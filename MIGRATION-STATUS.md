@@ -31,7 +31,7 @@
 ## 仍需完成
 
 - 定位用户现有 GPT 定时任务所在对话、任务指令和时间，确认可用连接工具，接入独立站的认证写入通道并验证一次真实更新。旧 Sites 关联 automations 为空，不能据此判断其他对话没有任务。不要宣称已自动整理聊天。
-- 本机 Git 已关联公开仓库 https://github.com/wayneren906-cmd/Wayne-site 的 main，完整源码已推送，保留原初始化提交。Cloudflare Workers Builds 已连接 main，首次推送部署待验证。构建执行测试、类型检查和生产构建，发布前应用 D1 迁移；NODE_VERSION=24、PNPM_VERSION=11.25.0，关闭预览构建。
+- 本机 Git 已关联公开仓库 https://github.com/wayneren906-cmd/Wayne-site 的 main，完整源码已推送，保留原初始化提交。Cloudflare 已连接 main，构建配置、Node 24 和 pnpm 11.25.0 已保存；但自动构建 API 返回 12052：账户被禁止使用 Workers Builds，需联系 Cloudflare 支持解除限制。尚未验证自动部署成功。本机已准备 GitHub Actions 推送部署备选方案，保存令牌到 GitHub Secrets 需用户确认。
 - Workers Builds 部署令牌权限已收紧为账户内 Workers Scripts/D1 编辑与 wayneo.dev 的 Workers Routes 编辑、Zone 读取，不授予其他产品或其他域名权限。令牌仅保存在 Cloudflare。
 - 测试域名保留供后续验证。
 
