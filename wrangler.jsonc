@@ -1,0 +1,41 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wayne-site",
+  "account_id": "0a59f37c545599c4f15fcc9e8f53c7bf",
+  "routes": [
+    { "pattern": "wayneo.dev", "custom_domain": true },
+    { "pattern": "study-test.wayneo.dev", "custom_domain": true }
+  ],
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": "dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "none"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "wayne-learning",
+      "database_id": "badfc253-15a8-4cfa-9e6b-fb6b237c1b93",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "0 15 * * *",
+      "55 21 * * *"
+    ]
+  },
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "CF_ACCESS_TEAM_DOMAIN": "https://wayne-profile-pages.cloudflareaccess.com",
+    "CF_ACCESS_AUD": "35006a286e94d49799bd537f61a282a7bd62ae45b683588d37938661457b456e",
+    "JOURNAL_OWNER_EMAIL": "wayne.ren906@gmail.com"
+  }
+}

@@ -1,0 +1,13 @@
+node_modules/
+.pnpm-store/
+.pnpm-cache/
+dist/
+.next/
+.wrangler/
+*.tsbuildinfo
+.dev.vars
+.env*
+!.env.example
+data/
+*.zip
+*.log
