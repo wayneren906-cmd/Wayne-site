@@ -1,6 +1,6 @@
 # Wayne 的个人网站
 
-这是已部署到自己 Cloudflare 账号的完整源码。主页、学习日历、记录编辑、数据库和定时快照都可以独立运行，无需 ChatGPT 账号。内容更新通过站点的 /admin；GitHub 自动部署尚未连接。
+这是已部署到自己 Cloudflare 账号的完整源码。主页、学习日历、记录编辑、数据库和定时快照都可以独立运行，无需 ChatGPT 账号。内容更新通过站点的 /admin；GitHub main 已连接 Cloudflare Workers Builds 自动部署。
 
 ## 当前交付状态
 
@@ -75,7 +75,9 @@ pnpm exec wrangler d1 execute DB --remote --file data/import.sql
 
 ## 5. GitHub 更新后自动部署
 
-推荐在 Cloudflare Workers & Pages 为已部署的 Worker 连接此 GitHub 仓库，生产分支 main，构建命令 pnpm build，部署命令 pnpm db:remote && pnpm exec wrangler deploy --config dist/server/wrangler.json。在 Build variables 设置 NODE_VERSION=24、PNPM_VERSION=11.25.0。这样 push 后由 Cloudflare 构建部署，不依赖 ChatGPT。
+已在 Cloudflare Workers & Pages 为 wayne-site 连接 GitHub Wayne-site 仓库，生产分支 main，构建命令 pnpm test && pnpm typecheck && pnpm build，部署命令 pnpm db:remote && pnpm exec wrangler deploy --config dist/server/wrangler.json。Build variables 为 NODE_VERSION=24、PNPM_VERSION=11.25.0。push 后由 Cloudflare 检查、构建并部署，不依赖 ChatGPT；预览构建关闭。
+
+部署令牌仅存于 Cloudflare Workers Builds，权限限于个人账户的 Workers Scripts 编辑、D1 编辑，以及 wayneo.dev 的 Workers Routes 编辑和 Zone 读取。令牌不写入本机源码、仓库或聊天。
 
 仓库还包含 GitHub Actions 的检查工作流和备用手动部署工作流。若使用后者，在仓库 Settings > Secrets and variables > Actions 创建 CLOUDFLARE_API_TOKEN 和 CLOUDFLARE_ACCOUNT_ID，再从 Actions 运行 Deploy manually。令牌只存 GitHub Secrets，不要写进源码或聊天。无需同时开启两套自动部署。
 

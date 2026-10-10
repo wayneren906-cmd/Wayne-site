@@ -31,7 +31,8 @@
 ## 仍需完成
 
 - 定位用户现有 GPT 定时任务所在对话、任务指令和时间，确认可用连接工具，接入独立站的认证写入通道并验证一次真实更新。旧 Sites 关联 automations 为空，不能据此判断其他对话没有任务。不要宣称已自动整理聊天。
-- 本机 Git 已关联公开仓库 https://github.com/wayneren906-cmd/Wayne-site 的 main，完整源码随本次提交推送，保留原初始化提交。Cloudflare 自动部署尚未连接；当前通过本机 Wrangler 发布，后续可继续本机发布。
+- 本机 Git 已关联公开仓库 https://github.com/wayneren906-cmd/Wayne-site 的 main，完整源码已推送，保留原初始化提交。Cloudflare Workers Builds 已连接 main，首次推送部署待验证。构建执行测试、类型检查和生产构建，发布前应用 D1 迁移；NODE_VERSION=24、PNPM_VERSION=11.25.0，关闭预览构建。
+- Workers Builds 部署令牌权限已收紧为账户内 Workers Scripts/D1 编辑与 wayneo.dev 的 Workers Routes 编辑、Zone 读取，不授予其他产品或其他域名权限。令牌仅保存在 Cloudflare。
 - 测试域名保留供后续验证。
 
 ## 后续本机部署
