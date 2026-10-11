@@ -14,6 +14,9 @@
 
 /* Shared personal-site identity and navigation. */
 .personal-brand{font-size:18px;letter-spacing:-.4px;gap:10px}
+.wordmark{position:relative;display:block;width:140px;aspect-ratio:1020/235;overflow:hidden;flex-shrink:0}
+.wordmark img{position:absolute;width:141.9608%;height:auto;max-width:none;left:-21.0784%;top:-189.3617%;mix-blend-mode:multiply}
+:root[data-theme=dark] .wordmark img{filter:invert(1);mix-blend-mode:screen}
 .monogram{font-family:Georgia,serif;font-size:21px;font-weight:600}
 .personal-brand-caption{display:block;font-size:9px;letter-spacing:1.5px;margin-top:3px}
 .nav-actions{display:flex;align-items:center;gap:23px;min-width:0}
@@ -79,7 +82,7 @@
 .direction-list h3{font-size:14px;font-weight:500;margin:12px 0 8px}
 .direction-list p{font-size:12px;color:var(--muted);line-height:1.9;margin:0}
 @media(max-width:650px){
-  .personal-brand{font-size:16px;gap:8px}.personal-brand-caption{display:none}.personal-brand .brand-mark{width:30px;height:30px}
+  .personal-brand{font-size:16px;gap:8px}.wordmark{width:112px}.personal-brand-caption{display:none}.personal-brand .brand-mark{width:30px;height:30px}
   .nav-actions{gap:10px}.site-nav{gap:16px;font-size:11px}.nav-actions>.icon-button{width:28px}
   .personal-hero{gap:16px;padding:42px 0 38px;grid-template-columns:minmax(0,1fr) 116px;align-items:start}
   .personal-kicker{font-size:9px;letter-spacing:.3px;gap:6px;margin-bottom:18px}
@@ -96,4 +99,4 @@
   .project-empty{padding:33px 21px}.project-empty-mark{width:50px;height:50px;margin-bottom:19px}.project-empty h2{font-size:19px;line-height:1.5}.project-empty p{font-size:12px;line-height:1.9}.project-empty .secondary{font-size:12px}
   .project-directions{padding:30px 0 37px}.direction-list{grid-template-columns:1fr;gap:22px;margin-top:18px}.direction-list>div{padding-top:18px}.direction-list h3{display:inline-block;margin:0 0 8px 10px;font-size:13px}.direction-list svg{vertical-align:middle;width:17px}.direction-list p{font-size:12px}
 }
-@media(max-width:360px){.personal-brand .brand-mark{display:none}.site-nav{gap:13px}.nav-actions{gap:8px}.personal-hero{grid-template-columns:minmax(0,1fr) 90px;gap:10px}.identity-letter{font-size:54px}.identity-letter>span{font-size:32px}.art-caption{font-size:6px;bottom:9px}}
+@media(max-width:360px){.wordmark{width:96px}.personal-brand .brand-mark{display:none}.site-nav{gap:13px}.nav-actions{gap:8px}.personal-hero{grid-template-columns:minmax(0,1fr) 90px;gap:10px}.identity-letter{font-size:54px}.identity-letter>span{font-size:32px}.art-caption{font-size:6px;bottom:9px}}
