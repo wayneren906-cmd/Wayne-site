@@ -1,6 +1,6 @@
 # wayneo.dev 迁移进度
 
-更新时间：2026-10-11（北京时间）。域名迁移和 GitHub Actions 自动部署已验证完成，GPT 定时内容写入尚未接入。
+更新时间：2026-10-11（北京时间）。域名迁移、GitHub Actions 自动部署和真实聊天摘要写入均已验证完成；每日 06:00 的定时同步已启用，首个定时运行尚待验证。
 
 ## 已完成
 
@@ -14,6 +14,9 @@
 - 正式域名主页、学习页、项目页 HTTP 200；匿名管理员页面和实际管理 API 跳转 Access 登录。本人正式域名登录并读取管理数据成功。
 - 测试站原样保存 2026-10-09 既有内容验证写入：revision 3→4，更新时间变化，正文和练习未改动。两天记录和两份快照完整迁移。
 - 定时快照：北京时间 23:00、次日 05:55，只保存已有记录，不会读取聊天或生成学习内容。
+- 已部署专用 /api/sync/records，提交 3cb60b3，GitHub Deploy website 运行 38111256534 成功，对应版本 e0c6b514-01e5-4225-8960-d92f8f5a0f7e。独立随机令牌只保存在忽略的本机 data；Worker Secret SYNC_TOKEN_SHA256 只保存摘要。
+- 已从可见学习聊天整理并新增 2026-10-10 记录，revision=1；回读核对和重复提交通过。17 项测试、类型检查、构建、独立代码审查均通过；匿名/错误凭证 HTTP 401，旧版本写入 HTTP 409，人工管理员仍跳转 Access。原有两条记录和两份快照与同步前备份逐项一致。
+- 已启用同聊天 heartbeat wayneo-dev：每天北京时间 06:00 整理前一学习日，只通知真实更新、失败或所需操作。此为本机任务，需要电脑开机且 Codex 运行；首次定时执行的结果需单独核验，不能用首次手动同步替代。
 - 旧 Sites 项目 appgprj_6ac9413994dc819192006314205b9946 已解绑 wayneo.dev，list_custom_domains 返回空。旧站 access_mode=custom，只有所有者，revision=3；保留旧数据供恢复。
 - 用户确认删除两条旧 A 记录后已移除，Worker 自定义域名绑定成功。
 
@@ -27,10 +30,11 @@
 - production-verified.json：正式域名完整记录和快照，与 admin-write-verified.json 完全一致。
 - production-admin-verified.jpg：正式域名管理员页面截图。
 - pre-migration-2026-10-10.json/sql：最初备份和只添加缺失日期的导入文件。
+- pre-sync-2026-10-11.json、post-sync-2026-10-11.json：首次聊天同步前后备份；sync-evidence-2026-10-10.json 为已读取片段的依据，sync-source-state.json 保存来源检查点。不是完整聊天归档。
 
 ## 仍需完成
 
-- 定位用户现有 GPT 定时任务所在对话、任务指令和时间，确认可用连接工具，接入独立站的认证写入通道并验证一次真实更新。旧 Sites 关联 automations 为空，不能据此判断其他对话没有任务。不要宣称已自动整理聊天。
+- 首个每日 06:00 定时运行尚待验证；当前只承诺已核实的两条指定学习聊天。检索不完整时明确覆盖范围，不删除既有内容，不把学习计划记为完成练习。人工修改导致版本变化时停止自动覆盖。其他学习聊天须用户指定后再加入。
 - 本机 Git 已关联公开仓库 https://github.com/wayneren906-cmd/Wayne-site 的 main，完整源码已推送，保留原初始化提交。Cloudflare 已连接 main，构建配置、Node 24 和 pnpm 11.25.0 已保存；此前自动构建 API 返回 12052 账户限制，需联系 Cloudflare 支持解决。使用真实 script tag f4222014ba2b4ca6ba0876456a10bc27 重新查询，确认构建配置和 main 触发器仍存在，当前没有构建记录；不能将使用 Worker 名称查询得到的 12040 当作配置不存在或限制仍生效的新证据。
 - GitHub Actions 推送 main 和手动部署均已启用并验证成功。此前提交 d365a33 的部署缺少 Secrets；最新提交 10c2ba5 的 Check 运行 38071905567 和 Deploy website 运行 38071905534 均成功，Cloudflare 发布时间与运行一致。正式主页、学习页、项目页、记录和快照 API 均 HTTP 200，记录数 2；匿名 /admin 和 /api/admin/records 均 HTTP 302 跳转 Access 登录。
 - 当前 Cloudflare MCP 授权可读取 Worker 与 Builds 配置，但账户 API Token 管理接口返回 9109 Unauthorized；无法通过此连接创建专用 CI 令牌。不要提取本机 OAuth 登录令牌替代，不要把任何令牌写进聊天或文档。GitHub 现有授权已确认有本仓库 admin/push 权限，无需重复要求用户登录 GitHub 才能读取部署日志。

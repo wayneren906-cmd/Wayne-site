@@ -14,21 +14,21 @@
 
 ## Task 1: Authenticated endpoint
 
-- [ ] Add tests in tests/sync.test.mjs using an in-memory SQLite-backed D1 adapter for authentication, payload bounds, create/update, conflict and identical retry.
-- [ ] Run `node --experimental-strip-types --test tests/sync.test.mjs` and observe missing functionality.
-- [ ] Implement `handleSync(request, {DB, SYNC_TOKEN_SHA256})` in lib/sync.ts and a thin route in app/api/sync/records/route.ts.
-- [ ] Generate binding types with project Wrangler after adding the secret locally; run tests and typecheck.
+- [x] Add tests in tests/sync.test.mjs using an in-memory SQLite-backed D1 adapter for authentication, payload bounds, create/update, conflict and identical retry.
+- [x] Run `node --experimental-strip-types --test tests/sync.test.mjs` and observe missing functionality.
+- [x] Implement `handleSync(request, {DB, SYNC_TOKEN_SHA256})` in lib/sync.ts and a thin route in app/api/sync/records/route.ts.
+- [x] Generate binding types with project Wrangler after adding the secret locally; run tests and typecheck.
 
 ## Task 2: Verified local uploader
 
-- [ ] Implement scripts/sync-record.mjs and testable upload/state helpers in scripts/sync-client.mjs.
-- [ ] Test stale/manual revision rejection, unchanged replay, and verification failure before recording local success.
-- [ ] Generate local credential without printing it; upload only its digest via Wrangler stdin to Worker secret.
+- [x] Implement scripts/sync-record.mjs and testable upload/state helpers in scripts/sync-client.mjs.
+- [x] Test stale/manual revision rejection, unchanged replay, and verification failure before recording local success.
+- [x] Generate local credential without printing it; upload only its digest via Wrangler stdin to Worker secret.
 
 ## Task 3: Publish and schedule
 
-- [ ] Run all tests, typecheck and build. Review diff, push source to GitHub and wait for successful automatic deployment.
-- [ ] Back up remote records, summarize real retrieved conversation evidence, merge existing content, and upload once with explicit adoption.
-- [ ] Verify real record, no-op retry, incorrect auth, stale conflict and manual admin protection.
-- [ ] Inspect existing schedules and create/update one same-chat daily 06:00 heartbeat.
-- [ ] Document verified deployment and local execution requirement. Distinguish tested integration from the future scheduled run.
+- [x] Run all tests, typecheck and build. Review diff, push source to GitHub and wait for successful automatic deployment.
+- [x] Back up remote records, summarize real retrieved conversation evidence, merge existing content, and upload once with explicit adoption.
+- [x] Verify real record, no-op retry, incorrect auth, stale conflict and manual admin protection.
+- [x] Inspect existing schedules and create/update one same-chat daily 06:00 heartbeat.
+- [x] Document verified deployment and local execution requirement. Distinguish tested integration from the future scheduled run.
