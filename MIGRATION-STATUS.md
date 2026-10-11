@@ -1,13 +1,13 @@
 # wayneo.dev 迁移进度
 
-更新时间：2026-10-10。域名迁移已完成，GPT 定时内容写入尚未接入。
+更新时间：2026-10-11（北京时间）。域名迁移和 GitHub Actions 自动部署已验证完成，GPT 定时内容写入尚未接入。
 
 ## 已完成
 
 - 本机源码：D:\codex_dev\web\wayne-site-migration\wayne-site。
 - Cloudflare 账户：0a59f37c545599c4f15fcc9e8f53c7bf。
 - Worker：wayne-site；正式 https://wayneo.dev，测试 https://study-test.wayneo.dev。
-- 当前发布版本：836e2c03-31e9-4a45-b69b-69e049c9ee04。
+- 2026-10-11 01:29 自动发布版本：9c797e75-e20e-48e2-819d-d0cb912cfe8f，100% 流量；对应 GitHub 提交 10c2ba5，Deploy website 运行 38071905534 成功。
 - D1：wayne-learning，badfc253-15a8-4cfa-9e6b-fb6b237c1b93。
 - 8 项测试、类型检查、生产构建通过。修复 Workers 不支持 fetch redirect:error 导致管理员验证失败；改为 manual，仍拒绝重定向并验证 JWT 签名和声明。
 - Access 应用 Wayne site admin：af090a7a-8aff-4384-a83b-cd532ee3ba07；策略 Wayne site owner：e441c72e-7bd1-401c-96ae-80331f214cf5，只允许所有者邮箱。保护两个域名的 /admin 和 /api/admin/*。关闭 eager_redirect_cookie_setting，避免跨域同步回旧站。
@@ -31,7 +31,9 @@
 ## 仍需完成
 
 - 定位用户现有 GPT 定时任务所在对话、任务指令和时间，确认可用连接工具，接入独立站的认证写入通道并验证一次真实更新。旧 Sites 关联 automations 为空，不能据此判断其他对话没有任务。不要宣称已自动整理聊天。
-- 本机 Git 已关联公开仓库 https://github.com/wayneren906-cmd/Wayne-site 的 main，完整源码已推送，保留原初始化提交。Cloudflare 已连接 main，构建配置、Node 24 和 pnpm 11.25.0 已保存；但自动构建 API 返回 12052：账户被禁止使用 Workers Builds，需联系 Cloudflare 支持解除限制。尚未验证自动部署成功。本机已准备 GitHub Actions 推送部署备选方案，保存令牌到 GitHub Secrets 需用户确认。
+- 本机 Git 已关联公开仓库 https://github.com/wayneren906-cmd/Wayne-site 的 main，完整源码已推送，保留原初始化提交。Cloudflare 已连接 main，构建配置、Node 24 和 pnpm 11.25.0 已保存；此前自动构建 API 返回 12052 账户限制，需联系 Cloudflare 支持解决。使用真实 script tag f4222014ba2b4ca6ba0876456a10bc27 重新查询，确认构建配置和 main 触发器仍存在，当前没有构建记录；不能将使用 Worker 名称查询得到的 12040 当作配置不存在或限制仍生效的新证据。
+- GitHub Actions 推送 main 和手动部署均已启用并验证成功。此前提交 d365a33 的部署缺少 Secrets；最新提交 10c2ba5 的 Check 运行 38071905567 和 Deploy website 运行 38071905534 均成功，Cloudflare 发布时间与运行一致。正式主页、学习页、项目页、记录和快照 API 均 HTTP 200，记录数 2；匿名 /admin 和 /api/admin/records 均 HTTP 302 跳转 Access 登录。
+- 当前 Cloudflare MCP 授权可读取 Worker 与 Builds 配置，但账户 API Token 管理接口返回 9109 Unauthorized；无法通过此连接创建专用 CI 令牌。不要提取本机 OAuth 登录令牌替代，不要把任何令牌写进聊天或文档。GitHub 现有授权已确认有本仓库 admin/push 权限，无需重复要求用户登录 GitHub 才能读取部署日志。
 - Workers Builds 部署令牌权限已收紧为账户内 Workers Scripts/D1 编辑与 wayneo.dev 的 Workers Routes 编辑、Zone 读取，不授予其他产品或其他域名权限。令牌仅保存在 Cloudflare。
 - 测试域名保留供后续验证。
 

@@ -1,6 +1,6 @@
 # Wayne 的个人网站
 
-这是已部署到自己 Cloudflare 账号的完整源码。主页、学习日历、记录编辑、数据库和定时快照都可以独立运行，无需 ChatGPT 账号。内容更新通过站点的 /admin；GitHub main 已连接 Cloudflare，但账户被禁止使用 Workers Builds，自动发布尚未验证成功。
+这是已部署到自己 Cloudflare 账号的完整源码。主页、学习日历、记录编辑、数据库和定时快照都可以独立运行，无需 ChatGPT 账号。内容更新通过站点的 /admin；GitHub main 推送后通过 GitHub Actions 自动发布到 Cloudflare，2026-10-11 已验证成功。
 
 ## 当前交付状态
 
@@ -79,7 +79,11 @@ pnpm exec wrangler d1 execute DB --remote --file data/import.sql
 
 部署令牌仅存于 Cloudflare Workers Builds，权限限于个人账户的 Workers Scripts 编辑、D1 编辑，以及 wayneo.dev 的 Workers Routes 编辑和 Zone 读取。令牌不写入本机源码、仓库或聊天。
 
-仓库包含 GitHub Actions 检查和手动部署工作流。本机已准备 main 推送自动部署的备选修改，待确认把专用令牌保存到 GitHub Secrets 后再启用。所需秘密为 CLOUDFLARE_API_TOKEN 和 CLOUDFLARE_ACCOUNT_ID；令牌不要写进源码或聊天。无需同时开启两套自动部署。
+仓库已启用 GitHub Actions：推送 main 或手动运行 Deploy website 都会触发部署，工作流使用 production environment。2026-10-11 北京时间 01:29，提交 10c2ba5 的检查和部署均成功：[部署运行](https://github.com/wayneren906-cmd/Wayne-site/actions/runs/38071905534)。Cloudflare 发布版本为 9c797e75-e20e-48e2-819d-d0cb912cfe8f，流量 100%；正式站页面、公开数据与匿名管理员登录保护已于当天再次验证。
+
+此前因缺少 CLOUDFLARE_API_TOKEN 失败的问题已解决。工作流使用 GitHub 加密 Secrets 中的 CLOUDFLARE_API_TOKEN 与 CLOUDFLARE_ACCOUNT_ID；更换令牌时使用目标账户的 Workers Scripts 编辑、D1 编辑，以及 wayneo.dev 区域的 Workers Routes 编辑和 Zone 读取权限。
+
+令牌只保存到 GitHub 的加密 Secrets，不要写进源码、提交、日志或聊天，也不要使用本机 OAuth 登录令牌替代长期 CI 部署令牌。保存后手动运行 Deploy website，核对运行成功、新的 Worker 发布版本及正式站访问，才能确认自动部署可用。Cloudflare Workers Builds 的仓库关联配置仍然存在，不能使用 Worker 名称代替系统生成的 script tag 查询后据此判断配置丢失；该路径之前返回的 12052 账户限制仍待解决，无需同时运行两套自动部署。
 
 ## 6. 最后切换 wayneo.dev
 
@@ -96,7 +100,7 @@ pnpm exec wrangler d1 execute DB --remote --file data/import.sql
 ## 日常维护
 
 - 写学习内容：打开 /admin，邮箱验证码登录，点记一笔或编辑。保存后立即写入 D1，无需改代码。
-- 改简介或项目：编辑 app/personal-home.tsx、app/projects/page.tsx；改样式：app/globals.css。提交到 main 后触发已连接的 Cloudflare 部署。
+- 改简介或项目：编辑 app/personal-home.tsx、app/projects/page.tsx；改样式：app/globals.css。推送到 GitHub main 后由 GitHub Actions 自动部署到 Cloudflare。
 - 快照：北京时间 23:00 和次日 05:55，保存已有记录。06:00 切换学习日。快照在同一数据库，不能代替异地备份。
 - 备份：定期运行 pnpm export:data，将 JSON 保存到自己的电脑或可信存储。D1 数据备份恢复也应按 Cloudflare 官方文档操作。
 - 检查：GitHub Actions 查看构建结果，Cloudflare Logs 查看 Worker 错误和定时任务执行情况。
