@@ -48,20 +48,18 @@
   font-size: clamp(64px, 10vw, 144px);
   font-weight: 400;
   line-height: 0.90;
-  letter-spacing: -0.015em;
+  letter-spacing: 0.02em;
   color: var(--ink);
 }
 .pub-cover-title > span { display: block; width: fit-content; overflow: hidden; padding-bottom: .15em; margin-bottom: -.02em; }
 .pub-cover-title .pub-title-word {
   display: inline-flex;
   align-items: baseline;
-  transform: scaleX(1.10);
-  transform-origin: left baseline;
   animation: pub-type-enter 1.25s both cubic-bezier(.22,1,.36,1);
 }
 .pub-cover-title .cover-line-1 { padding-left: 0; }
-.pub-cover-title .cover-line-2 { padding-left: 0.65em; }
-.pub-cover-title .cover-line-3 { padding-left: 1.30em; }
+.pub-cover-title .cover-line-2 { padding-left: 0.60em; }
+.pub-cover-title .cover-line-3 { padding-left: 1.20em; }
 .pub-cover-title .cover-line-2 .pub-title-word { animation-delay: .14s; }
 .pub-cover-title .cover-line-3 .pub-title-word { animation-delay: .28s; }
 
@@ -86,7 +84,7 @@
   color: var(--ink);
   letter-spacing: -0.015em;
   margin: 20px 0 clamp(42px, 5vw, 64px);
-  padding-left: 1.30em;
+  padding-left: 1.20em;
   animation: pub-intro-enter 1.2s 0.48s both cubic-bezier(.22,1,.36,1);
 }
 .pub-cover-grid { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: 24px; position: relative; padding-top: 24px; }
@@ -383,9 +381,9 @@
   .pub-cover-meta span:last-child { display: none; }
   .pub-cover-title { font-size: clamp(42px, 11.5vw, 80px); margin: 38px 0 0; }
   .pub-cover-title .cover-line-1 { padding-left: 0; }
-  .pub-cover-title .cover-line-2 { padding-left: 0.35em; }
-  .pub-cover-title .cover-line-3 { padding-left: 0.70em; }
-  .pub-cover-subphrase { padding-left: 0.70em; font-size: 18px; margin: 16px 0 28px; }
+  .pub-cover-title .cover-line-2 { padding-left: 0.30em; }
+  .pub-cover-title .cover-line-3 { padding-left: 0.60em; }
+  .pub-cover-subphrase { padding-left: 0.60em; font-size: 18px; margin: 16px 0 28px; }
   .pub-cover-grid { grid-template-columns: 1fr; gap: 30px; padding-top: 0; }
   .pub-cover-photo { grid-column: 1; grid-row: 1; }
   .pub-cover-photo .pub-photo-window { aspect-ratio: 1.25; }
