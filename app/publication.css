@@ -868,3 +868,15 @@
   .contact-social-anchor { gap: 6px; font-size: 12px; }
   .contact-bottom-wavy { margin-top: 28px; }
 }
+
+.contact-replica-subinvite {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(20px,2vw,26px);
+  line-height: 1.4;
+  letter-spacing: .01em;
+}
+@media (max-width: 600px) {
+  .contact-replica-subinvite { font-size: 15px; }
+}
