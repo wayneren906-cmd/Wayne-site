@@ -773,3 +773,56 @@
   .works-asymmetric-grid .work-feature-card { grid-column: 1 / -1; padding: 24px; }
   .works-asymmetric-grid .work-number { overflow-wrap: anywhere; }
 }
+
+/* Explicit glyph dimensions also work in iOS embedded browsers. */
+.c-letter-glyph { flex-shrink: 0; }
+.c-letter-glyph svg { width: 100%; height: 100%; flex-shrink: 0; overflow: visible; }
+.contact-action-col, .contact-headline-col { min-width: 0; }
+.contact-newsletter-field input { min-width: 0; width: 100%; }
+
+/* Preserve the facing-column composition on smaller screens. */
+@media (max-width: 900px) {
+  .contact-replica-grid { grid-template-columns: minmax(0,1.05fr) minmax(0,1fr); gap: 24px; align-items: start; }
+  .contact-headline-col { padding-left: 0; }
+  .contact-replica-subinvite { padding-left: 0; }
+  .contact-action-col { padding-left: 0; }
+}
+@media (max-width: 700px) {
+  .pub-cover-grid { grid-template-columns: minmax(0,.85fr) minmax(0,1.15fr); gap: 16px; align-items: start; }
+  .pub-cover-intro { grid-column: 1; grid-row: 1; align-self: center; padding: 0; }
+  .pub-cover-photo { grid-column: 2; grid-row: 1; }
+  .pub-cover-photo .pub-photo-window { aspect-ratio: .68; }
+  .pub-cover-deck { font-size: 17px; line-height: 1.55; margin: 12px 0; }
+  .pub-cover-intro .pub-body { font-size: 12px; line-height: 1.85; margin: 0 0 12px; }
+  .pub-cover-intro .pub-small-label { font-size: 9px; }
+  .pub-cover-intro .pub-text-link { font-size: 11px; gap: 8px; }
+  .pub-cover-photo figcaption { flex-direction: column; gap: 2px; }
+  .pub-practice-grid { display: grid; grid-template-columns: minmax(0,.95fr) minmax(0,1.05fr); gap: 18px; align-items: start; }
+  .pub-practice-image { grid-column: 1; }
+  .pub-practice-image .pub-photo-window { aspect-ratio: .65; }
+  .pub-practice-copy { grid-column: 2; padding-top: 0; }
+  .pub-practice-copy h2 { font-size: 22px; line-height: 1.5; margin: 12px 0; }
+  .pub-practice-copy h2 br { display: initial; }
+  .pub-practice-lead { font-size: 13px; line-height: 1.7; }
+  .pub-practice-copy .pub-body { font-size: 12px; line-height: 1.85; margin-bottom: 12px; }
+  .pub-practice-copy .pub-small-label { font-size: 9px; }
+  .pub-practice-copy .pub-text-link { font-size: 11px; gap: 8px; }
+  .pub-practice-topics { flex-wrap: wrap; font-size: 9px; gap: 4px 10px; padding-top: 12px; margin-top: 16px; }
+  .pub-practice-image figcaption { flex-direction: column; gap: 2px; }
+  .pub-fragments-heading { grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 18px; align-items: end; }
+  .pub-fragments-heading h2 { font-size: clamp(32px,8vw,50px); }
+  .pub-fragments-heading .pub-body { font-size: 12px; line-height: 1.85; }
+  .pub-fragments-heading .pub-small-label { font-size: 9px; }
+  .contact-replica-grid { gap: 16px; }
+  .contact-title-group { font-size: clamp(28px,8vw,52px); }
+  .contact-replica-subinvite { font-size: 14px; margin-top: 24px; padding-left: 0; }
+  .contact-direct-email { font-size: 14px; overflow-wrap: anywhere; }
+  .contact-social-matrix { gap: 12px; }
+  .contact-social-anchor { font-size: 12px; }
+  .contact-newsletter-heading { font-size: 24px; margin-bottom: 10px; }
+  .contact-newsletter-zone .pub-body { font-size: 12px; line-height: 1.85; }
+  .contact-newsletter-field input { font-size: 12px; }
+  .contact-newsletter-field input::placeholder { font-size: 11px; }
+  .contact-newsletter-arrow svg { width: 18px; height: 18px; }
+}
+.pub-cover-bottom { justify-content: flex-end; }

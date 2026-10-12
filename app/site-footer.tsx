@@ -11,15 +11,14 @@ export default function SiteFooter() {
       <div className="colophon-details-grid">
         <div className="colophon-col-1">
           <p style={{ margin: 0, lineHeight: 1.8 }}>
-            A personal archive dedicated to learning, building, and becoming.<br />
-            物联网工程 · C 语言 · 嵌入式系统与车载总线研习录。
+            WAYNE / PERSONAL ARCHIVE.<br />
+            C 语言 · 嵌入式 · 汽车电子。
           </p>
         </div>
 
         <div className="colophon-col-2">
           <p style={{ margin: 0, lineHeight: 1.8 }}>
             LEARNING / PRACTICE / EVERYDAY.<br />
-            持续更新的个人刊物。<br />
             <a
               href="https://github.com/wayneren906-cmd/Wayne-site"
               target="_blank"

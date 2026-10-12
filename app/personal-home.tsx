@@ -88,11 +88,11 @@ export default function PersonalHome() {
         <div className="pub-cover-meta"><span>A PERSONAL PUBLICATION</span><span>LEARNING / PRACTICE / EVERYDAY</span></div>
         <h1 id="cover-title" className="pub-cover-title"><span><span className="pub-title-word">Learning.</span></span><span><span className="pub-title-word">Building.</span></span><span><span className="pub-title-word">Becoming.</span></span></h1>
         <div className="pub-cover-grid">
-          <div className="pub-cover-intro"><span className="pub-small-label">WAYNE / 个人刊物</span><p className="pub-cover-deck">从一行代码，<br />到生活的细部。</p><p className="pub-body">物联网工程在读。这里收录学习、实践和日常观察，也留下还没想明白的事。</p><a className="pub-text-link" href="#journal">翻开这一页 <ArrowDown size={15} /></a></div>
+          <div className="pub-cover-intro"><span className="pub-small-label">WAYNE / 个人刊物</span><p className="pub-cover-deck">从一行代码，<br />到生活的细部。</p><p className="pub-body">物联网工程在读。C 语言与嵌入式。</p><a className="pub-text-link" href="#journal">翻开这一页 <ArrowDown size={15} /></a></div>
           <figure className="pub-cover-photo"><div className="pub-photo-window"><img src="/editorial-structure.jpg" alt="自然光下交错的混凝土阶梯与建筑结构" width={1376} height={768} fetchPriority="high" /></div><figcaption><span>01 / STRUCTURE & LIGHT</span><span>封面影像 · 版式参考</span></figcaption></figure>
           <span className="pub-cover-side" aria-hidden="true">NOTES ON BECOMING — 2026</span>
         </div>
-        <div className="pub-cover-bottom"><span>技术、审美与生活的持续练习</span><a href="/learning">进入学习档案 <ArrowUpRight size={13} /></a></div>
+        <div className="pub-cover-bottom"><a href="/learning">进入学习档案 <ArrowUpRight size={13} /></a></div>
       </section>
       <section id="journal" className="pub-section pub-journal pub-reveal" aria-labelledby="journal-title">
         <SectionLabel number="01" title="JOURNAL" note="日常研习 / 按时间收录" />
@@ -114,25 +114,25 @@ export default function PersonalHome() {
         <SectionLabel number="02" title="IN PRACTICE" note="从理解到动手" />
         <div className="pub-practice-grid">
           <figure className="pub-practice-image pub-reveal-image"><div className="pub-photo-window"><img src="/editorial-desk.jpg" alt="窗前原木长案、布面研习笔记与极简书写笔" width={1376} height={768} loading="lazy" /></div><figcaption><span>02 / THE DESK</span><span>实践意向 · 研习案头</span></figcaption></figure>
-          <div className="pub-practice-copy pub-reveal"><span className="pub-small-label">WORK IN PROGRESS</span><h2 id="practice-title">让想法，<br />有迹可循。</h2><p className="pub-practice-lead">理解一个问题，<br />也试着把它做出来。</p><p className="pub-body">从 C 语言练习出发，逐步探索嵌入式与汽车电子。这里将收录实践过程、遇到的问题和每一次修改。</p><a className="pub-text-link" href="/projects">查看实践方向 <ArrowUpRight size={15} /></a><div className="pub-practice-topics"><span>C 语言</span><span>嵌入式</span><span>汽车电子</span></div></div>
+          <div className="pub-practice-copy pub-reveal"><span className="pub-small-label">WORK IN PROGRESS</span><h2 id="practice-title">让想法，<br />有迹可循。</h2><a className="pub-text-link" href="/projects">查看实践方向 <ArrowUpRight size={15} /></a><div className="pub-practice-topics"><span>C 语言</span><span>嵌入式</span><span>汽车电子</span></div></div>
         </div>
       </section>
       <section className="pub-section pub-fragments pub-reveal" aria-labelledby="fragments-title">
         <SectionLabel number="03" title="FRAGMENTS" note="影像随笔 / 光与空间" />
-        <div className="pub-fragments-heading pub-reveal"><h2 id="fragments-title">Between<br /><em>the lines.</em></h2><div><span className="pub-small-label">在字里行间之外</span><p className="pub-body">观察光线如何落下，结构如何相遇。<br />给尚未成为文字的片段，留一点位置。</p></div></div>
+        <div className="pub-fragments-heading pub-reveal"><h2 id="fragments-title">Between<br /><em>the lines.</em></h2><div><span className="pub-small-label">在字里行间之外</span></div></div>
         <div className="pub-photo-essay">
           <figure className="pub-essay-main pub-reveal-image"><div className="pub-photo-window"><img src="/editorial-architecture.jpg" alt="天窗的自然光落在混凝土墙面与楼梯上" width={1376} height={768} loading="lazy" /></div><figcaption><span>01 — LIGHT, IN PASSING</span><span>光线经过的地方</span></figcaption></figure>
           <figure className="pub-essay-detail pub-reveal-image"><div className="pub-photo-window"><img src="/editorial-facade.jpg" alt="仰视城市建筑，玻璃立面在天空中形成交错的边界" width={1600} height={1067} loading="lazy" /></div><figcaption><span>02 — LOOKING UP</span><span>城市的另一种尺度</span></figcaption></figure>
-          <div className="pub-essay-note pub-reveal"><span className="pub-small-label">A NOTE ON LOOKING</span><p>光让结构显现，<br />留白让视线停下。</p><span>本组影像用于摄影风格与版式参考。<br />个人影像随笔将逐步收录。</span></div>
+
         </div>
       </section>
       <div className="pub-endnote pub-reveal">
         <span>TO BE CONTINUED</span>
-        <p>还有很多，正在发生。</p>
+
         <a href="#cover-title" aria-label="返回首页封面">↑</a>
       </div>
       {/* 1:1 复刻 Project Invitation & Contact 模块 (Chiara Luzzana 风格) */}
-      <section className="contact-replica-section pub-reveal" aria-label="Contact and project invitation">
+      <section id="contact" className="contact-replica-section pub-reveal" aria-label="Contact and project invitation">
         <div className="contact-replica-top">
           <div className="contact-replica-brand" aria-label="WAYNE REN">
             <span>WAYNE</span>
@@ -256,30 +256,7 @@ export default function PersonalHome() {
               </a>
             </div>
 
-            <div className="contact-newsletter-zone">
-              <h3 className="contact-newsletter-heading">Newsletter</h3>
-              <p className="pub-body" role="status">订阅暂未开放。欢迎通过上方邮箱联系。</p>
-              {copyError && <p className="pub-body" role="status">{copyError}</p>}
-              <form
-                className="contact-newsletter-field"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                }}
-              >
-                <input
-                  type="email"
-                  disabled
-                  placeholder="订阅暂未开放"
-                  aria-label="Email Address for newsletter"
-                />
-                <button type="submit" disabled className="contact-newsletter-arrow" aria-label="订阅暂未开放">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-                    <line x1="4" y1="12" x2="20" y2="12" />
-                    <polyline points="13 5 20 12 13 19" />
-                  </svg>
-                </button>
-              </form>
-            </div>
+            {copyError && <p className="pub-body" role="status">{copyError}</p>}
           </div>
         </div>
 
