@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./publication.css";
+import "./journal-reading.css";
 
 export const metadata: Metadata = {
   title: { default: "Wayne · 个人网站", template: "%s · Wayne" },
