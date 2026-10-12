@@ -826,3 +826,45 @@
   .contact-newsletter-arrow svg { width: 18px; height: 18px; }
 }
 .pub-cover-bottom { justify-content: flex-end; }
+
+/* Contact spread: compact stepped typography and a clear right-hand axis. */
+.contact-replica-section { padding: 64px 0 40px; margin-top: 24px; scroll-margin-top: 108px; }
+.contact-replica-top { margin-bottom: 48px; }
+.contact-replica-grid { max-width: 1120px; margin: 0 auto; grid-template-columns: minmax(0,1.1fr) 72px minmax(0,.95fr); gap: 40px; align-items: start; }
+.contact-headline-col { padding-left: 40px; }
+.contact-title-group { font-size: clamp(70px,7.8vw,112px); line-height: .82; }
+.contact-title-line.line-1 { padding-left: .3em; }
+.contact-title-line.line-2 { padding-left: .6em; }
+.contact-title-line.line-3 { padding-left: 0; }
+.contact-title-line.line-4 { padding-left: .65em; }
+.contact-replica-subinvite { align-self: flex-end; padding-left: 0; margin: 42px 0 0; font-size: clamp(20px,2.2vw,28px); }
+.contact-center-node { display: flex; padding-top: 112px; }
+.contact-floating-ring { width: 48px; height: 48px; }
+.contact-action-col { padding: 20px 0 0; }
+.contact-direct-email { width: fit-content; max-width: 100%; font-size: clamp(22px,2.5vw,32px); padding-bottom: 2px; }
+.contact-email-line { margin-bottom: 38px; }
+.contact-social-matrix { max-width: 260px; gap: 14px 24px; margin-bottom: 0; }
+.contact-bottom-wavy { margin-top: 38px; }
+@media (max-width: 900px) {
+  .contact-replica-grid { grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); gap: 28px; }
+  .contact-center-node { display: none; }
+  .contact-headline-col { padding-left: 0; }
+  .contact-title-group { font-size: clamp(40px,7.8vw,70px); }
+  .contact-replica-subinvite { align-self: flex-end; padding-left: 0; font-size: 20px; }
+}
+@media (max-width: 600px) {
+  .contact-replica-section { padding: 40px 0 28px; margin-top: 16px; }
+  .contact-replica-top { margin-bottom: 32px; }
+  .contact-replica-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 18px; }
+  .contact-title-group { font-size: clamp(28px,8.6vw,46px); }
+  .contact-title-line.line-1 { padding-left: .2em; }
+  .contact-title-line.line-2 { padding-left: .3em; }
+  .contact-title-line.line-4 { padding-left: .35em; }
+  .contact-replica-subinvite { font-size: 14px; margin-top: 24px; }
+  .contact-action-col { padding-top: 8px; }
+  .contact-direct-email { font-size: 14px; }
+  .contact-email-line { margin-bottom: 24px; }
+  .contact-social-matrix { gap: 14px 12px; }
+  .contact-social-anchor { gap: 6px; font-size: 12px; }
+  .contact-bottom-wavy { margin-top: 28px; }
+}
