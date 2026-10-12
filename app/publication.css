@@ -3,7 +3,7 @@
   src: url('/fonts/Roslindale-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -11,7 +11,7 @@
   src: url('/fonts/Roslindale-Medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 @font-face {
@@ -19,7 +19,7 @@
   src: url('/fonts/Ayer-Medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 /* Scoped publication layout; existing journal tools retain their styles. */
@@ -50,11 +50,16 @@
   line-height: 0.90;
   letter-spacing: 0.02em;
   color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 .pub-cover-title > span { display: block; width: fit-content; overflow: hidden; padding-bottom: .15em; margin-bottom: -.02em; }
 .pub-cover-title .pub-title-word {
   display: inline-flex;
   align-items: baseline;
+  will-change: transform;
+  backface-visibility: hidden;
   animation: pub-type-enter 1.25s both cubic-bezier(.22,1,.36,1);
 }
 .pub-cover-title .cover-line-1 { padding-left: 0; }
