@@ -3,7 +3,7 @@
   src: url('/fonts/Roslindale-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
-  font-display: block;
+  font-display: swap;
 }
 
 @font-face {
@@ -11,7 +11,7 @@
   src: url('/fonts/Roslindale-Medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
-  font-display: block;
+  font-display: swap;
 }
 
 @font-face {
@@ -19,7 +19,7 @@
   src: url('/fonts/Ayer-Medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
-  font-display: block;
+  font-display: swap;
 }
 
 /* Scoped publication layout; existing journal tools retain their styles. */
@@ -50,17 +50,13 @@
   line-height: 0.90;
   letter-spacing: 0.02em;
   color: var(--ink);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 .pub-cover-title > span { display: block; width: fit-content; overflow: hidden; padding-bottom: .15em; margin-bottom: -.02em; }
 .pub-cover-title .pub-title-word {
   display: inline-flex;
   align-items: baseline;
-  will-change: transform;
-  backface-visibility: hidden;
-  animation: pub-type-enter 1.25s both cubic-bezier(.22,1,.36,1);
+  transform: translate3d(0, 0, 0);
+  animation: pub-type-enter 1.25s both cubic-bezier(0.16, 1, 0.3, 1);
 }
 .pub-cover-title .cover-line-1 { padding-left: 0; }
 .pub-cover-title .cover-line-2 { padding-left: 0.60em; }
@@ -90,7 +86,8 @@
   letter-spacing: -0.015em;
   margin: 20px 0 clamp(42px, 5vw, 64px);
   padding-left: 1.20em;
-  animation: pub-intro-enter 1.2s 0.48s both cubic-bezier(.22,1,.36,1);
+  transform: translate3d(0, 0, 0);
+  animation: pub-intro-enter 1.2s 0.42s both cubic-bezier(0.16, 1, 0.3, 1);
 }
 .pub-cover-grid { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: 24px; position: relative; padding-top: 24px; }
 .pub-cover-intro { grid-column: 1 / 5; align-self: end; padding: 0 35px 28px 0; animation: pub-intro-enter 1.1s .4s both cubic-bezier(.22,1,.36,1); }
@@ -162,9 +159,9 @@
 .publication-home .colophon-editorial-footer { margin: 0; border-top: 1px solid var(--ink); padding-top: 36px; }
 .publication-home .colophon-big-brand { font-size: clamp(64px, 10vw, 136px); font-weight: 500; letter-spacing: -.075em; margin-bottom: 28px; }
 .publication-home .colophon-details-grid { font-size: 12px; line-height: 1.8; }
-@keyframes pub-type-enter { from { opacity: 0; transform: translateY(105%); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pub-type-enter { from { opacity: 0; transform: translate3d(0, 102%, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
 @keyframes pub-photo-enter { from { opacity: .35; transform: scale(1.025); } to { opacity: 1; transform: scale(1); } }
-@keyframes pub-intro-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pub-intro-enter { from { opacity: 0; transform: translate3d(0, 8px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
 
 /* ==========================================================================
    SCROLL REVEAL & EDITORIAL ANIMATION SYSTEM
