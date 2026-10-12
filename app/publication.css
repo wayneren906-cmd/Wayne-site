@@ -44,29 +44,34 @@
 .pub-cover-meta { display: flex; justify-content: space-between; color: var(--ink-secondary); }
 .pub-cover-title {
   margin: 48px 0 0;
-  font-family: 'Bodoni Moda', Didot, Georgia, serif;
-  font-size: clamp(58px, 8.8vw, 126px);
+  font-family: 'Roslindale Display Condensed', "Bodoni MT", Georgia, serif;
+  font-size: clamp(64px, 10vw, 144px);
   font-weight: 400;
-  line-height: 0.98;
+  line-height: 0.90;
   letter-spacing: -0.015em;
   color: var(--ink);
 }
-.pub-cover-title > span { display: block; width: fit-content; overflow: hidden; padding-bottom: .12em; margin-bottom: 0; }
-.pub-cover-title .pub-title-word { display: inline-flex; align-items: baseline; animation: pub-type-enter 1.25s both cubic-bezier(.22,1,.36,1); }
+.pub-cover-title > span { display: block; width: fit-content; overflow: hidden; padding-bottom: .15em; margin-bottom: -.02em; }
+.pub-cover-title .pub-title-word {
+  display: inline-flex;
+  align-items: baseline;
+  transform: scaleX(1.10);
+  transform-origin: left baseline;
+  animation: pub-type-enter 1.25s both cubic-bezier(.22,1,.36,1);
+}
 .pub-cover-title .cover-line-1 { padding-left: 0; }
-.pub-cover-title .cover-line-2 { padding-left: 1.35em; }
-.pub-cover-title .cover-line-3 { padding-left: 2.7em; }
+.pub-cover-title .cover-line-2 { padding-left: 0.65em; }
+.pub-cover-title .cover-line-3 { padding-left: 1.30em; }
 .pub-cover-title .cover-line-2 .pub-title-word { animation-delay: .14s; }
 .pub-cover-title .cover-line-3 .pub-title-word { animation-delay: .28s; }
 
-.pub-title-word .c-bodoni,
 .pub-title-word .c-roslindale {
-  font-family: 'Bodoni Moda', Didot, Georgia, serif;
+  font-family: 'Roslindale Display Condensed', "Bodoni MT", Georgia, serif;
   font-weight: 400;
 }
 
 .pub-title-word .c-editorial-it {
-  font-family: 'Bodoni Moda', Didot, Georgia, serif;
+  font-family: 'Instrument Serif', Georgia, serif;
   font-style: italic;
   font-weight: 400;
   display: inline-block;
@@ -74,14 +79,14 @@
 }
 
 .pub-cover-subphrase {
-  font-family: 'Bodoni Moda', 'Ayer', Georgia, serif;
+  font-family: 'Ayer', Georgia, serif;
   font-style: italic;
-  font-weight: 400;
-  font-size: clamp(20px, 2.2vw, 30px);
+  font-weight: 500;
+  font-size: clamp(20px, 2.3vw, 30px);
   color: var(--ink);
-  letter-spacing: -0.01em;
-  margin: 24px 0 clamp(42px, 5vw, 64px);
-  padding-left: 2.7em;
+  letter-spacing: -0.015em;
+  margin: 20px 0 clamp(42px, 5vw, 64px);
+  padding-left: 1.30em;
   animation: pub-intro-enter 1.2s 0.48s both cubic-bezier(.22,1,.36,1);
 }
 .pub-cover-grid { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: 24px; position: relative; padding-top: 24px; }
@@ -376,11 +381,11 @@
   .pub-cover { padding-top: 20px; }
   .pub-cover-meta { font-size: 11px; }
   .pub-cover-meta span:last-child { display: none; }
-  .pub-cover-title { font-size: clamp(38px, 10.2vw, 70px); margin: 38px 0 0; line-height: 1.02; }
+  .pub-cover-title { font-size: clamp(42px, 11.5vw, 80px); margin: 38px 0 0; }
   .pub-cover-title .cover-line-1 { padding-left: 0; }
-  .pub-cover-title .cover-line-2 { padding-left: 0.7em; }
-  .pub-cover-title .cover-line-3 { padding-left: 1.4em; }
-  .pub-cover-subphrase { padding-left: 1.4em; font-size: 18px; margin: 18px 0 28px; }
+  .pub-cover-title .cover-line-2 { padding-left: 0.35em; }
+  .pub-cover-title .cover-line-3 { padding-left: 0.70em; }
+  .pub-cover-subphrase { padding-left: 0.70em; font-size: 18px; margin: 16px 0 28px; }
   .pub-cover-grid { grid-template-columns: 1fr; gap: 30px; padding-top: 0; }
   .pub-cover-photo { grid-column: 1; grid-row: 1; }
   .pub-cover-photo .pub-photo-window { aspect-ratio: 1.25; }
@@ -585,9 +590,9 @@
 }
 
 .c-letter-glyph.glyph-a {
-  width: 0.42em;
-  height: 0.68em;
-  margin: 0 0.02em 0 0.04em;
+  width: 0.38em;
+  height: 0.63em;
+  margin: 0 0.01em 0 0.04em;
   position: relative;
   top: 0.05em;
 }
