@@ -86,11 +86,43 @@ export default function PersonalHome() {
     <main>
       <section className="pub-cover" aria-labelledby="cover-title">
         <div className="pub-cover-meta"><span>A PERSONAL PUBLICATION</span><span>LEARNING / PRACTICE / EVERYDAY</span></div>
-        <h1 id="cover-title" className="pub-cover-title"><span><span className="pub-title-word">Learning.</span></span><span><span className="pub-title-word">Building.</span></span><span><span className="pub-title-word">Becoming.</span></span></h1>
+        <div className="pub-cover-title-group">
+          <h1 id="cover-title" className="pub-cover-title">
+            <span className="cover-line-1">
+              <span className="pub-title-word">
+                <span className="c-roslindale">Le</span>
+                <span className="c-letter-glyph glyph-a">
+                  <svg viewBox="0 0 58 96">
+                    <path d="M56,2h-1.3l-3.7,3.2C49.7,4.4,46.7,2,42.7,2C21.7,2,1.8,41.6,1.8,75c0,12.9,3.5,19.3,10.1,19.3c7.4,0,14.6-10.2,22.1-29.9l-3.2,16.3l-2.3,11.7h11.9l0.2-1L40.4,79L56,2z M37.2,49.2c-7.5,22.1-14.3,36.7-20.5,36.7c-3.5,0-5.2-3.7-5.2-11.7c0-28.5,15.3-68.6,26.7-68.8c2.5,0,4.9,3,6.4,6.4L37.2,49.2z" />
+                  </svg>
+                </span>
+                <span className="c-roslindale">rning.</span>
+              </span>
+            </span>
+            <span className="cover-line-2">
+              <span className="pub-title-word">
+                <span className="c-roslindale">B</span>
+                <span className="c-editorial-it">ui</span>
+                <span className="c-roslindale">lding.</span>
+              </span>
+            </span>
+            <span className="cover-line-3">
+              <span className="pub-title-word">
+                <span className="c-roslindale">B</span>
+                <span className="c-editorial-it">e</span>
+                <span className="c-roslindale">c</span>
+                <span className="c-editorial-it">o</span>
+                <span className="c-roslindale">ming.</span>
+              </span>
+            </span>
+          </h1>
+          <p className="pub-cover-subphrase">
+            Notes on becoming — 2026.
+          </p>
+        </div>
         <div className="pub-cover-grid">
           <div className="pub-cover-intro"><span className="pub-small-label">WAYNE / 个人刊物</span><p className="pub-cover-deck">从一行代码，<br />到生活的细部。</p><p className="pub-body">物联网工程在读。C 语言与嵌入式。</p><a className="pub-text-link" href="#journal">翻开这一页 <ArrowDown size={15} /></a></div>
           <figure className="pub-cover-photo"><div className="pub-photo-window"><img src="/editorial-structure.jpg" alt="自然光下交错的混凝土阶梯与建筑结构" width={1376} height={768} fetchPriority="high" /></div><figcaption><span>01 / STRUCTURE & LIGHT</span><span>封面影像 · 版式参考</span></figcaption></figure>
-          <span className="pub-cover-side" aria-hidden="true">NOTES ON BECOMING — 2026</span>
         </div>
         <div className="pub-cover-bottom"><a href="/learning">进入学习档案 <ArrowUpRight size={13} /></a></div>
       </section>
