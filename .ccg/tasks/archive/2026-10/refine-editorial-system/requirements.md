@@ -1,0 +1,1 @@
+User approved first-round refinement: unify typography and spacing and extend the homepage's publication style to learning/projects. Retain current cover and contact title art direction, all record features and actual project status. No photo treatment or animation redesign in this round. No external model review.

@@ -1,0 +1,14 @@
+{
+  "search": true,
+  "monthFilter": true,
+  "dateFilter": true,
+  "heatmap": {
+    "scrollable": true,
+    "pageWidth": 390,
+    "viewport": 390
+  },
+  "projectHeadings": true,
+  "projectTags": 12,
+  "projectLink": true,
+  "longLabels": true
+}

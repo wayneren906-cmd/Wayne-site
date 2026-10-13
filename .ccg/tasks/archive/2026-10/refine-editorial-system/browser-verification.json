@@ -1,0 +1,275 @@
+{
+  "cross": [
+    {
+      "route": "/",
+      "width": 320,
+      "scroll": 320,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "64px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/learning",
+      "width": 320,
+      "scroll": 320,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "64px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/projects",
+      "width": 320,
+      "scroll": 320,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "64px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/",
+      "width": 390,
+      "scroll": 390,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "64px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/learning",
+      "width": 390,
+      "scroll": 390,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "64px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/projects",
+      "width": 390,
+      "scroll": 390,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "64px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/",
+      "width": 600,
+      "scroll": 600,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "64px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/learning",
+      "width": 600,
+      "scroll": 600,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "64px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/projects",
+      "width": 600,
+      "scroll": 600,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "64px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/",
+      "width": 700,
+      "scroll": 700,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "70px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/learning",
+      "width": 700,
+      "scroll": 700,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "70px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/projects",
+      "width": 700,
+      "scroll": 700,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "70px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/",
+      "width": 768,
+      "scroll": 768,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "76.8px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/learning",
+      "width": 768,
+      "scroll": 768,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "76.8px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/projects",
+      "width": 768,
+      "scroll": 768,
+      "gutter": 20,
+      "navFont": "11.5px",
+      "footerSize": "76.8px",
+      "footerCaption": "11px",
+      "clipped": []
+    },
+    {
+      "route": "/",
+      "width": 769,
+      "scroll": 769,
+      "gutter": 32,
+      "navFont": "13px",
+      "footerSize": "76.9px",
+      "footerCaption": "12px",
+      "clipped": []
+    },
+    {
+      "route": "/learning",
+      "width": 769,
+      "scroll": 769,
+      "gutter": 32,
+      "navFont": "13px",
+      "footerSize": "76.9px",
+      "footerCaption": "12px",
+      "clipped": []
+    },
+    {
+      "route": "/projects",
+      "width": 769,
+      "scroll": 769,
+      "gutter": 32,
+      "navFont": "13px",
+      "footerSize": "76.9px",
+      "footerCaption": "12px",
+      "clipped": []
+    },
+    {
+      "route": "/",
+      "width": 900,
+      "scroll": 900,
+      "gutter": 32,
+      "navFont": "13px",
+      "footerSize": "90px",
+      "footerCaption": "12px",
+      "clipped": []
+    },
+    {
+      "route": "/learning",
+      "width": 900,
+      "scroll": 900,
+      "gutter": 32,
+      "navFont": "13px",
+      "footerSize": "90px",
+      "footerCaption": "12px",
+      "clipped": []
+    },
+    {
+      "route": "/projects",
+      "width": 900,
+      "scroll": 900,
+      "gutter": 32,
+      "navFont": "13px",
+      "footerSize": "90px",
+      "footerCaption": "12px",
+      "clipped": []
+    },
+    {
+      "route": "/",
+      "width": 1024,
+      "scroll": 1024,
+      "gutter": 32,
+      "navFont": "13px",
+      "footerSize": "102.4px",
+      "footerCaption": "12px",
+      "clipped": []
+    },
+    {
+      "route": "/learning",
+      "width": 1024,
+      "scroll": 1024,
+      "gutter": 32,
+      "navFont": "13px",
+      "footerSize": "102.4px",
+      "footerCaption": "12px",
+      "clipped": []
+    },
+    {
+      "route": "/projects",
+      "width": 1024,
+      "scroll": 1024,
+      "gutter": 32,
+      "navFont": "13px",
+      "footerSize": "102.4px",
+      "footerCaption": "12px",
+      "clipped": []
+    },
+    {
+      "route": "/",
+      "width": 1440,
+      "scroll": 1440,
+      "gutter": 48,
+      "navFont": "13px",
+      "footerSize": "136px",
+      "footerCaption": "12px",
+      "clipped": []
+    },
+    {
+      "route": "/learning",
+      "width": 1440,
+      "scroll": 1440,
+      "gutter": 48,
+      "navFont": "13px",
+      "footerSize": "136px",
+      "footerCaption": "12px",
+      "clipped": []
+    },
+    {
+      "route": "/projects",
+      "width": 1440,
+      "scroll": 1440,
+      "gutter": 48,
+      "navFont": "13px",
+      "footerSize": "136px",
+      "footerCaption": "12px",
+      "clipped": []
+    }
+  ],
+  "errors": []
+}

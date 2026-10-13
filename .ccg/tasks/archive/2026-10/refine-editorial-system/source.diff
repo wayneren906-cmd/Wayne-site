@@ -1,0 +1,650 @@
+diff --git a/app/globals.css b/app/globals.css
+index a4a21ef..d6b72d3 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -44,6 +44,15 @@
+   --font-serif: "Songti SC", "Source Han Serif SC", Georgia, "Times New Roman", serif;
+   --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+ 
++  --editorial-width: 1440px;
++  --editorial-gutter: 48px;
++  --editorial-body-size: 16px;
++  --editorial-caption-size: 12px;
++  --editorial-nav-size: 13px;
++  --editorial-page-space: 64px;
++  --editorial-section-space: 88px;
++  --editorial-heading-space: 40px;
++
+   color-scheme: light;
+ }
+ 
+@@ -160,8 +169,8 @@ a {
+ /* 12-Column Editorial Container */
+ .editorial-shell {
+   width: 100%;
+-  max-width: 1320px;
+-  padding: 0 max(48px, env(safe-area-inset-left)) 0 max(48px, env(safe-area-inset-right));
++  max-width: var(--editorial-width);
++  padding: 0 max(var(--editorial-gutter), env(safe-area-inset-left)) 0 max(var(--editorial-gutter), env(safe-area-inset-right));
+   margin: 0 auto;
+ }
+ 
+@@ -250,14 +259,14 @@ a {
+   align-items: center;
+   gap: 36px;
+   font-family: var(--font-mono);
+-  font-size: 13px;
++  font-size: var(--editorial-nav-size);
+   letter-spacing: 0.08em;
+   text-transform: uppercase;
+ }
+ 
+ .nav-links-cluster a {
+   position: relative;
+-  color: var(--stone);
++  color: var(--ink-secondary);
+   padding: 6px 0;
+   transition: color 0.2s ease;
+ }
+@@ -1043,32 +1052,101 @@ a {
+   margin-top: 24px;
+ }
+ 
+-/* Backward compatibility for /projects page */
+-.works-asymmetric-grid {
++/* Works share the publication grid, reading measure and ruled sections. */
++.works-intro {
++  padding: var(--editorial-page-space) 0;
++  border-bottom: 1px solid var(--ink);
++}
++.works-intro .section-label-bar {
++  margin-bottom: var(--editorial-heading-space);
++  gap: 16px;
++  font-size: var(--editorial-caption-size);
++  color: var(--ink-secondary);
++}
++.works-intro-grid {
+   display: grid;
+-  grid-template-columns: repeat(12, minmax(0, 1fr));
+-  gap: 36px;
++  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
++  gap: 48px;
++  align-items: end;
+ }
+-
+-.work-feature-card {
+-  border: 1px solid var(--line);
+-  background: var(--surface);
+-  padding: 32px;
++.works-page-title {
++  font: 400 clamp(40px, 5vw, 72px)/1.08 var(--font-serif);
++  letter-spacing: -.04em;
++  margin: 0;
++}
++.works-intro-copy {
++  max-width: 58ch;
++  font-size: var(--editorial-body-size);
++  line-height: 1.9;
++  color: var(--ink-secondary);
++}
++.works-intro-copy p { margin: 0; }
++.works-intro-copy .works-lead {
++  font-family: var(--font-serif);
++  font-size: clamp(18px, 1.7vw, 24px);
++  line-height: 1.7;
++  color: var(--ink);
++  margin-bottom: 20px;
++}
++.works-catalog { padding-top: 16px; }
++.work-entry {
++  display: grid;
++  grid-template-columns: minmax(56px, 1fr) minmax(0, 4fr) minmax(0, 7fr);
++  gap: 24px;
++  padding: 48px 0;
++  border-bottom: 1px solid var(--line);
++}
++.work-index {
++  font: 400 clamp(36px, 4vw, 56px)/1 var(--font-display);
++  letter-spacing: -.06em;
++  color: var(--stone);
++}
++.work-heading, .work-body { min-width: 0; }
++.work-number {
++  font: var(--editorial-caption-size)/1.6 var(--font-mono);
++  letter-spacing: .06em;
++  color: var(--ink-secondary);
++  margin: 0 0 16px;
++  overflow-wrap: anywhere;
++}
++.work-title {
++  font: 400 clamp(22px, 2vw, 28px)/1.5 var(--font-serif);
++  letter-spacing: -.025em;
++  margin: 0;
++  color: var(--ink);
++}
++.work-desc {
++  font-size: var(--editorial-body-size);
++  line-height: 1.9;
++  color: var(--ink-secondary);
++  max-width: 62ch;
++  margin: 0;
++}
++.work-tech-tags {
+   display: flex;
+-  flex-direction: column;
++  flex-wrap: wrap;
++  gap: 8px 20px;
++  margin: 24px 0 0;
++  padding: 0;
++  list-style: none;
++  font: var(--editorial-caption-size)/1.8 var(--font-mono);
++  color: var(--ink-secondary);
++}
++.works-status {
++  display: flex;
++  align-items: end;
+   justify-content: space-between;
+   gap: 24px;
++  padding: 40px 0 var(--editorial-page-space);
++}
++.works-status-copy { max-width: 62ch; }
++.works-status h2 { font: 400 22px/1.5 var(--font-serif); margin: 12px 0; }
++.works-status-copy > p:last-child {
++  font-size: var(--editorial-body-size);
++  line-height: 1.9;
++  color: var(--ink-secondary);
++  margin: 0;
+ }
+-
+-.card-primary { grid-column: span 7; }
+-.card-secondary { grid-column: span 5; }
+-.card-tertiary { grid-column: span 12; }
+-.work-card-top { display: flex; flex-direction: column; gap: 12px; }
+-.work-number { font-family: var(--font-mono); font-size: 12px; color: var(--stone); }
+-.work-title { font-family: var(--font-display); font-size: 22px; font-weight: 650; margin: 0; color: var(--ink); }
+-.work-desc { font-size: 14.5px; line-height: 1.85; color: var(--ink-secondary); margin: 0; }
+-.work-tech-tags { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 10px; }
+-.work-tech-pill { font-family: var(--font-mono); font-size: 11.5px; color: var(--stone); padding: 2px 8px; background: var(--surface-alt); border-radius: 2px; }
+ 
+ /* ==========================================================================
+    06. FRAGMENTS (Contact Sheet Photobook Spread — Reference B)
+@@ -1261,18 +1339,18 @@ a {
+ }
+ 
+ .colophon-editorial-footer {
+-  padding: 80px 0 max(48px, env(safe-area-inset-bottom));
+-  border-top: 1px solid var(--line);
+-  margin-top: 56px;
++  padding: 36px 0 max(48px, env(safe-area-inset-bottom));
++  border-top: 1px solid var(--ink);
++  margin-top: 0;
+ }
+ 
+ .colophon-big-brand {
+   font-family: var(--font-display);
+-  font-size: clamp(56px, 12vw, 150px);
+-  font-weight: 700;
+-  letter-spacing: -0.05em;
++  font-size: clamp(64px, 10vw, 136px);
++  font-weight: 500;
++  letter-spacing: -0.075em;
+   line-height: 0.9;
+-  margin-bottom: 40px;
++  margin-bottom: 28px;
+   display: flex;
+   align-items: baseline;
+   user-select: none;
+@@ -1289,9 +1367,9 @@ a {
+   border-top: 1px solid var(--line);
+   padding-top: 32px;
+   font-family: var(--font-mono);
+-  font-size: 12px;
+-  color: var(--stone);
+-  letter-spacing: 0.06em;
++  font-size: var(--editorial-caption-size);
++  color: var(--ink-secondary);
++  letter-spacing: 0.04em;
+   text-transform: uppercase;
+ }
+ 
+@@ -1327,10 +1405,14 @@ a {
+    ========================================================================== */
+ 
+ @media (max-width: 1024px) {
++  :root { --editorial-gutter: 32px; }
+   .editorial-shell {
+-    padding: 0 32px;
++    padding: 0 max(var(--editorial-gutter), env(safe-area-inset-left)) 0 max(var(--editorial-gutter), env(safe-area-inset-right));
+   }
+ 
++  .works-intro-grid { gap: 32px; }
++  .work-entry { gap: 16px; }
++
+   .hero-composition-grid {
+     grid-template-columns: 1fr;
+     gap: 32px;
+@@ -1424,8 +1506,17 @@ a {
+ }
+ 
+ @media (max-width: 768px) {
++  :root {
++    --editorial-gutter: 20px;
++    --editorial-body-size: 15px;
++    --editorial-caption-size: 11px;
++    --editorial-nav-size: 11.5px;
++    --editorial-page-space: 40px;
++    --editorial-section-space: 56px;
++    --editorial-heading-space: 28px;
++  }
+   .editorial-shell {
+-    padding: 0 max(16px, env(safe-area-inset-left)) 0 max(16px, env(safe-area-inset-right));
++    padding: 0 max(var(--editorial-gutter), env(safe-area-inset-left)) 0 max(var(--editorial-gutter), env(safe-area-inset-right));
+     max-width: 100vw;
+   }
+ 
+@@ -1448,7 +1539,7 @@ a {
+ 
+   .nav-links-cluster {
+     gap: 14px;
+-    font-size: 11px;
++    font-size: var(--editorial-nav-size);
+     letter-spacing: 0.05em;
+   }
+ 
+@@ -1457,6 +1548,14 @@ a {
+     height: 28px;
+   }
+ 
++  .works-intro-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
++  .work-entry { grid-template-columns: 40px minmax(0, 1fr); gap: 20px; padding: 32px 0; }
++  .work-index { font-size: 32px; }
++  .work-body { grid-column: 2; }
++  .work-number { margin-bottom: 10px; }
++  .work-tech-tags { gap: 8px 16px; margin-top: 20px; }
++  .works-status { flex-direction: column; align-items: flex-start; padding-top: 32px; }
++
+   .hero-editorial-spread {
+     padding: 40px 0 56px;
+   }
+diff --git a/app/journal-reading.css b/app/journal-reading.css
+index c8ac479..51efac9 100644
+--- a/app/journal-reading.css
++++ b/app/journal-reading.css
+@@ -19,12 +19,12 @@
+ 
+ 
+ /* The journal shares the publication's paper, typography and ruled rhythm. */
+-.shell.journal-shell { max-width: 1440px; padding: 0 max(48px,env(safe-area-inset-left)) 0 max(48px,env(safe-area-inset-right)); --soft: var(--surface-alt); --shadow: none; }
++.shell.journal-shell { max-width: var(--editorial-width); padding: 0 max(var(--editorial-gutter),env(safe-area-inset-left)) 0 max(var(--editorial-gutter),env(safe-area-inset-right)); --soft: var(--surface-alt); --shadow: none; }
+ .journal-shell .editorial-nav-bar { background: color-mix(in srgb,var(--paper) 82%,transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+-.journal-shell .intro { padding: 60px 0 52px; align-items: flex-end; }
+-.journal-shell .eyebrow, .journal-shell .section-kicker { font: 10px/1.6 var(--font-mono); letter-spacing: .08em; color: var(--ink-secondary); }
++.journal-shell .intro { padding: var(--editorial-page-space) 0; align-items: flex-end; }
++.journal-shell .eyebrow, .journal-shell .section-kicker { font: var(--editorial-caption-size)/1.6 var(--font-mono); letter-spacing: .08em; color: var(--ink-secondary); }
+ .journal-shell .intro h1 { font: 400 clamp(36px,4.8vw,64px)/1.3 var(--font-serif); letter-spacing: -.035em; margin: 20px 0; }
+-.journal-shell .subtitle { color: var(--ink-secondary); font-size: 13px; line-height: 1.8; }
++.journal-shell .subtitle { color: var(--ink-secondary); font-size: var(--editorial-body-size); line-height: 1.9; }
+ .journal-shell .primary, .journal-shell .secondary { border-radius: 0; min-height: 40px; font-size: 12px; }
+ .journal-shell .secondary { border: 0; border-bottom: 1px solid var(--ink); background: transparent; padding: 9px 0; }
+ .journal-shell .calendar-panel { background: transparent; padding: 28px 0 24px; border: 0; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--line); border-radius: 0; margin: 0 0 32px; }
+@@ -58,32 +58,30 @@
+ .journal-shell .category-preview { color: var(--ink-secondary); max-width: 380px; }
+ .journal-shell .entry-body { padding: 0 0 36px 0; }
+ .journal-shell .notes { border-top: 1px solid var(--line); padding: 4px 0 0; display: flex; flex-direction: column; gap: 0; }
+-.journal-shell .note { display: grid; grid-template-columns: minmax(220px, 260px) minmax(0, 1fr); gap: 36px; padding: 22px 0; border-bottom: 1px dashed var(--line); align-items: baseline; }
++.journal-shell .note { display: grid; grid-template-columns: minmax(180px, 22%) minmax(0, 1fr); gap: 48px; padding: 28px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+ .journal-shell .note:last-child { border-bottom: none; }
+-.journal-shell .note-label { font-family: var(--font-serif); font-size: 18px; font-weight: 500; letter-spacing: .01em; color: var(--ink); line-height: 1.45; min-width: 0; white-space: normal; overflow-wrap: anywhere; display: flex; align-items: center; gap: 10px; }
++.journal-shell .note-label { font-family: var(--font-serif); font-size: 17px; font-weight: 400; letter-spacing: .01em; color: var(--ink); line-height: 1.65; min-width: 0; white-space: normal; overflow-wrap: anywhere; display: flex; align-items: center; gap: 10px; }
+ .journal-shell .note-label::before { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--ink); opacity: .45; flex-shrink: 0; }
+-.journal-shell .note p { font-family: var(--font-sans); font-size: 15px; line-height: 1.85; color: var(--ink-secondary); max-width: 75ch; margin: 0; }
++.journal-shell .note p { font-family: var(--font-sans); font-size: var(--editorial-body-size); line-height: 1.95; color: var(--ink-secondary); max-width: 68ch; margin: 0; }
+ .journal-shell .practice { background: transparent; padding: 20px 0 0; border-radius: 0; border-top: 1px solid var(--line); }
+-.journal-shell .practice p { color: var(--ink-secondary); }
++.journal-shell .practice p { font-size: var(--editorial-body-size); line-height: 1.9; max-width: 68ch; color: var(--ink-secondary); }
+ .journal-shell .empty { background: transparent; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 50px 0; }
+ .journal-shell .loading-bars > div { background: var(--surface-alt); border-radius: 0; border: 0; }
+ .journal-shell main > footer { padding: 24px 0 36px; margin: 0; color: var(--ink-secondary); }
+ .journal-shell .history select { border-radius: 0; background: transparent; }
+-.journal-shell .colophon-editorial-footer { display: block; margin: 0; border-top: 1px solid var(--ink); padding: 36px 0 48px; }
++.journal-shell .colophon-editorial-footer { display: block; margin: 0; border-top: 1px solid var(--ink); padding: 36px 0 max(48px,env(safe-area-inset-bottom)); }
+ .journal-shell .colophon-big-brand { font-size: clamp(64px,10vw,136px); font-weight: 500; letter-spacing: -.075em; margin-bottom: 28px; }
+-.journal-shell .colophon-details-grid { font-size: 10px; line-height: 1.8; color: var(--ink-secondary); }
++.journal-shell .colophon-details-grid { line-height: 1.8; }
+ .journal-shell .editor { background: var(--paper); border-radius: 0; }
+ .journal-shell .field input, .journal-shell .field textarea { border-radius: 0; }
+ @media (max-width: 1000px) {
+-  .shell.journal-shell { padding-left: 32px; padding-right: 32px; }
+   .journal-shell .entry-body { padding: 0 0 32px 0; }
+   .journal-shell .heatmap-layout { --cell: 16px; --gap: 4.5px; }
+-  .journal-shell .note { grid-template-columns: minmax(190px, 230px) minmax(0, 1fr); gap: 24px; }
++  .journal-shell .note { grid-template-columns: minmax(160px, 25%) minmax(0, 1fr); gap: 32px; }
+ }
+ @media (max-width: 700px) {
+-  .shell.journal-shell { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
+-  .journal-shell .intro { padding: 34px 0 30px; gap: 20px; }
+-  .journal-shell .intro h1 { font-size: 31px; margin: 14px 0; }
++  .journal-shell .intro { padding: var(--editorial-page-space) 0; gap: 20px; }
++  .journal-shell .intro h1 { font-size: 34px; margin: 16px 0; }
+   .journal-shell .intro .secondary { font-size: 10px; }
+   .journal-shell .calendar-panel { padding: 22px 0; }
+   .journal-shell .heatmap-layout { --cell: 20px; --gap: 4.5px; }
+@@ -92,16 +90,12 @@
+   .journal-shell .date-line { gap: 10px; }
+   .journal-shell .entry-date { font-size: 24px; }
+   .journal-shell .entry-body { padding: 0 0 28px 0; }
+-  .journal-shell .note { display: flex; flex-direction: column; gap: 8px; padding: 16px 0; }
++  .journal-shell .note { display: flex; flex-direction: column; gap: 12px; padding: 24px 0; }
+   .journal-shell .note-label { font-size: 16px; white-space: normal; }
+-  .journal-shell .note p { font-size: 14.5px; line-height: 1.8; }
+-  .journal-shell .colophon-big-brand { font-size: clamp(54px, 15vw, 90px); }
++  .journal-shell .note p { font-size: var(--editorial-body-size); line-height: 1.95; }
+ }
+ 
+ /* Readable journal type sizes across desktop and mobile. */
+-.journal-shell .eyebrow, .journal-shell .section-kicker { font-size: 12px; }
+-.journal-shell .subtitle { font-size: 16px; }
+-.journal-shell .nav-links-cluster { font-size: 13px; }
+ .journal-shell .nav-links-cluster a { color: var(--ink-secondary); }
+ .journal-shell .nav-links-cluster a[aria-current='page'] { color: var(--ink); }
+ .journal-shell .nav-edition-tag { font-size: 12px; color: var(--ink-secondary); }
+@@ -118,10 +112,7 @@
+ .journal-shell .category-preview { font-size: 13px; }
+ .journal-shell .practice span, .journal-shell .edit-button { font-size: 13px; }
+ .journal-shell main > footer, .journal-shell .history select { font-size: 12px; }
+-.journal-shell .colophon-details-grid { font-size: 12px; letter-spacing: .02em; }
+ @media (max-width: 700px) {
+-  .journal-shell .nav-links-cluster { font-size: 12px; gap: 18px; }
+-  .journal-shell .subtitle { font-size: 15px; }
+   .journal-shell .intro { align-items: flex-start; flex-wrap: wrap; }
+   .journal-shell .intro .secondary { padding-top: 4px; }
+ }
+diff --git a/app/projects/page.tsx b/app/projects/page.tsx
+index a1b2f7b..296ef2a 100644
+--- a/app/projects/page.tsx
++++ b/app/projects/page.tsx
+@@ -31,26 +31,25 @@ const works = [
+ 
+ export default function ProjectsPage() {
+   return (
+-    <div className="editorial-shell">
++    <div className="editorial-shell works-shell">
+       <SiteHeader active="projects" />
+ 
+       <main>
+-        {/* 展录导言 */}
+-        <section className="editorial-section" style={{ borderBottom: "1px solid var(--line)" }}>
++        <section className="works-intro" aria-labelledby="works-title">
+           <div className="section-label-bar">
+-            <span>SELECTED WORKS ARCHIVE</span>
+-            <span>VOL. 2026 INDEX</span>
++            <span>WORKS / 实践目录</span>
++            <span>项目蓝图 · 持续整理</span>
+           </div>
+ 
+-          <div className="personal-note-grid">
+-            <div className="note-headline-col">
+-              <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(32px, 5vw, 48px)", fontWeight: 650, letterSpacing: "-0.03em", margin: 0, lineHeight: 1.15 }}>
++          <div className="works-intro-grid">
++            <div>
++              <h1 id="works-title" className="works-page-title">
+                 Learning by<br />Building.
+               </h1>
+             </div>
+ 
+-            <div className="note-body-col">
+-              <p style={{ fontFamily: "var(--font-serif)", fontSize: "16px", color: "var(--ink)", fontStyle: "italic", margin: "0 0 12px 0" }}>
++            <div className="works-intro-copy">
++              <p className="works-lead">
+                 “不仅要在屏幕上理解指针与寄存器，更要让真实世界的信号与电机听从指令。”
+               </p>
+               <p>
+@@ -60,38 +59,34 @@ export default function ProjectsPage() {
+           </div>
+         </section>
+ 
+-        {/* 展板大图录 */}
+-        <section className="editorial-section" style={{ borderBottom: "1px solid var(--line)" }}>
+-          <div className="works-asymmetric-grid">
++        <section className="works-catalog" aria-label="项目方向目录">
++          <div>
+             {works.map((item, idx) => (
+-              <div
+-                key={item.num}
+-                className={`work-feature-card ${idx === 0 ? "card-primary" : idx === 1 ? "card-secondary" : "card-tertiary"}`}
+-              >
+-                <div className="work-card-top">
+-                  <span className="work-number">{item.num}</span>
+-                  <h3 className="work-title">{item.title}</h3>
+-                  <p className="work-desc">{item.desc}</p>
++              <article key={item.num} className="work-entry">
++                <span className="work-index" aria-hidden="true">{String(idx + 1).padStart(2, "0")}</span>
++                <div className="work-heading">
++                  <p className="work-number">{item.num}</p>
++                  <h2 className="work-title">{item.title}</h2>
+                 </div>
+-                <div className="work-tech-tags">
+-                  {item.tags.map((tag) => (
+-                    <span key={tag} className="work-tech-pill">{tag}</span>
+-                  ))}
++                <div className="work-body">
++                  <p className="work-desc">{item.desc}</p>
++                  <ul className="work-tech-tags" aria-label="涉及技术">
++                    {item.tags.map((tag) => <li key={tag}>{tag}</li>)}
++                  </ul>
+                 </div>
+-              </div>
++              </article>
+             ))}
+           </div>
+ 
+-          {/* 工坊状态通知 */}
+-          <div style={{ marginTop: 40, border: "1px dashed var(--line)", background: "var(--surface-alt)", padding: "28px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+-            <div style={{ maxWidth: 560 }}>
+-              <div style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--stone)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
++          <aside className="works-status" aria-labelledby="works-status-title">
++            <div className="works-status-copy">
++              <p className="work-number">
+                 STATUS: IN ACTIVE PROGRESS
+-              </div>
+-              <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>
++              </p>
++              <h2 id="works-status-title">
+                 项目整理与调试进行中
+-              </div>
+-              <p style={{ margin: 0, fontSize: "13px", color: "var(--ink-secondary)", lineHeight: 1.7 }}>
++              </h2>
++              <p>
+                 目前正专注于 C 语言基础模块与外设库的扎实落地。
+                 当第一批具备完整工程结构的作品完成验证后，将在此刊登详尽的技术复盘、电路设计图与开源代码。
+               </p>
+@@ -100,7 +95,7 @@ export default function ProjectsPage() {
+               <span>查阅目前的研习记录</span>
+               <ArrowUpRight size={14} />
+             </a>
+-          </div>
++          </aside>
+         </section>
+       </main>
+ 
+diff --git a/app/publication.css b/app/publication.css
+index ec669a9..ef07f0d 100644
+--- a/app/publication.css
++++ b/app/publication.css
+@@ -18,7 +18,7 @@ body::before {
+ }
+ 
+ /* Scoped publication layout; existing journal tools retain their styles. */
+-.publication-home { --accent: var(--ink); max-width: 1440px; }
++.publication-home { --accent: var(--ink); max-width: var(--editorial-width); }
+ .publication-home .editorial-nav-bar {
+   position: sticky;
+   top: 0;
+@@ -41,7 +41,7 @@ body::before {
+   justify-content: space-between;
+   gap: 12px;
+   padding-top: 14px;
+-  font: 11.5px/1.6 var(--font-mono);
++  font: var(--editorial-caption-size)/1.6 var(--font-mono);
+   color: var(--ink-secondary);
+   letter-spacing: 0.04em;
+ }
+@@ -49,8 +49,8 @@ body::before {
+   color: var(--ink);
+   font-weight: 500;
+ }
+-.pub-small-label, .pub-cover-meta, .pub-section-label, .pub-cover-side, .pub-cover-bottom, .pub-practice-topics, .pub-endnote > span { font: 12px/1.6 var(--font-mono); letter-spacing: .06em; }
+-.pub-body { font-size: 15px; line-height: 1.85; color: var(--ink-secondary); }
++.pub-small-label, .pub-cover-meta, .pub-section-label, .pub-cover-side, .pub-cover-bottom, .pub-practice-topics, .pub-endnote > span { font: var(--editorial-caption-size)/1.6 var(--font-mono); letter-spacing: .06em; }
++.pub-body { font-size: var(--editorial-body-size); line-height: 1.9; color: var(--ink-secondary); }
+ .pub-text-link { display: inline-flex; align-items: center; gap: 16px; padding: 8px 0; font-size: 13.5px; border-bottom: 1px solid var(--line-strong); width: fit-content; }
+ .pub-text-link svg { transition: transform .25s ease; }
+ .pub-text-link:hover svg { transform: translate(2px, -2px); }
+@@ -113,10 +113,10 @@ body::before {
+ .pub-cover-side { position: absolute; right: 0; top: -16px; transform: translateY(-100%); color: var(--ink-secondary); }
+ .pub-cover-bottom { display: flex; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--ink); margin-top: 35px; padding: 18px 0; font-size: 13px; }
+ .pub-cover-bottom a { display: inline-flex; gap: 12px; align-items: center; }
+-.pub-section { padding: 36px 0 88px; border-bottom: 1px solid var(--line); scroll-margin-top: 108px; }
++.pub-section { padding: 40px 0 var(--editorial-section-space); border-bottom: 1px solid var(--line); scroll-margin-top: 108px; }
+ .pub-section-label { display: flex; justify-content: space-between; gap: 16px; color: var(--ink-secondary); font-size: 12px; }
+ .pub-section-label span:first-child { color: var(--ink); }
+-.pub-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin: 55px 0 45px; }
++.pub-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin: var(--editorial-heading-space) 0; }
+ .pub-section-heading h2, .pub-practice h2 { font: 400 clamp(30px, 3.3vw, 46px)/1.4 var(--font-serif); letter-spacing: -.035em; margin: 0; }
+ .pub-section-heading > p { font-size: 13.5px; line-height: 1.8; color: var(--ink-secondary); margin: 0 8% 0 0; }
+ @font-face {
+@@ -376,7 +376,7 @@ body::before {
+ .pub-endnote a { font-size: 24px; padding: 8px 12px; }
+ .publication-home .colophon-editorial-footer { margin: 0; border-top: 1px solid var(--ink); padding-top: 36px; }
+ .publication-home .colophon-big-brand { font-size: clamp(64px, 10vw, 136px); font-weight: 500; letter-spacing: -.075em; margin-bottom: 28px; }
+-.publication-home .colophon-details-grid { font-size: 12px; line-height: 1.8; }
++.publication-home .colophon-details-grid { font-size: var(--editorial-caption-size); line-height: 1.8; }
+ @keyframes pub-type-enter { from { opacity: 0; transform: translate3d(0, 102%, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+ @keyframes pub-photo-enter { from { opacity: .35; transform: scale(1.025); } to { opacity: 1; transform: scale(1); } }
+ @keyframes pub-intro-enter { from { opacity: 0; transform: translate3d(0, 8px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+@@ -605,14 +605,14 @@ body::before {
+ }
+ @media (max-width: 768px) {
+   .publication-home {
+-    padding-left: max(16px, env(safe-area-inset-left));
+-    padding-right: max(16px, env(safe-area-inset-right));
++    padding-left: max(var(--editorial-gutter), env(safe-area-inset-left));
++    padding-right: max(var(--editorial-gutter), env(safe-area-inset-right));
+   }
+   .pub-cover {
+     padding-top: 20px;
+   }
+   .pub-cover-meta {
+-    font-size: 10.5px;
++    font-size: var(--editorial-caption-size);
+   }
+   .pub-cover-meta span:last-child {
+     display: none;
+@@ -663,8 +663,8 @@ body::before {
+     margin: 10px 0;
+   }
+   .pub-cover-intro .pub-body {
+-    font-size: 11.5px;
+-    line-height: 1.75;
++    font-size: var(--editorial-body-size);
++    line-height: 1.85;
+     margin-bottom: 12px;
+   }
+   .pub-cover-intro .pub-text-link {
+@@ -675,7 +675,7 @@ body::before {
+   .pub-cover-photo figcaption {
+     flex-direction: column;
+     gap: 2px;
+-    font-size: 10px;
++    font-size: var(--editorial-caption-size);
+     padding-top: 8px;
+     min-width: 0;
+     overflow: hidden;
+@@ -691,18 +691,18 @@ body::before {
+ 
+   /* 01. Journal: 两列开本，文字随内容增高，避免窄屏裁切。 */
+   .pub-section {
+-    padding: 24px 0 36px;
++    padding: 28px 0 var(--editorial-section-space);
+   }
+   .pub-section-label {
+-    font-size: 10.5px;
++    font-size: var(--editorial-caption-size);
+     margin-bottom: 20px;
+   }
+   .pub-section-heading {
+-    margin: 24px 0;
++    margin: var(--editorial-heading-space) 0;
+     display: block;
+   }
+   .pub-section-heading h2 {
+-    font-size: 26px;
++    font-size: 28px;
+   }
+   .pub-index {
+     grid-template-columns: repeat(2, minmax(0, 1fr));
+@@ -775,7 +775,7 @@ body::before {
+   .pub-practice-image figcaption {
+     flex-direction: column;
+     gap: 2px;
+-    font-size: 10px;
++    font-size: var(--editorial-caption-size);
+     padding-top: 8px;
+     min-width: 0;
+     overflow: hidden;
+@@ -786,13 +786,13 @@ body::before {
+     min-width: 0;
+   }
+   .pub-practice-copy h2 {
+-    font-size: 22px;
++    font-size: 24px;
+     line-height: 1.4;
+     margin: 10px 0;
+   }
+   .pub-practice-copy .pub-body {
+-    font-size: 11.5px;
+-    line-height: 1.75;
++    font-size: var(--editorial-body-size);
++    line-height: 1.85;
+     margin-bottom: 12px;
+   }
+   .pub-practice-copy .pub-text-link {
+@@ -801,7 +801,7 @@ body::before {
+   }
+   .pub-practice-topics {
+     flex-wrap: wrap;
+-    font-size: 9.5px;
++    font-size: var(--editorial-caption-size);
+     gap: 4px 10px;
+     padding-top: 10px;
+     margin-top: 14px;
+@@ -821,7 +821,7 @@ body::before {
+     margin: 0;
+   }
+   .pub-fragments-heading div span {
+-    font-size: 9.5px;
++    font-size: var(--editorial-caption-size);
+   }
+   .pub-photo-essay {
+     display: grid;
+@@ -855,7 +855,7 @@ body::before {
+     display: flex;
+     flex-direction: column;
+     gap: 2px;
+-    font-size: 9.5px;
++    font-size: var(--editorial-caption-size);
+     padding-top: 8px;
+     min-width: 0;
+     overflow: hidden;
+@@ -1259,11 +1259,6 @@ body::before {
+ @media (prefers-reduced-motion: reduce) {
+   .publication-home .pub-reveal, .publication-home .pub-reveal-image { opacity: 1 !important; transform: none !important; }
+ }
+-@media (max-width: 700px) {
+-  .works-asymmetric-grid { grid-template-columns: minmax(0,1fr); gap: 20px; }
+-  .works-asymmetric-grid .work-feature-card { grid-column: 1 / -1; padding: 24px; }
+-  .works-asymmetric-grid .work-number { overflow-wrap: anywhere; }
+-}
+ 
+ /* Explicit glyph dimensions also work in iOS embedded browsers. */
+ .c-letter-glyph { flex-shrink: 0; }

@@ -1,0 +1,50 @@
+[
+  {
+    "route": "/",
+    "width": 390,
+    "gutter": 16,
+    "navFont": "11px",
+    "footerSize": "64px",
+    "mainFont": "16.38px"
+  },
+  {
+    "route": "/learning",
+    "width": 390,
+    "gutter": 20,
+    "navFont": "12px",
+    "footerSize": "58.5px",
+    "mainFont": "12px"
+  },
+  {
+    "route": "/projects",
+    "width": 390,
+    "gutter": 16,
+    "navFont": "11px",
+    "footerSize": "56px",
+    "mainFont": "16px"
+  },
+  {
+    "route": "/",
+    "width": 1440,
+    "gutter": 48,
+    "navFont": "13px",
+    "footerSize": "136px",
+    "mainFont": "30px"
+  },
+  {
+    "route": "/learning",
+    "width": 1440,
+    "gutter": 48,
+    "navFont": "13px",
+    "footerSize": "136px",
+    "mainFont": "12px"
+  },
+  {
+    "route": "/projects",
+    "width": 1440,
+    "gutter": 108,
+    "navFont": "13px",
+    "footerSize": "150px",
+    "mainFont": "16px"
+  }
+]
