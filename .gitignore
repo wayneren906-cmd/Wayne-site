@@ -11,3 +11,5 @@ dist/
 data/
 *.zip
 *.log
+
+tests/.generated/

@@ -4,6 +4,8 @@
 
 **[访问网站](https://wayneo.dev) · [学习日志](https://wayneo.dev/learning) · [项目与实践](https://wayneo.dev/projects)**
 
+渐进升级从阶段0开始，真实架构与边界见 [架构审计](docs/architecture.md)，当前批次、验收和Codex/Gemini文件分工见 [实施计划](docs/implementation-plan.md)。后续按小批次推进；测试域名当前共用生产Worker/DB，不能用于隔离写入测试。
+
 ## 页面与功能
 
 - **首页**：摄影封面、双页式学习目录、实践入口、影像与联系信息。手机端保留左右构图。
