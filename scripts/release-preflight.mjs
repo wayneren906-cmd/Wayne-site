@@ -12,9 +12,11 @@ export function planStudioAccessExtension(app,ownerEmail,audience,hosts){
   if(policies.length!==1||policies[0].decision!=='allow'||policies[0].include?.length!==1
     ||Object.keys(policies[0].include[0]).join(',')!=='email'||policies[0].include[0].email?.email?.toLowerCase()!==ownerEmail.toLowerCase())throw Error('Expected existing owner-only Access policy');
   if(app.destinations.some(d=>d.type!=='public'||!hosts.includes(d.uri.split('/')[0])||d.overrides?.length))throw Error('Unexpected destination or public bypass override');
-  const additions=hosts.flatMap(host=>[host+'/studio',host+'/api/studio']).filter(uri=>!app.destinations.some(d=>d.uri===uri));
-  return {app_id:app.id,add_public_paths:additions,preserve_audience:true,preserve_policy_ids:policies.map(p=>p.id),
-    before_destinations:app.destinations.map(d=>d.uri),after_destinations:[...app.destinations.map(d=>d.uri),...additions]};
+  const remove=app.destinations.filter(d=>hosts.some(host=>d.uri===host+'/studio')).map(d=>d.uri);
+  const kept=app.destinations.map(d=>d.uri).filter(uri=>!remove.includes(uri));
+  const additions=hosts.flatMap(host=>[host+'/studio/private',host+'/api/studio']).filter(uri=>!kept.includes(uri));
+  return {app_id:app.id,add_public_paths:additions,remove_public_paths:remove,preserve_audience:true,preserve_policy_ids:policies.map(p=>p.id),
+    before_destinations:app.destinations.map(d=>d.uri),after_destinations:[...kept,...additions]};
 }
 
 export function prepareStudioRelease(snapshot){
@@ -25,7 +27,7 @@ export function prepareStudioRelease(snapshot){
   for(const [name,text] of Object.entries(config.vars))if(bindings.find(b=>b.name===name&&b.type==='plain_text')?.text!==text)throw Error('Production identity configuration mismatch');
   const latest=snapshot.deployments?.[0];
   if(!latest?.versions?.length||latest.versions.reduce((sum,v)=>sum+v.percentage,0)!==100)throw Error('Current deployment baseline unavailable');
-  const roots=['app/studio','app/api/studio','lib/learning','lib/ui','migrations','tests','docs','scripts/migration-preflight.mjs','scripts/release-preflight.mjs',
+  const roots=['app/studio','app/site-header.tsx','app/globals.css','app/api/studio','lib/studio-public.ts','lib/learning','lib/ui','migrations','tests','docs','scripts/migration-preflight.mjs','scripts/release-preflight.mjs',
     'AGENTS.md','.gitignore','app/journal.tsx','README.md','MIGRATION-STATUS.md','VALIDATION.md'];
   const changed=execFileSync('git',['diff','--name-only','HEAD','--',...roots],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']});
   const untracked=execFileSync('git',['ls-files','--others','--exclude-standard','--',...roots],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']});

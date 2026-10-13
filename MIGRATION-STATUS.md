@@ -1,5 +1,7 @@
 # wayneo.dev 迁移进度
 
+当前进度：**C2-K Studio 已推送并部署成功。** 用户明确授权后，main 提交 8e043e9，GitHub Check/Deploy 均成功；生产版本 cd3f6cfe-8a22-476b-ac5f-791d26fb190b。Studio Access 四路径保护已更新，匿名入口均跳转登录；两域名公开页面和资源正常、旧公开 API 哈希一致。真实 owner 尚未登记，签名所有者先查看只读预览，私人保存禁用。总体粗估 53%–58%，本批 +3 个百分点。详见 [部署结果](docs/studio-deployment-result.md)。
+
 当前进度：**C2-J Studio 上线准备完成，尚未发布。** 已核对生产 Access/Worker 与空 owner 表，补齐签名身份的只读登记提案入口；不会创建或启用账户。136/136、非增量类型检查、隔离完整构建与 26 个实际 Worker 路由请求通过。代码哈希清单与既有 Access 四路径扩展、版本回退方案已准备；提交推送、生产发布和 Access 修改等待明确授权，真实登记另行授权。详见 [Studio 上线准备](docs/studio-release-readiness.md)。
 
 > 历史记录：以下为2026-10-11迁移时的检查与授权，不能作为现在部署、线上写入或调度的授权。2026-10-13阶段0已重新核对部分后台配置和只读接口；最新现状、未核验项与后续范围见 [架构](docs/architecture.md) 和 [实施计划](docs/implementation-plan.md)。测试域名当前共用生产Worker/DB，不是隔离预览。

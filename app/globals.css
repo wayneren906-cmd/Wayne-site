@@ -1623,3 +1623,12 @@ a {
     scroll-behavior: auto !important;
   }
 }
+
+/* Keep all four primary destinations usable on narrow screens. */
+.editorial-nav-bar :is(.nav-links-cluster a,.wordmark-wrap) {min-height:44px;display:inline-flex;align-items:center;}
+.editorial-nav-bar .theme-toggle-btn {width:44px;height:44px;flex-shrink:0;}
+@media(max-width:520px){
+  .editorial-nav-bar {height:auto;min-height:100px;flex-wrap:wrap;gap:0;padding-block:8px;}
+  .editorial-nav-bar .brand-anchor {width:100%;}
+  .editorial-nav-bar .nav-links-cluster {width:100%;justify-content:space-between;gap:8px;font-size:11.5px;letter-spacing:.025em;}
+}

@@ -1,5 +1,9 @@
 /* Studio Client Composite Styling */
 .studio-page {padding-block:32px;}
+.studio-private-shell .studio-page {padding-block:32px 56px;}
+.studio-back-link {display:inline-flex;align-items:center;min-height:44px;margin-bottom:20px;font-size:13px;color:var(--ink-secondary);}
+.studio-private-kicker {font:12px/1.6 var(--font-mono);color:var(--ink-secondary);margin-bottom:8px;}
+.studio-private-shell .studio-page__header h1 {font:500 32px/1.4 var(--font-serif);}
 .studio-page__header {display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px;}
 .studio-page__header a,.studio-page>a {display:inline-flex;align-items:center;min-height:44px;}
 .studio-page a:focus-visible {outline:2px solid var(--ink,#171717);outline-offset:4px;}
@@ -68,3 +72,4 @@
     transition: none !important;
   }
 }
+.studio-private-shell a {min-height:44px;display:inline-flex;align-items:center;}

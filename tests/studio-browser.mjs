@@ -37,7 +37,7 @@ const server=http.createServer(async(req,res)=>{
         await (req.method==='POST'?handleStudioEvents:handleStudioContext)(request,{DB:f.db,...auth.config},{now,verification:auth.verification});
       if(useWorker)console.log('Worker browser HTTP '+response.status+' '+req.url+' '+response.headers.get('content-type'));
       if(fault==='partial'&&req.method==='POST'){fault=null;res.writeHead(200,{'content-type':'application/json'});res.end('{"saved":true,"receipt_id":"partial"}');return;}
-      res.writeHead(response.status,Object.fromEntries(response.headers));res.end(await response.text());return;
+      res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;
     }
     const target=path.resolve(work,'dist',req.url==='/'?'index.html':'.'+req.url);
     if(!target.startsWith(path.join(work,'dist')+path.sep)){res.writeHead(404).end();return;}
@@ -62,7 +62,7 @@ try {
   const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++sequence;const timer=setTimeout(()=>reject(Error('CDP command timed out: '+method)),10000);pending.set(id,{resolve:value=>{clearTimeout(timer);resolve(value);},reject:error=>{clearTimeout(timer);reject(error);}});ws.send(JSON.stringify({id,method,params}));});
   const evaluate=async expression=>{const result=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(result.exceptionDetails)throw Error(JSON.stringify(result.exceptionDetails));return result.result.value;};
   const visible=()=>evaluate(`!!document.querySelector('textarea')&&!document.body.innerText.includes('正在读取')`);
-  await send('Runtime.enable');await send('Page.enable');await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/${useWorker?'studio':''}`});await wait(visible);
+  await send('Runtime.enable');await send('Page.enable');await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/${useWorker?'studio/private':''}`});await wait(visible);
   await wait(()=>reads===1);
   await wait(()=>evaluate(`document.body.innerText.includes('尚未接入聊天记录')`));
   assert.equal(reads,1,'initial overview/list must share one context');
@@ -96,6 +96,21 @@ try {
   assert.equal(await evaluate(`document.activeElement.className`),'studio-client__detail-overlay');
   await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await wait(()=>evaluate(`!document.querySelector('.studio-client__detail-overlay')`));
   assert.equal(await evaluate(`document.activeElement.hasAttribute('data-event-id')`),true);
-  const summary={posts,reads,rows:2,viewportResults,passed:true,scope:useWorker?'Chrome + complete Worker build + actual Vinext dispatch + memory D1, synthetic Access JWT/JWKS':'synthetic browser + actual handlers + memory SQLite, not Worker route dispatch'};
+  const publicViews=[];
+  if(useWorker){
+    for(let n=1;n<=4;n++)await f.db.prepare('INSERT INTO records(date,items,practice,revision,updated_at) VALUES(?,?,?,?,?)').bind(`2000-01-0${n}`,JSON.stringify([{label:'合成公开主题',text:'合成公开手记，用于隔离界面验证'}]),'',1,'2000-01-01T00:00:00Z').run();
+    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio`});await wait(()=>evaluate(`!!document.querySelector('.studio-topic-list')`));
+    assert.equal(await evaluate(`document.querySelectorAll('.studio-note-list li').length`),4);
+    assert.equal(await evaluate(`document.body.innerText.includes('合成浏览器学习记录')`),false,'private facts must not reach public Studio');
+    assert.equal(reads,3,'public Studio must not call the private context API');
+    for(const width of [320,390,1280])for(const theme of ['light','dark']){
+      await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});
+      await evaluate(`document.documentElement.dataset.theme=${JSON.stringify(theme)}`);
+      const view=await evaluate(`({width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,controls:[...document.querySelectorAll('button,a')].every(e=>e.getBoundingClientRect().height>=44),headings:document.querySelectorAll('h1').length,studioActive:document.querySelector('.nav-links-cluster a[aria-current="page"]').textContent.trim()})`);
+      assert.equal(view.overflow,false);assert.equal(view.controls,true);assert.equal(view.headings,1);assert.equal(view.studioActive,'Studio');
+      const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(work,`public-${width}-${theme}.png`),Buffer.from(shot.data,'base64'));publicViews.push({...view,theme});
+    }
+  }
+  const summary={posts,reads,rows:2,viewportResults,publicViews,passed:true,scope:useWorker?'Chrome + complete Worker build + actual Vinext dispatch + memory D1, synthetic Access JWT/JWKS':'synthetic browser + actual handlers + memory SQLite, not Worker route dispatch'};
   fs.writeFileSync(path.join(work,'summary.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
 }finally{ws?.close();chrome?.kill();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));for(const cleanup of cleanups)cleanup();if(useWorker)await f.runtime.dispose();}
