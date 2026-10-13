@@ -122,7 +122,7 @@ export default function PersonalHome() {
         </div>
         <div className="pub-cover-grid">
           <div className="pub-cover-intro"><span className="pub-small-label">WAYNE / 个人刊物</span><p className="pub-cover-deck">从一行代码，<br />到生活的细部。</p><p className="pub-body">物联网工程在读。C 语言与嵌入式。</p><a className="pub-text-link" href="#journal">翻开这一页 <ArrowDown size={15} /></a></div>
-          <figure className="pub-cover-photo"><div className="pub-photo-window"><img src="/editorial-structure.jpg" alt="自然光下交错的混凝土阶梯与建筑结构" width={1376} height={768} fetchPriority="high" /></div><figcaption><span>01 / STRUCTURE & LIGHT</span><span>封面影像 · 版式参考</span></figcaption></figure>
+          <figure className="pub-cover-photo"><div className="pub-photo-window"><img src="/editorial-monument-light.jpg" alt="晨光穿透现代主义建筑廊柱与几何阶梯，独行者步入光芒之中" width={1376} height={768} fetchPriority="high" /></div><figcaption><span>01 / THE PASSAGE OF LIGHT</span><span>国际摄影大赛获奖构图 · 空间与光影</span></figcaption></figure>
         </div>
         <div className="pub-cover-bottom"><a href="/learning">进入学习档案 <ArrowUpRight size={13} /></a></div>
       </section>
