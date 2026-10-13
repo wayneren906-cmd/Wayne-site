@@ -1,0 +1,42 @@
+[codeagent-wrapper]
+  Backend: claude
+  Command: claude -p --dangerously-skip-permissions --setting-sources  --output-format stream-json --verbose -
+  PID: 57680
+  Log: C:\Users\27466\AppData\Local\Temp\codeagent-wrapper-57680.log
+  Web UI: http://localhost:65238
+  Session-ID: 7f044da8-1d30-4e26-a359-f5bab98bbe5d
+## Review: `app/publication.css` 鈥?mobile journal fix (lines 688鈥?51)
+
+I read the diff against the base styles above the media query. The geometry is sound: `container-type: inline-size` (line 131) makes `cqw` resolve correctly, `aspect-ratio: auto` + `min-height: 0` (707鈥?08) un-couples height from width, `position: static` copy (724) flows in normal flow so content never collides with the absolutely-positioned number, and the 165px reserved padding correctly holds the rotated number in both odd (bottom) and even/archive (top) positions. No blocking issues found.
+
+### Critical 馃敶
+None.
+
+### Warning 馃煛
+
+- **[publication.css:712, 713, 717, 721, 728, 732]** Four interdependent magic numbers are hardcoded: `min-height: 310px`, `padding: 鈥?65px`, `top: calc(100% - 85px)` / `top: 85px`, and the `clamp(88px, 30cqw, 140px)` number size. They only line up by convention (165 鈮?reserved space; 85 鈮?half, offset by the number's rotated extent).
+  - Why: Bump the number `font-size` clamp and the reserved space, offset, and min-height silently desync 鈥?either the rotated number clips (via the base `overflow: hidden` at line 180) or the padding over/under-reserves.
+  - Fix: Define once, e.g. `--journal-num-space: 165px; --journal-num-offset: 85px;` on `.pub-index`, and derive `min-height` and both `top` values from them.
+
+- **[publication.css:749]** `overflow-wrap: anywhere` on `.pub-index h3 span` (changed from `break-word`). Unlike `break-word`, `anywhere` also shrinks the min-content intrinsic size, so English titles wrap earlier and long words break mid-word even when the column had room.
+  - Why: Inconsistent with the parent `h3` (line 743 still uses `break-word`), and `anywhere`'s min-content effect can change line-breaking in the `minmax(0,1fr)` columns unexpectedly.
+  - Fix: Keep `overflow-wrap: break-word` for consistency unless long CJK/URL content specifically requires `anywhere`; if so, scope it (e.g. `.pub-index h3 span a[href]`).
+
+### Info 馃煝
+
+- **[publication.css:710鈥?19]** `.pub-index-archive` is listed in both rules with conflicting padding (`20px 鈥?165px` then `165px 鈥?20px`), resolved only by source order; `border-right: 0` is also redundant with the base `.pub-index-archive { border-right: 0 }` (line 189). Works, but fragile 鈥?a dedicated single archive rule would be clearer.
+
+- **[publication.css:721]** `30cqw` scales with the full 2-column container, not the single column (desktop uses `22cqw` for 4 columns, so the precedent is container-relative too). Numerically safe at 320鈥?68px, but at the 768px upper edge the number hits the 140px cap while the column is ~368px 鈥?the "瓒呭ぇ鏁板瓧" effect is proportionally smaller than desktop. Not a bug; just noting the scaling basis.
+
+- **[publication.css:714]** `border-bottom` is applied to every entry, so the last row also draws a divider just above `.pub-section`'s own `border-bottom` (line 116), producing a second line near the section end. Cosmetic; consider `:nth-last-child(-n+2)` to drop the trailing row divider if unintended.
+
+- **[publication.css:705鈥?06]** `width: 100%; min-width: 0` on a block-level grid is mostly redundant (block grids already fill width); harmless.
+
+### Positive (verified)
+- Empty/partial states are correctly preserved: base `.pub-index:has(.pub-index-state) { min-height: 220px }` (324) and `.pub-index-state + .pub-index-archive { padding: 24px; min-height: 130px }` (329鈥?34) outrank the mobile `.pub-index-archive` rule by specificity, so the archive never gets the 165px/310px journal treatment in skeleton state.
+
+### Summary
+Approve. The fix is correct and the mobile/desktop isolation is clean (mobile rules scoped to `max-width: 768px`, desktop geometry untouched). Address the magic-number coupling (Warning 1) and confirm `anywhere` is intentional (Warning 2) before merging.
+
+---
+SESSION_ID: 7f044da8-1d30-4e26-a359-f5bab98bbe5d

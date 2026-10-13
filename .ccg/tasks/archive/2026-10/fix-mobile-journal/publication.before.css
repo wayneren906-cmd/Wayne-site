@@ -1,0 +1,1261 @@
+/* Scoped publication layout; typography fonts are provided synchronously by embedded-fonts.css */
+
+/* Tactile Paper & Darkroom Film Grain Materiality */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.022;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+:root[data-theme='dark'] body::before {
+  opacity: 0.035;
+}
+
+/* Scoped publication layout; existing journal tools retain their styles. */
+.publication-home { --accent: var(--ink); max-width: 1440px; }
+.publication-home .editorial-nav-bar {
+  position: sticky;
+  top: 0;
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.publication-home figure { margin: 0; }
+.publication-home .pub-photo-window {
+  overflow: hidden;
+  background: var(--surface-alt);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+:root[data-theme='dark'] .publication-home .pub-photo-window {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.publication-home figure img { display: block; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.02); }
+.publication-home figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 14px;
+  font: 11.5px/1.6 var(--font-mono);
+  color: var(--ink-secondary);
+  letter-spacing: 0.04em;
+}
+.publication-home figcaption span:first-child {
+  color: var(--ink);
+  font-weight: 500;
+}
+.pub-small-label, .pub-cover-meta, .pub-section-label, .pub-cover-side, .pub-cover-bottom, .pub-practice-topics, .pub-endnote > span { font: 12px/1.6 var(--font-mono); letter-spacing: .06em; }
+.pub-body { font-size: 15px; line-height: 1.85; color: var(--ink-secondary); }
+.pub-text-link { display: inline-flex; align-items: center; gap: 16px; padding: 8px 0; font-size: 13.5px; border-bottom: 1px solid var(--line-strong); width: fit-content; }
+.pub-text-link svg { transition: transform .25s ease; }
+.pub-text-link:hover svg { transform: translate(2px, -2px); }
+.pub-cover { padding-top: 28px; }
+.pub-cover-meta { display: flex; justify-content: space-between; color: var(--ink-secondary); }
+.pub-cover-title {
+  margin: 48px 0 0;
+  font-family: 'Roslindale Display Condensed', "Bodoni MT", Georgia, serif;
+  font-size: clamp(64px, 10vw, 144px);
+  font-weight: 400;
+  line-height: 0.90;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.pub-cover-title > span { display: block; width: fit-content; overflow: hidden; padding-bottom: .15em; margin-bottom: -.02em; }
+.pub-cover-title .pub-title-word {
+  display: inline-flex;
+  align-items: baseline;
+  transform: translate3d(0, 0, 0);
+  animation: pub-type-enter 1.25s both cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pub-cover-title .cover-line-1 { padding-left: 0; }
+.pub-cover-title .cover-line-2 { padding-left: 0.60em; }
+.pub-cover-title .cover-line-3 { padding-left: 1.20em; }
+.pub-cover-title .cover-line-2 .pub-title-word { animation-delay: .14s; }
+.pub-cover-title .cover-line-3 .pub-title-word { animation-delay: .28s; }
+
+.pub-title-word .c-roslindale {
+  font-family: 'Roslindale Display Condensed', "Bodoni MT", Georgia, serif;
+  font-weight: 400;
+}
+
+.pub-title-word .c-editorial-it {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  display: inline-block;
+  line-height: inherit;
+}
+
+.pub-cover-subphrase {
+  font-family: 'Ayer', Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(20px, 2.3vw, 30px);
+  color: var(--ink);
+  letter-spacing: -0.015em;
+  margin: 20px 0 clamp(42px, 5vw, 64px);
+  padding-left: 1.20em;
+  transform: translate3d(0, 0, 0);
+  animation: pub-intro-enter 1.2s 0.42s both cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pub-cover-grid { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: 24px; position: relative; padding-top: 24px; }
+.pub-cover-intro { grid-column: 1 / 5; align-self: end; padding: 0 35px 28px 0; animation: pub-intro-enter 1.1s .4s both cubic-bezier(.22,1,.36,1); }
+.pub-cover-deck { font: 400 clamp(22px, 2.1vw, 30px)/1.55 var(--font-serif); margin: 20px 0; }
+.pub-cover-intro .pub-body { max-width: 320px; margin-bottom: 24px; }
+.pub-cover-photo { grid-column: 5 / 13; }
+.pub-cover-photo .pub-photo-window { aspect-ratio: 1.72; }
+.pub-cover-photo img { object-position: 50% 58%; animation: pub-photo-enter 1.6s .18s both cubic-bezier(.22,1,.36,1); }
+.pub-cover-side { position: absolute; right: 0; top: -16px; transform: translateY(-100%); color: var(--ink-secondary); }
+.pub-cover-bottom { display: flex; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--ink); margin-top: 35px; padding: 18px 0; font-size: 13px; }
+.pub-cover-bottom a { display: inline-flex; gap: 12px; align-items: center; }
+.pub-section { padding: 36px 0 88px; border-bottom: 1px solid var(--line); scroll-margin-top: 108px; }
+.pub-section-label { display: flex; justify-content: space-between; gap: 16px; color: var(--ink-secondary); font-size: 12px; }
+.pub-section-label span:first-child { color: var(--ink); }
+.pub-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin: 55px 0 45px; }
+.pub-section-heading h2, .pub-practice h2 { font: 400 clamp(30px, 3.3vw, 46px)/1.4 var(--font-serif); letter-spacing: -.035em; margin: 0; }
+.pub-section-heading > p { font-size: 13.5px; line-height: 1.8; color: var(--ink-secondary); margin: 0 8% 0 0; }
+@font-face {
+  font-family: 'Publication Light';
+  src: url('/fonts/publication-light.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+
+.pub-index {
+  container-type: inline-size;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  aspect-ratio: 1.48;
+  align-items: stretch;
+  gap: 0;
+  border: 0;
+  background: #e6e3dc;
+  color: #222;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+:root[data-theme='dark'] .pub-index {
+  background: #242320;
+  color: #eceae5;
+  box-shadow: none;
+}
+
+/* 翻页书脊立体阴影 */
+.pub-index::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.09) 45%, rgba(255, 255, 255, 0.44) 65%, transparent);
+  pointer-events: none;
+  z-index: 5;
+}
+
+:root[data-theme='dark'] .pub-index::after {
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.45) 45%, rgba(255, 255, 255, 0.08) 65%, transparent);
+}
+
+.pub-index-entry, .pub-index-archive {
+  position: relative;
+  display: block;
+  padding: 0;
+  margin: 0;
+  min-height: 0;
+  border: 0;
+  border-right: 1px solid rgba(0, 0, 0, 0.07);
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  transition: background-color 0.35s ease;
+}
+
+:root[data-theme='dark'] .pub-index-entry,
+:root[data-theme='dark'] .pub-index-archive {
+  border-right-color: rgba(255, 255, 255, 0.06);
+}
+
+.pub-index-archive {
+  border-right: 0;
+}
+
+.pub-index-entry:hover, .pub-index-archive:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+:root[data-theme='dark'] .pub-index-entry:hover,
+:root[data-theme='dark'] .pub-index-archive:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* 艺术开本超大数字 (01 - 04) */
+.pub-index-number {
+  position: absolute;
+  left: 50%;
+  margin: 0;
+  font-family: 'Publication Light', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 22cqw;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.065em;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  transform-origin: center;
+  color: var(--ink);
+  opacity: 0.85;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+/* 偶数列 (02, 04): 大数字置顶 */
+.pub-index-entry:nth-child(even) .pub-index-number,
+.pub-index-archive .pub-index-number {
+  top: 23%;
+}
+
+.pub-index-entry:nth-child(even):hover .pub-index-number,
+.pub-index-archive:hover .pub-index-number {
+  transform: translate(-50%, -54%) rotate(-90deg);
+  opacity: 1;
+}
+
+/* 奇数列 (01, 03): 大数字靠底，确保与上方文字有宽绰距离，绝不被文字遮挡 */
+.pub-index-entry:nth-child(odd) .pub-index-number {
+  top: 77%;
+}
+
+.pub-index-entry:nth-child(odd):hover .pub-index-number {
+  transform: translate(-50%, -46%) rotate(-90deg);
+  opacity: 1;
+}
+
+/* 文字块：居中轴线微排印 */
+.pub-index-copy {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 3;
+  pointer-events: auto;
+}
+
+/* 偶数列 (02, 04): 文字置底 */
+.pub-index-entry:nth-child(even) .pub-index-copy,
+.pub-index-archive .pub-index-copy {
+  top: 55%;
+}
+
+/* 奇数列 (01, 03): 文字靠顶起排，即使有4项记录也能完整容纳在顶部，不向下侵占大数字空间 */
+.pub-index-entry:nth-child(odd) .pub-index-copy {
+  top: 5%;
+}
+
+/* 日期微标 */
+.pub-index-entry-date {
+  display: block;
+  font: 500 clamp(10px, 1.25cqw, 12px)/1.4 var(--font-mono);
+  letter-spacing: 0.1em;
+  color: var(--ink-secondary);
+  margin-bottom: clamp(5px, 0.8cqw, 10px);
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* 标项目录 */
+.pub-index h3, .pub-index-entry:first-child h3 {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(11.5px, 1.55cqw, 16.5px);
+  font-weight: 400;
+  line-height: 1.52;
+  letter-spacing: 0.015em;
+  color: var(--ink);
+  overflow-wrap: break-word;
+  word-break: normal;
+  text-decoration: none !important;
+}
+
+.pub-index h3 span {
+  display: block;
+  margin-bottom: clamp(2px, 0.35cqw, 4px);
+  overflow-wrap: break-word;
+  word-break: normal;
+  white-space: normal;
+}
+
+.pub-index-entry a, .pub-index-archive a {
+  display: block;
+}
+
+.pub-index h3 a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* 状态与骨架 */
+.pub-index-state {
+  grid-column: 1 / -1;
+  position: relative;
+  z-index: 1;
+  padding: 36px;
+  color: var(--ink-secondary);
+  font-size: 14.5px;
+  text-align: center;
+}
+
+.pub-index:has(.pub-index-state) {
+  aspect-ratio: auto;
+  min-height: 220px;
+}
+
+.pub-index-state + .pub-index-archive {
+  grid-column: 1 / -1;
+  min-height: 130px;
+  display: block;
+  padding: 24px;
+}
+
+.pub-index-state + .pub-index-archive .pub-index-number {
+  display: none;
+}
+
+.pub-index-state + .pub-index-archive .pub-index-copy {
+  position: static;
+}
+.pub-notice { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; font-size: 13px; color: var(--ink-secondary); border-top: 1px solid var(--line); }
+.pub-notice button { display: inline-flex; gap: 8px; align-items: center; background: transparent; border: 0; padding: 8px; flex-shrink: 0; font-size: 13px; }
+.pub-notice button:disabled { opacity: .5; cursor: wait; }
+.pub-practice-grid { display: grid; grid-template-columns: repeat(12,minmax(0,1fr)); gap: 32px; margin-top: 60px; }
+.pub-practice-image { grid-column: 1 / 8; }
+.pub-practice-image .pub-photo-window { aspect-ratio: 1.22; }
+.pub-practice-image img { object-position: 47% center; }
+.pub-practice-copy { grid-column: 9 / 13; display: flex; align-items: flex-start; flex-direction: column; padding-top: 24px; }
+.pub-practice-copy h2 { margin: 28px 0 18px; }
+.pub-practice-lead { font-size: 17px; line-height: 1.85; margin: 0 0 12px; }
+.pub-practice-copy .pub-body { margin: 0 0 24px; }
+.pub-practice-topics { display: flex; gap: 20px; border-top: 1px solid var(--line); width: 100%; padding-top: 18px; margin-top: auto; color: var(--ink-secondary); font-size: 12px; }
+.pub-fragments-heading { display: grid; grid-template-columns: 7fr 5fr; gap: 40px; align-items: end; margin: 55px 0 48px; }
+.pub-fragments-heading h2 { font: 400 clamp(55px, 7vw, 100px)/.98 var(--font-display); letter-spacing: -.055em; margin: 0; }
+.pub-fragments-heading h2 em { font-family: var(--font-serif); font-weight: 400; }
+.pub-fragments-heading > div { padding-bottom: 8px; }
+.pub-photo-essay { display: grid; grid-template-columns: repeat(12,minmax(0,1fr)); gap: 32px; }
+.pub-essay-main { grid-column: 1 / 9; grid-row: 1 / 3; }
+.pub-essay-main .pub-photo-window { aspect-ratio: .99; }
+.pub-essay-main img { object-position: 61% center; }
+.pub-essay-detail { grid-column: 10 / 13; padding-top: 70px; }
+.pub-essay-detail .pub-photo-window { aspect-ratio: .76; }
+.pub-essay-detail img { object-position: 65% center; }
+.pub-essay-note { grid-column: 10 / 13; align-self: end; padding-bottom: 24px; }
+.pub-essay-note p { font: 400 21px/1.8 var(--font-serif); margin: 20px 0; }
+.pub-essay-note > span:last-child { font-size: 12px; line-height: 1.8; color: var(--ink-secondary); }
+.pub-endnote { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 32px 0; }
+.pub-endnote > span { color: var(--ink-secondary); font-size: 12px; }
+.pub-endnote p { font: italic 16px var(--font-serif); margin: 0; }
+.pub-endnote a { font-size: 24px; padding: 8px 12px; }
+.publication-home .colophon-editorial-footer { margin: 0; border-top: 1px solid var(--ink); padding-top: 36px; }
+.publication-home .colophon-big-brand { font-size: clamp(64px, 10vw, 136px); font-weight: 500; letter-spacing: -.075em; margin-bottom: 28px; }
+.publication-home .colophon-details-grid { font-size: 12px; line-height: 1.8; }
+@keyframes pub-type-enter { from { opacity: 0; transform: translate3d(0, 102%, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+@keyframes pub-photo-enter { from { opacity: .35; transform: scale(1.025); } to { opacity: 1; transform: scale(1); } }
+@keyframes pub-intro-enter { from { opacity: 0; transform: translate3d(0, 8px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+
+/* ==========================================================================
+   SCROLL REVEAL & EDITORIAL ANIMATION SYSTEM
+   ========================================================================== */
+
+.pub-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.pub-reveal.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pub-reveal-image {
+  opacity: 0;
+  transform: translateY(24px) scale(0.98);
+  transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.pub-reveal-image.is-revealed {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* 研习 4 列大数字阶梯入场 */
+.pub-index.is-revealed .pub-index-entry:nth-child(1) .pub-index-number {
+  animation: pub-num-enter-odd 0.9s 0.05s both cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pub-index.is-revealed .pub-index-entry:nth-child(2) .pub-index-number {
+  animation: pub-num-enter-even 0.9s 0.18s both cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pub-index.is-revealed .pub-index-entry:nth-child(3) .pub-index-number {
+  animation: pub-num-enter-odd 0.9s 0.31s both cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pub-index.is-revealed .pub-index-archive .pub-index-number {
+  animation: pub-num-enter-even 0.9s 0.44s both cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pub-num-enter-odd {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -42%) rotate(-90deg);
+  }
+  to {
+    opacity: 0.85;
+    transform: translate(-50%, -50%) rotate(-90deg);
+  }
+}
+
+@keyframes pub-num-enter-even {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -58%) rotate(-90deg);
+  }
+  to {
+    opacity: 0.85;
+    transform: translate(-50%, -50%) rotate(-90deg);
+  }
+}
+
+/* 研习列悬停微动效 */
+.pub-index-entry, .pub-index-archive {
+  transition: background-color 0.35s ease;
+}
+.pub-index-entry:hover, .pub-index-archive:hover {
+  background-color: rgba(0, 0, 0, 0.035);
+}
+:root[data-theme='dark'] .pub-index-entry:hover,
+:root[data-theme='dark'] .pub-index-archive:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* 全站照片悬停暗房呼吸动效 */
+.publication-home .pub-photo-window img {
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
+}
+.publication-home .pub-photo-window:hover img {
+  transform: scale(1.036);
+  filter: grayscale(0.85) contrast(1.05);
+}
+
+/* 联系大标题阶梯文字进入动效 */
+.contact-replica-section.is-revealed .contact-title-line.line-1 {
+  animation: contact-line-reveal 0.85s 0.08s both cubic-bezier(0.16, 1, 0.3, 1);
+}
+.contact-replica-section.is-revealed .contact-title-line.line-2 {
+  animation: contact-line-reveal 0.85s 0.2s both cubic-bezier(0.16, 1, 0.3, 1);
+}
+.contact-replica-section.is-revealed .contact-title-line.line-3 {
+  animation: contact-line-reveal 0.85s 0.32s both cubic-bezier(0.16, 1, 0.3, 1);
+}
+.contact-replica-section.is-revealed .contact-title-line.line-4 {
+  animation: contact-line-reveal 0.85s 0.44s both cubic-bezier(0.16, 1, 0.3, 1);
+}
+.contact-replica-section.is-revealed .contact-replica-subinvite {
+  animation: contact-line-reveal 0.95s 0.58s both cubic-bezier(0.16, 1, 0.3, 1);
+}
+.contact-replica-section.is-revealed .contact-action-col {
+  animation: contact-line-reveal 0.9s 0.3s both cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes contact-line-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 中间细环圈持续呼吸浮动 */
+@keyframes ring-harmonic-float {
+  0%, 100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.06) rotate(180deg);
+  }
+}
+
+.contact-floating-ring {
+  animation: ring-harmonic-float 8s ease-in-out infinite;
+}
+.contact-replica-grid:hover .contact-floating-ring {
+  animation-play-state: paused;
+  transform: scale(1.2);
+}
+
+/* 底部波浪线持续呼吸浮动 */
+@keyframes wavy-drift {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-7px);
+  }
+}
+.contact-bottom-wavy svg {
+  animation: wavy-drift 5s ease-in-out infinite;
+}
+
+/* 印章图标悬停旋转 */
+.contact-stamp-toggle:hover svg {
+  transform: rotate(180deg);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 返回顶部箭头与链接微动效 */
+.pub-endnote a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease;
+}
+.pub-endnote a:hover {
+  transform: translateY(-5px) scale(1.12);
+}
+
+/* 社交按钮悬停微动效 */
+.contact-social-anchor {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+.contact-social-anchor:hover {
+  transform: translateX(4px);
+  opacity: 1;
+}
+.contact-social-anchor svg {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.contact-social-anchor:hover svg {
+  transform: scale(1.2) rotate(-5deg);
+}
+
+/* 邮箱下划线微动效 */
+.contact-direct-email {
+  position: relative;
+  transition: opacity 0.2s ease, transform 0.25s ease;
+}
+.contact-direct-email:hover {
+  transform: translateY(-2px);
+}
+
+/* 订阅邮件箭头交互 */
+.contact-newsletter-arrow {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.contact-newsletter-field:focus-within .contact-newsletter-arrow,
+.contact-newsletter-arrow:hover {
+  transform: translateX(6px) scale(1.15);
+}
+
+/* 底部巨幅品牌 logo 悬停弹性字间起伏 */
+.colophon-big-brand span {
+  display: inline-block;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.colophon-big-brand:hover span:nth-child(1) {
+  transform: translateY(-5px);
+}
+.colophon-big-brand:hover span:nth-child(2) {
+  transform: translateY(-9px);
+  transition-delay: 0.04s;
+}
+.colophon-big-brand:hover span:nth-child(3) {
+  transform: translateY(-5px);
+  transition-delay: 0.08s;
+}
+
+@media (max-width: 1000px) {
+  .pub-cover-intro { padding-right: 0; }
+  .pub-index { aspect-ratio: 1.35; }
+  .pub-practice-copy { grid-column: 8 / 13; padding-top: 0; }
+  .pub-practice-image { grid-column: 1 / 8; }
+  .pub-practice-topics { margin-top: 24px; }
+  .pub-essay-detail, .pub-essay-note { grid-column: 9 / 13; }
+}
+@media (max-width: 768px) {
+  .publication-home {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  .pub-cover {
+    padding-top: 20px;
+  }
+  .pub-cover-meta {
+    font-size: 10.5px;
+  }
+  .pub-cover-meta span:last-child {
+    display: none;
+  }
+  .pub-cover-title {
+    font-size: clamp(38px, 10vw, 56px);
+    margin: 28px 0 0;
+    line-height: 1.02;
+  }
+  .pub-cover-title .cover-line-1 { padding-left: 0; }
+  .pub-cover-title .cover-line-2 { padding-left: 0.25em; }
+  .pub-cover-title .cover-line-3 { padding-left: 0.50em; }
+  .pub-cover-subphrase {
+    padding-left: 0.50em;
+    font-size: 16px;
+    margin: 12px 0 24px;
+  }
+  
+  /* Hero Cover: 双栏并排杂志画幅，与网页端一致 */
+  .pub-cover-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 16px;
+    align-items: start;
+    padding-top: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+  .pub-cover-intro {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 0;
+    align-self: center;
+    min-width: 0;
+  }
+  .pub-cover-photo {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+  }
+  .pub-cover-photo .pub-photo-window {
+    aspect-ratio: 0.72;
+    width: 100%;
+  }
+  .pub-cover-deck {
+    font-size: 17px;
+    line-height: 1.5;
+    margin: 10px 0;
+  }
+  .pub-cover-intro .pub-body {
+    font-size: 11.5px;
+    line-height: 1.75;
+    margin-bottom: 12px;
+  }
+  .pub-cover-intro .pub-text-link {
+    font-size: 11px;
+    gap: 8px;
+    padding: 6px 0;
+  }
+  .pub-cover-photo figcaption {
+    flex-direction: column;
+    gap: 2px;
+    font-size: 10px;
+    padding-top: 8px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .pub-cover-side {
+    display: none;
+  }
+  .pub-cover-bottom {
+    font-size: 11px;
+    margin-top: 18px;
+    justify-content: flex-end;
+  }
+
+  /* 01. Journal: 保留 4 栏开本翻阅感，紧凑微排印无溢出 */
+  .pub-section {
+    padding: 24px 0 36px;
+  }
+  .pub-section-label {
+    font-size: 10.5px;
+    margin-bottom: 20px;
+  }
+  .pub-section-heading {
+    margin: 24px 0;
+    display: block;
+  }
+  .pub-section-heading h2 {
+    font-size: 26px;
+  }
+  .pub-index {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    aspect-ratio: 1.1;
+    min-height: 385px;
+  }
+  .pub-index-copy {
+    left: 3%;
+    right: 3%;
+    width: 94%;
+  }
+  .pub-index-entry:nth-child(odd) .pub-index-copy {
+    top: 4.5%;
+  }
+  .pub-index-entry:nth-child(even) .pub-index-copy,
+  .pub-index-archive .pub-index-copy {
+    top: 53%;
+  }
+  .pub-index-entry:nth-child(odd) .pub-index-number {
+    top: 78%;
+  }
+  .pub-index-entry:nth-child(even) .pub-index-number,
+  .pub-index-archive .pub-index-number {
+    top: 21%;
+  }
+  .pub-index-entry-date {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .pub-index h3, .pub-index-entry:first-child h3 {
+    font-size: 10px;
+    line-height: 1.45;
+    letter-spacing: 0;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+  .pub-index h3 span {
+    display: block;
+    margin-bottom: 2px;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  /* 02. Practice: 双栏图文对齐，与网页端一致 */
+  .pub-practice-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 16px;
+    align-items: start;
+    margin-top: 24px;
+    width: 100%;
+    max-width: 100%;
+  }
+  .pub-practice-image {
+    grid-column: 1;
+    min-width: 0;
+  }
+  .pub-practice-image .pub-photo-window {
+    aspect-ratio: 0.68;
+    width: 100%;
+  }
+  .pub-practice-image figcaption {
+    flex-direction: column;
+    gap: 2px;
+    font-size: 10px;
+    padding-top: 8px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .pub-practice-copy {
+    grid-column: 2;
+    padding-top: 0;
+    min-width: 0;
+  }
+  .pub-practice-copy h2 {
+    font-size: 22px;
+    line-height: 1.4;
+    margin: 10px 0;
+  }
+  .pub-practice-copy .pub-body {
+    font-size: 11.5px;
+    line-height: 1.75;
+    margin-bottom: 12px;
+  }
+  .pub-practice-copy .pub-text-link {
+    font-size: 11px;
+    gap: 8px;
+  }
+  .pub-practice-topics {
+    flex-wrap: wrap;
+    font-size: 9.5px;
+    gap: 4px 10px;
+    padding-top: 10px;
+    margin-top: 14px;
+  }
+
+  /* 03. Fragments: 严禁上下堆叠，双图横向错落并置，完美复刻网页端杂志排版 */
+  .pub-fragments-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 14px;
+    margin: 28px 0 20px;
+  }
+  .pub-fragments-heading h2 {
+    font-size: clamp(32px, 8.5vw, 48px);
+    line-height: 0.96;
+    margin: 0;
+  }
+  .pub-fragments-heading div span {
+    font-size: 9.5px;
+  }
+  .pub-photo-essay {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    width: 100%;
+    max-width: 100%;
+  }
+  .pub-essay-main {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+  }
+  .pub-essay-main .pub-photo-window {
+    aspect-ratio: 0.94;
+    width: 100%;
+  }
+  .pub-essay-detail {
+    grid-column: 2;
+    grid-row: 1;
+    padding-top: 16px;
+    min-width: 0;
+  }
+  .pub-essay-detail .pub-photo-window {
+    aspect-ratio: 0.72;
+    width: 100%;
+  }
+  .pub-essay-main figcaption,
+  .pub-essay-detail figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 9.5px;
+    padding-top: 8px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .pub-endnote {
+    padding: 24px 0 16px;
+    font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .publication-home *, .publication-home *::before, .publication-home *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+
+
+
+
+/* ==========================================================================
+   EDITORIAL PROJECT INVITATION & CONTACT (1:1 REPLICA)
+   "Want to start a new. project? Or just say hello."
+   ========================================================================== */
+
+.contact-replica-section {
+  position: relative;
+  border-top: 1px solid var(--line);
+  padding: 100px 0 70px;
+  margin-top: 40px;
+}
+
+.contact-replica-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 40px;
+}
+
+.contact-replica-brand {
+  font-family: var(--font-display), var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: 0.16em;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+.contact-replica-brand span {
+  display: block;
+}
+
+.contact-stamp-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  color: var(--ink);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+.contact-stamp-toggle:hover {
+  transform: rotate(90deg) scale(1.05);
+  opacity: 0.75;
+}
+
+.contact-replica-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) 70px minmax(0, 1fr);
+  align-items: center;
+  gap: 32px;
+  position: relative;
+}
+
+.contact-headline-col {
+  display: flex;
+  flex-direction: column;
+  padding-left: clamp(40px, 5.5vw, 96px);
+}
+
+.contact-title-group {
+  font-size: clamp(56px, 7.8vw, 118px);
+  line-height: 0.84;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  user-select: none;
+}
+
+.contact-title-line {
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+}
+
+.contact-title-line.line-1 {
+  padding-left: 0.34em;
+}
+
+.contact-title-line.line-2 {
+  padding-left: 0.30em;
+}
+
+.contact-title-line.line-3 {
+  padding-left: 0;
+}
+
+.contact-title-line.line-4 {
+  padding-left: 0.74em;
+}
+
+.c-ayer-w {
+  font-family: 'Ayer', Georgia, serif;
+  font-weight: 500;
+  font-style: normal;
+  margin-right: -0.03em;
+  display: inline-block;
+}
+
+.c-roslindale {
+  font-family: 'Roslindale Display Condensed', "Bodoni MT", Georgia, serif;
+  font-weight: 400;
+}
+
+.c-letter-glyph {
+  display: inline-flex;
+  align-items: baseline;
+  line-height: 0;
+  vertical-align: baseline;
+}
+
+.c-letter-glyph svg {
+  display: block;
+  fill: currentColor;
+}
+
+.c-letter-glyph.glyph-a {
+  width: 0.38em;
+  height: 0.63em;
+  margin: 0 0.01em 0 0.04em;
+  position: relative;
+  top: 0.05em;
+}
+
+.c-letter-glyph.glyph-a-word {
+  margin: 0 0.16em 0 0;
+}
+
+.c-letter-glyph.glyph-j {
+  width: 0.28em;
+  height: 0.84em;
+  margin: 0 0.01em 0 -0.01em;
+  position: relative;
+  top: 0.23em;
+}
+
+.contact-replica-subinvite {
+  font-family: 'Ayer', Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(20px, 2.4vw, 32px);
+  color: var(--ink);
+  margin: 36px 0 0;
+  align-self: flex-start;
+  padding-left: clamp(140px, 16vw, 240px);
+  letter-spacing: -0.015em;
+}
+
+.contact-center-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contact-floating-ring {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1.2px solid var(--ink);
+  opacity: 0.8;
+  transition: transform 0.3s ease;
+}
+
+.contact-replica-grid:hover .contact-floating-ring {
+  transform: scale(1.15);
+}
+
+.contact-action-col {
+  display: flex;
+  flex-direction: column;
+  padding-left: 12px;
+}
+
+.contact-email-line {
+  margin-bottom: 36px;
+}
+
+.contact-direct-email {
+  font-family: 'Roslindale Display Condensed', Georgia, serif;
+  font-size: clamp(22px, 2.6vw, 36px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  border-bottom: 1.2px solid var(--ink);
+  padding-bottom: 6px;
+  display: inline-block;
+  width: 100%;
+  max-width: 440px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.contact-direct-email:hover {
+  opacity: 0.65;
+  transform: translateY(-1px);
+}
+
+.contact-social-matrix {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 32px;
+  margin-bottom: 50px;
+  max-width: 340px;
+}
+
+.contact-social-anchor {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  transition: opacity 0.2s ease;
+}
+
+.contact-social-anchor:hover {
+  opacity: 0.6;
+}
+
+.contact-social-anchor svg {
+  flex-shrink: 0;
+}
+
+.contact-newsletter-zone {
+  display: flex;
+  flex-direction: column;
+  max-width: 440px;
+}
+
+.contact-newsletter-heading {
+  font-family: 'Roslindale Display Condensed', Georgia, serif;
+  font-size: clamp(26px, 3vw, 42px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin: 0 0 16px 0;
+  color: var(--ink);
+}
+
+.contact-newsletter-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-bottom: 1.2px solid var(--ink);
+  padding: 10px 0 8px;
+}
+
+.contact-newsletter-field input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--ink);
+  padding: 4px 0;
+}
+
+.contact-newsletter-field input::placeholder {
+  color: var(--stone);
+  font-size: 13.5px;
+}
+
+.contact-newsletter-arrow {
+  background: transparent;
+  border: none;
+  padding: 0 4px;
+  cursor: pointer;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s ease;
+}
+
+.contact-newsletter-arrow:hover {
+  transform: translateX(6px);
+}
+
+.contact-bottom-wavy {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 48px;
+  color: var(--ink);
+  opacity: 0.75;
+}
+
+@media (max-width: 900px) {
+  .contact-replica-grid {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+  .contact-center-node {
+    display: none;
+  }
+  .contact-headline-col {
+    padding-left: 0;
+  }
+  .contact-title-group {
+    font-size: clamp(32px, 8vw, 64px);
+  }
+  .contact-replica-subinvite {
+    align-self: flex-start;
+    padding-left: 0;
+    font-size: 18px;
+  }
+  .contact-action-col {
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .contact-replica-section {
+    padding: 44px 0 32px;
+    margin-top: 20px;
+  }
+  .contact-replica-grid {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+  }
+  .contact-headline-col {
+    padding-left: 0;
+    min-width: 0;
+  }
+  .contact-title-group {
+    font-size: clamp(22px, 7.2vw, 36px);
+    line-height: 0.88;
+  }
+  .contact-title-line.line-1 { padding-left: 0.15em; }
+  .contact-title-line.line-2 { padding-left: 0.2em; }
+  .contact-title-line.line-4 { padding-left: 0.25em; }
+  .contact-replica-subinvite {
+    padding-left: 0;
+    font-size: 13.5px;
+    margin-top: 16px;
+  }
+  .contact-action-col {
+    padding-top: 4px;
+    min-width: 0;
+  }
+  .contact-direct-email {
+    font-size: 12.5px;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+  }
+  .contact-email-line {
+    margin-bottom: 18px;
+  }
+  .contact-social-matrix {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 8px;
+    margin-bottom: 0;
+  }
+  .contact-social-anchor {
+    font-size: 11px;
+    gap: 5px;
+  }
+  .contact-bottom-wavy {
+    margin-top: 24px;
+  }
+}
+
+/* Release fixes: visible fallback and readable mobile project cards. */
+.publication-home:not(.motion-ready) .pub-reveal,
+.publication-home:not(.motion-ready) .pub-reveal-image { opacity: 1; transform: none; }
+.contact-newsletter-field:has(input:disabled) { opacity: .6; }
+@media (prefers-reduced-motion: reduce) {
+  .publication-home .pub-reveal, .publication-home .pub-reveal-image { opacity: 1 !important; transform: none !important; }
+}
+@media (max-width: 700px) {
+  .works-asymmetric-grid { grid-template-columns: minmax(0,1fr); gap: 20px; }
+  .works-asymmetric-grid .work-feature-card { grid-column: 1 / -1; padding: 24px; }
+  .works-asymmetric-grid .work-number { overflow-wrap: anywhere; }
+}
+
+/* Explicit glyph dimensions also work in iOS embedded browsers. */
+.c-letter-glyph { flex-shrink: 0; }
+.c-letter-glyph svg { width: 100%; height: 100%; flex-shrink: 0; overflow: visible; }
+.contact-action-col, .contact-headline-col { min-width: 0; }
+.contact-newsletter-field input { min-width: 0; width: 100%; }
+
+.contact-replica-subinvite {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(18px, 2.2vw, 26px);
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}

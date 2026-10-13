@@ -1,0 +1,12 @@
+{
+  "createdAt": "2026-10-13T04:59:09.4939398Z",
+  "id": "fix-mobile-journal",
+  "complexity": "S",
+  "domain": "frontend",
+  "branch": "design/frontend",
+  "nextAction": "本地修复已验证；Antigravity CLI 不可用；未发布",
+  "currentPhase": "completed",
+  "status": "completed",
+  "risk": "low",
+  "title": "修复首页学习目录手机端排版"
+}

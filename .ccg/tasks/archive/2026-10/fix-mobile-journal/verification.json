@@ -1,0 +1,144 @@
+{
+  "viewports": [
+    {
+      "viewport": 320,
+      "width": 288,
+      "available": 288,
+      "font": 14,
+      "columns": "144px 144px",
+      "overlap": false
+    },
+    {
+      "viewport": 375,
+      "width": 343,
+      "available": 343,
+      "font": 14,
+      "columns": "171.5px 171.5px",
+      "overlap": false
+    },
+    {
+      "viewport": 390,
+      "width": 358,
+      "available": 358,
+      "font": 14,
+      "columns": "179px 179px",
+      "overlap": false
+    },
+    {
+      "viewport": 430,
+      "width": 398,
+      "available": 398,
+      "font": 14,
+      "columns": "199px 199px",
+      "overlap": false
+    },
+    {
+      "viewport": 600,
+      "width": 568,
+      "available": 568,
+      "font": 14,
+      "columns": "284px 284px",
+      "overlap": false
+    },
+    {
+      "viewport": 768,
+      "width": 736,
+      "available": 736,
+      "font": 14,
+      "columns": "368px 368px",
+      "overlap": false
+    },
+    {
+      "viewport": 769,
+      "width": 705,
+      "available": 705,
+      "font": 11.5,
+      "columns": "176.25px 176.25px 176.25px 176.25px",
+      "overlap": false
+    },
+    {
+      "viewport": 1000,
+      "width": 936,
+      "available": 936,
+      "font": 14.508,
+      "columns": "234px 234px 234px 234px",
+      "overlap": false
+    },
+    {
+      "viewport": 1280,
+      "width": 1184,
+      "available": 1184,
+      "font": 16.5,
+      "columns": "296px 296px 296px 296px",
+      "overlap": false
+    }
+  ],
+  "desktopUnchanged": true,
+  "longTitles": [
+    {
+      "inside": true,
+      "overlap": false,
+      "scroll": 115,
+      "client": 115
+    },
+    {
+      "inside": true,
+      "overlap": false,
+      "scroll": 116,
+      "client": 116
+    },
+    {
+      "inside": true,
+      "overlap": false,
+      "scroll": 115,
+      "client": 115
+    },
+    {
+      "inside": true,
+      "overlap": false,
+      "scroll": 116,
+      "client": 116
+    }
+  ],
+  "states": [
+    {
+      "count": 0,
+      "width": 288,
+      "available": 288,
+      "copies": [
+        true
+      ]
+    },
+    {
+      "count": 1,
+      "width": 288,
+      "available": 288,
+      "copies": [
+        true,
+        true
+      ]
+    },
+    {
+      "count": 2,
+      "width": 288,
+      "available": 288,
+      "copies": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "count": 3,
+      "width": 288,
+      "available": 288,
+      "copies": [
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "animation": true
+}
