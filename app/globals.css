@@ -1632,3 +1632,4 @@ a {
   .editorial-nav-bar .brand-anchor {width:100%;}
   .editorial-nav-bar .nav-links-cluster {width:100%;justify-content:space-between;gap:8px;font-size:11.5px;letter-spacing:.025em;}
 }
+.studio-works-back {display:inline-flex;align-items:center;min-height:44px;margin-top:16px;font-size:13px;color:var(--ink-secondary);}

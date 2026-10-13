@@ -6,7 +6,6 @@ import { Moon, Sun } from "lucide-react";
 const navigation = [
   { id: "home", href: "/", label: "Index" },
   { id: "learning", href: "/learning", label: "Journal" },
-  { id: "projects", href: "/projects", label: "Works" },
   { id: "studio", href: "/studio", label: "Studio" },
 ];
 

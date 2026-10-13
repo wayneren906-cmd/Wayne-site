@@ -2,6 +2,7 @@ import {env} from 'cloudflare:workers';
 import {ArrowUpRight, LockKeyhole} from 'lucide-react';
 import {readRecords} from '@/lib/database';
 import {summarizePublicLearning} from '@/lib/studio-public';
+import {projectDirections} from '@/lib/project-directions';
 import SiteHeader from '../site-header';
 import SiteFooter from '../site-footer';
 import './studio-public.css';
@@ -19,7 +20,7 @@ export default async function StudioPage(){
         <div className="studio-intro-stats"><p className="studio-small-label">THE PUBLIC NOTEBOOK / 公开手记</p><dl><div><dt>有记录的学习日</dt><dd>{summary?.recordedDays??'—'}<span>天</span></dd></div><div><dt>已记录内容</dt><dd>{summary?.entryCount??'—'}<span>项</span></dd></div></dl><p className="studio-stat-note">{summary?'仅统计公开手记，不作为能力评估。':'公开记录暂时无法读取，请稍后刷新。'}</p></div>
       </div>
     </section>
-    <nav className="studio-section-nav" aria-label="Studio 栏目"><a href="#progress">01 学习进度</a><a href="#notebook">02 学习记录</a><a href="#plans">03 学习计划</a><a href="#private">04 私人空间 <LockKeyhole size={13} aria-hidden="true"/></a></nav>
+    <nav className="studio-section-nav" aria-label="Studio 栏目"><a href="#progress">01 学习进度</a><a href="#notebook">02 学习记录</a><a href="#works">03 项目实践</a><a href="#plans">04 学习计划</a><a href="#private">05 私人空间 <LockKeyhole size={13} aria-hidden="true"/></a></nav>
     <div className="studio-dashboard-grid">
       <section id="progress" className="studio-progress-panel" aria-labelledby="progress-title"><div className="studio-section-heading"><div><p className="studio-small-label">01 / LEARNING PROGRESS</p><h2 id="progress-title">看见积累的方向</h2></div><span className="studio-section-caption">公开记录分布</span></div>
         <p className="studio-section-description">每一次记下的内容，都是学习的一个落点。这里展示各主题的记录数量，掌握程度仍需通过实际练习确认。</p>
@@ -27,13 +28,14 @@ export default async function StudioPage(){
         <div className="studio-panel-foot"><span>最近记录日</span><span>{summary?.latestDate??'暂无可用日期'}</span></div>
       </section>
       <aside className="studio-side-stack">
-        <section id="plans" className="studio-plan-panel" aria-labelledby="plans-title"><p className="studio-small-label">03 / WHAT COMES NEXT</p><h2 id="plans-title">给下一步留白</h2><p>当前暂无已确认的学习计划。先保留真实记录，再用练习与反馈决定接下来的安排。</p><a className="studio-text-link" href="/projects">看看实践方向 <ArrowUpRight size={16} aria-hidden="true"/></a></section>
+        <section id="plans" className="studio-plan-panel" aria-labelledby="plans-title"><p className="studio-small-label">04 / WHAT COMES NEXT</p><h2 id="plans-title">给下一步留白</h2><p>当前暂无已确认的学习计划。先保留真实记录，再用练习与反馈决定接下来的安排。</p><a className="studio-text-link" href="#works">看看项目实践 <ArrowUpRight size={16} aria-hidden="true"/></a></section>
         <section id="private" className="studio-private-panel" aria-labelledby="private-title"><div className="studio-private-label"><LockKeyhole size={16} aria-hidden="true"/><span>PRIVATE / 仅自己可见</span></div><h2 id="private-title">私人的学习细节</h2><p>原始记录、修订历史与私人补充集中在这里。登录后核验权限，再查看或修改。</p><a className="studio-private-link" href="/studio/private">进入私人空间 <ArrowUpRight size={18} aria-hidden="true"/></a></section>
       </aside>
     </div>
     <section id="notebook" className="studio-notebook" aria-labelledby="notebook-title"><div className="studio-section-heading"><div><p className="studio-small-label">02 / RECENT NOTES</p><h2 id="notebook-title">最近的学习手记</h2></div><a className="studio-text-link" href="/learning">查看全部 <ArrowUpRight size={16} aria-hidden="true"/></a></div>
       {summary?.recent.length?<ol className="studio-note-list">{summary.recent.map(record=><li key={record.date}><time dateTime={record.date}>{record.date}</time><div><h3>{[...new Set(record.items.map(i=>i.label))].join(' · ')}</h3><p>{record.items.map(i=>i.text).join('；')}</p></div><a href="/learning" aria-label={`阅读 ${record.date} 的公开学习手记`}><ArrowUpRight size={20} aria-hidden="true"/></a></li>)}</ol>:<p className="studio-empty-note">{summary?'尚未发布公开手记。私人内容不会自动出现在这里。':'手记暂时无法读取，可稍后重试。'}</p>}
     </section>
+    <section id="works" className="studio-works" aria-labelledby="studio-works-title"><div className="studio-section-heading"><div><p className="studio-small-label">03 / WORKS</p><h2 id="studio-works-title">项目实践</h2></div><a className="studio-text-link" href="/projects">查看项目目录 <ArrowUpRight size={16} aria-hidden="true"/></a></div><p className="studio-section-description">从知识走向实践。以下是已有的项目方向，具体成果与验证记录将在完成后补充。</p><div className="studio-works-grid">{projectDirections.map(item=><article key={item.num}><p className="studio-small-label">{item.num}</p><h3>{item.title}</h3><p>{item.desc}</p><ul aria-label="涉及技术">{item.tags.map(tag=><li key={tag}>{tag}</li>)}</ul><span className="studio-work-status">项目方向 · 待补充成果</span></article>)}</div></section>
     <p className="studio-public-footnote">公开栏目无需登录。私人数据始终需要身份与权限核验，也不会因进入 Studio 而自动公开。</p>
   </main><SiteFooter/></div>;
 }
