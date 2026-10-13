@@ -1,26 +1,4 @@
-@font-face {
-  font-family: 'Roslindale Display Condensed';
-  src: url('/fonts/Roslindale-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Roslindale Display Condensed';
-  src: url('/fonts/Roslindale-Medium.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Ayer';
-  src: url('/fonts/Ayer-Medium.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
+/* Scoped publication layout; typography fonts are provided synchronously by embedded-fonts.css */
 
 /* Scoped publication layout; existing journal tools retain their styles. */
 .publication-home { --accent: var(--ink); max-width: 1440px; }
