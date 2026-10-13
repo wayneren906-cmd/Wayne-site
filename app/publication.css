@@ -18,7 +18,7 @@ body::before {
 }
 
 /* Scoped publication layout; existing journal tools retain their styles. */
-.publication-home { --accent: var(--ink); max-width: 1440px; }
+.publication-home { --accent: var(--ink); max-width: var(--editorial-width); }
 .publication-home .editorial-nav-bar {
   position: sticky;
   top: 0;
@@ -41,7 +41,7 @@ body::before {
   justify-content: space-between;
   gap: 12px;
   padding-top: 14px;
-  font: 11.5px/1.6 var(--font-mono);
+  font: var(--editorial-caption-size)/1.6 var(--font-mono);
   color: var(--ink-secondary);
   letter-spacing: 0.04em;
 }
@@ -49,8 +49,8 @@ body::before {
   color: var(--ink);
   font-weight: 500;
 }
-.pub-small-label, .pub-cover-meta, .pub-section-label, .pub-cover-side, .pub-cover-bottom, .pub-practice-topics, .pub-endnote > span { font: 12px/1.6 var(--font-mono); letter-spacing: .06em; }
-.pub-body { font-size: 15px; line-height: 1.85; color: var(--ink-secondary); }
+.pub-small-label, .pub-cover-meta, .pub-section-label, .pub-cover-side, .pub-cover-bottom, .pub-practice-topics, .pub-endnote > span { font: var(--editorial-caption-size)/1.6 var(--font-mono); letter-spacing: .06em; }
+.pub-body { font-size: var(--editorial-body-size); line-height: 1.9; color: var(--ink-secondary); }
 .pub-text-link { display: inline-flex; align-items: center; gap: 16px; padding: 8px 0; font-size: 13.5px; border-bottom: 1px solid var(--line-strong); width: fit-content; }
 .pub-text-link svg { transition: transform .25s ease; }
 .pub-text-link:hover svg { transform: translate(2px, -2px); }
@@ -113,10 +113,10 @@ body::before {
 .pub-cover-side { position: absolute; right: 0; top: -16px; transform: translateY(-100%); color: var(--ink-secondary); }
 .pub-cover-bottom { display: flex; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--ink); margin-top: 35px; padding: 18px 0; font-size: 13px; }
 .pub-cover-bottom a { display: inline-flex; gap: 12px; align-items: center; }
-.pub-section { padding: 36px 0 88px; border-bottom: 1px solid var(--line); scroll-margin-top: 108px; }
+.pub-section { padding: 40px 0 var(--editorial-section-space); border-bottom: 1px solid var(--line); scroll-margin-top: 108px; }
 .pub-section-label { display: flex; justify-content: space-between; gap: 16px; color: var(--ink-secondary); font-size: 12px; }
 .pub-section-label span:first-child { color: var(--ink); }
-.pub-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin: 55px 0 45px; }
+.pub-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin: var(--editorial-heading-space) 0; }
 .pub-section-heading h2, .pub-practice h2 { font: 400 clamp(30px, 3.3vw, 46px)/1.4 var(--font-serif); letter-spacing: -.035em; margin: 0; }
 .pub-section-heading > p { font-size: 13.5px; line-height: 1.8; color: var(--ink-secondary); margin: 0 8% 0 0; }
 @font-face {
@@ -376,7 +376,7 @@ body::before {
 .pub-endnote a { font-size: 24px; padding: 8px 12px; }
 .publication-home .colophon-editorial-footer { margin: 0; border-top: 1px solid var(--ink); padding-top: 36px; }
 .publication-home .colophon-big-brand { font-size: clamp(64px, 10vw, 136px); font-weight: 500; letter-spacing: -.075em; margin-bottom: 28px; }
-.publication-home .colophon-details-grid { font-size: 12px; line-height: 1.8; }
+.publication-home .colophon-details-grid { font-size: var(--editorial-caption-size); line-height: 1.8; }
 @keyframes pub-type-enter { from { opacity: 0; transform: translate3d(0, 102%, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
 @keyframes pub-photo-enter { from { opacity: .35; transform: scale(1.025); } to { opacity: 1; transform: scale(1); } }
 @keyframes pub-intro-enter { from { opacity: 0; transform: translate3d(0, 8px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
@@ -605,14 +605,14 @@ body::before {
 }
 @media (max-width: 768px) {
   .publication-home {
-    padding-left: max(16px, env(safe-area-inset-left));
-    padding-right: max(16px, env(safe-area-inset-right));
+    padding-left: max(var(--editorial-gutter), env(safe-area-inset-left));
+    padding-right: max(var(--editorial-gutter), env(safe-area-inset-right));
   }
   .pub-cover {
     padding-top: 20px;
   }
   .pub-cover-meta {
-    font-size: 10.5px;
+    font-size: var(--editorial-caption-size);
   }
   .pub-cover-meta span:last-child {
     display: none;
@@ -663,8 +663,8 @@ body::before {
     margin: 10px 0;
   }
   .pub-cover-intro .pub-body {
-    font-size: 11.5px;
-    line-height: 1.75;
+    font-size: var(--editorial-body-size);
+    line-height: 1.85;
     margin-bottom: 12px;
   }
   .pub-cover-intro .pub-text-link {
@@ -675,7 +675,7 @@ body::before {
   .pub-cover-photo figcaption {
     flex-direction: column;
     gap: 2px;
-    font-size: 10px;
+    font-size: var(--editorial-caption-size);
     padding-top: 8px;
     min-width: 0;
     overflow: hidden;
@@ -691,18 +691,18 @@ body::before {
 
   /* 01. Journal: 两列开本，文字随内容增高，避免窄屏裁切。 */
   .pub-section {
-    padding: 24px 0 36px;
+    padding: 28px 0 var(--editorial-section-space);
   }
   .pub-section-label {
-    font-size: 10.5px;
+    font-size: var(--editorial-caption-size);
     margin-bottom: 20px;
   }
   .pub-section-heading {
-    margin: 24px 0;
+    margin: var(--editorial-heading-space) 0;
     display: block;
   }
   .pub-section-heading h2 {
-    font-size: 26px;
+    font-size: 28px;
   }
   .pub-index {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -775,7 +775,7 @@ body::before {
   .pub-practice-image figcaption {
     flex-direction: column;
     gap: 2px;
-    font-size: 10px;
+    font-size: var(--editorial-caption-size);
     padding-top: 8px;
     min-width: 0;
     overflow: hidden;
@@ -786,13 +786,13 @@ body::before {
     min-width: 0;
   }
   .pub-practice-copy h2 {
-    font-size: 22px;
+    font-size: 24px;
     line-height: 1.4;
     margin: 10px 0;
   }
   .pub-practice-copy .pub-body {
-    font-size: 11.5px;
-    line-height: 1.75;
+    font-size: var(--editorial-body-size);
+    line-height: 1.85;
     margin-bottom: 12px;
   }
   .pub-practice-copy .pub-text-link {
@@ -801,7 +801,7 @@ body::before {
   }
   .pub-practice-topics {
     flex-wrap: wrap;
-    font-size: 9.5px;
+    font-size: var(--editorial-caption-size);
     gap: 4px 10px;
     padding-top: 10px;
     margin-top: 14px;
@@ -821,7 +821,7 @@ body::before {
     margin: 0;
   }
   .pub-fragments-heading div span {
-    font-size: 9.5px;
+    font-size: var(--editorial-caption-size);
   }
   .pub-photo-essay {
     display: grid;
@@ -855,7 +855,7 @@ body::before {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    font-size: 9.5px;
+    font-size: var(--editorial-caption-size);
     padding-top: 8px;
     min-width: 0;
     overflow: hidden;
@@ -1258,11 +1258,6 @@ body::before {
 .contact-newsletter-field:has(input:disabled) { opacity: .6; }
 @media (prefers-reduced-motion: reduce) {
   .publication-home .pub-reveal, .publication-home .pub-reveal-image { opacity: 1 !important; transform: none !important; }
-}
-@media (max-width: 700px) {
-  .works-asymmetric-grid { grid-template-columns: minmax(0,1fr); gap: 20px; }
-  .works-asymmetric-grid .work-feature-card { grid-column: 1 / -1; padding: 24px; }
-  .works-asymmetric-grid .work-number { overflow-wrap: anywhere; }
 }
 
 /* Explicit glyph dimensions also work in iOS embedded browsers. */

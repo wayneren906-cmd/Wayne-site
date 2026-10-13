@@ -31,26 +31,25 @@ const works = [
 
 export default function ProjectsPage() {
   return (
-    <div className="editorial-shell">
+    <div className="editorial-shell works-shell">
       <SiteHeader active="projects" />
 
       <main>
-        {/* 展录导言 */}
-        <section className="editorial-section" style={{ borderBottom: "1px solid var(--line)" }}>
+        <section className="works-intro" aria-labelledby="works-title">
           <div className="section-label-bar">
-            <span>SELECTED WORKS ARCHIVE</span>
-            <span>VOL. 2026 INDEX</span>
+            <span>WORKS / 实践目录</span>
+            <span>项目蓝图 · 持续整理</span>
           </div>
 
-          <div className="personal-note-grid">
-            <div className="note-headline-col">
-              <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(32px, 5vw, 48px)", fontWeight: 650, letterSpacing: "-0.03em", margin: 0, lineHeight: 1.15 }}>
+          <div className="works-intro-grid">
+            <div>
+              <h1 id="works-title" className="works-page-title">
                 Learning by<br />Building.
               </h1>
             </div>
 
-            <div className="note-body-col">
-              <p style={{ fontFamily: "var(--font-serif)", fontSize: "16px", color: "var(--ink)", fontStyle: "italic", margin: "0 0 12px 0" }}>
+            <div className="works-intro-copy">
+              <p className="works-lead">
                 “不仅要在屏幕上理解指针与寄存器，更要让真实世界的信号与电机听从指令。”
               </p>
               <p>
@@ -60,38 +59,34 @@ export default function ProjectsPage() {
           </div>
         </section>
 
-        {/* 展板大图录 */}
-        <section className="editorial-section" style={{ borderBottom: "1px solid var(--line)" }}>
-          <div className="works-asymmetric-grid">
+        <section className="works-catalog" aria-label="项目方向目录">
+          <div>
             {works.map((item, idx) => (
-              <div
-                key={item.num}
-                className={`work-feature-card ${idx === 0 ? "card-primary" : idx === 1 ? "card-secondary" : "card-tertiary"}`}
-              >
-                <div className="work-card-top">
-                  <span className="work-number">{item.num}</span>
-                  <h3 className="work-title">{item.title}</h3>
+              <article key={item.num} className="work-entry">
+                <span className="work-index" aria-hidden="true">{String(idx + 1).padStart(2, "0")}</span>
+                <div className="work-heading">
+                  <p className="work-number">{item.num}</p>
+                  <h2 className="work-title">{item.title}</h2>
+                </div>
+                <div className="work-body">
                   <p className="work-desc">{item.desc}</p>
+                  <ul className="work-tech-tags" aria-label="涉及技术">
+                    {item.tags.map((tag) => <li key={tag}>{tag}</li>)}
+                  </ul>
                 </div>
-                <div className="work-tech-tags">
-                  {item.tags.map((tag) => (
-                    <span key={tag} className="work-tech-pill">{tag}</span>
-                  ))}
-                </div>
-              </div>
+              </article>
             ))}
           </div>
 
-          {/* 工坊状态通知 */}
-          <div style={{ marginTop: 40, border: "1px dashed var(--line)", background: "var(--surface-alt)", padding: "28px 32px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
-            <div style={{ maxWidth: 560 }}>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--stone)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
+          <aside className="works-status" aria-labelledby="works-status-title">
+            <div className="works-status-copy">
+              <p className="work-number">
                 STATUS: IN ACTIVE PROGRESS
-              </div>
-              <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>
+              </p>
+              <h2 id="works-status-title">
                 项目整理与调试进行中
-              </div>
-              <p style={{ margin: 0, fontSize: "13px", color: "var(--ink-secondary)", lineHeight: 1.7 }}>
+              </h2>
+              <p>
                 目前正专注于 C 语言基础模块与外设库的扎实落地。
                 当第一批具备完整工程结构的作品完成验证后，将在此刊登详尽的技术复盘、电路设计图与开源代码。
               </p>
@@ -100,7 +95,7 @@ export default function ProjectsPage() {
               <span>查阅目前的研习记录</span>
               <ArrowUpRight size={14} />
             </a>
-          </div>
+          </aside>
         </section>
       </main>
 
