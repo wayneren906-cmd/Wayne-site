@@ -1,0 +1,12 @@
+{
+  "title": "检查前端分支后合并推送 main",
+  "nextAction": "检查修复已推送 main；归档验证记录",
+  "domain": "frontend",
+  "status": "completed",
+  "createdAt": "2026-10-13T05:24:50.8853049Z",
+  "complexity": "M",
+  "branch": "main",
+  "id": "review-push-main",
+  "risk": "medium",
+  "currentPhase": "completed"
+}

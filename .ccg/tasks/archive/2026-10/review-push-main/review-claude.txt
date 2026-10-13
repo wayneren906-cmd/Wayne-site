@@ -1,0 +1,40 @@
+[codeagent-wrapper]
+  Backend: claude
+  Command: claude -p --dangerously-skip-permissions --setting-sources  --output-format stream-json --verbose -
+  PID: 15388
+  Log: C:\Users\27466\AppData\Local\Temp\codeagent-wrapper-15388.log
+  Web UI: http://localhost:63195
+  Session-ID: 2a5a465b-b1aa-4cb9-adb9-f0505cabd175
+## Review: pre-main merge (6 files vs `main`)
+
+No auth/API/database changes 鈥?all CSS + two TSX UI tweaks. The `.pub-index` redesign is internally consistent (odd/even `nth-child`, archive, empty state all trace correctly). No hard crash found, but there is one dead interaction and a couple of fragile spots worth fixing before the auto-deploy.
+
+### Critical 馃敶
+None blocking. The horizontal-overflow fix (`aspect-ratio: auto` + `min-width: 0` + `overflow: hidden` on mobile, `publication.css:703-714`) is intact and doesn't reintroduce the prior bug.
+
+### Warning 馃煛
+- **[publication.css:409-442 + 228-242]** Big-number hover effect is dead. The reveal keyframes use `animation-fill-mode: both`, so after entry the `to` keyframe (`transform` + `opacity`) keeps overriding the cascade indefinitely 鈥?the `:hover` transform (`translate(-50%,-54%)` / `-46%`) and `opacity: 1` on `.pub-index-number` never apply, and the `transition` at `:219` is inert too.
+  - Why: `forwards` fill beats normal (and `:hover`) declarations for the animated property.
+  - Fix: change `both` 鈫?`backwards` on the four `pub-num-enter-*` rules. The base `.pub-index-number` already matches the `to` state (`opacity: 0.85; translate(-50%,-50%) rotate(-90deg)`), so there's no visual jump and hover starts working.
+
+- **[journal-reading.css:63]** `.journal-shell .note-label` sets `white-space: nowrap` but never resets the base `overflow-wrap: anywhere` (which `nowrap` negates), and the label column is capped at `minmax(220px,260px)`. A user-typed long category label overflows its track and overlaps the note text (`minmax(0,1fr)`), since `.note` has no `overflow: hidden`.
+  - Fix: add `min-width: 0; overflow-wrap: anywhere;` (or `overflow: hidden; text-overflow: ellipsis`) to `.note-label`, or drop `white-space: nowrap`.
+
+- **[publication.css:4-18]** `body::before` grain overlay is **global** 鈥?`publication.css` is imported in `app/layout.tsx:4`, so the film-grain now covers every page (journal, projects, contact), not just the publication home. Likely intended, but confirm 鈥?it also sits at `z-index: 9999` above the `.toast` (`z-index:100`). Harmless at 0.022/0.035 opacity with `pointer-events:none`, but it's a site-wide visual change living in a "scoped" file.
+
+### Info 馃煝
+- **[publication.css:1261-1268 vs 1011-1021]** `.contact-replica-subinvite` is declared twice; the later Georgia/`400` rule silently overrides the earlier Ayer italic/`500`/stepped-indent rule, making that first block dead code. (Pre-existing, but the diff touches the second block 鈥?good moment to delete one.)
+- **[publication.css:193-200 vs 448-454]** Duplicate `.pub-index-entry/archive` hover background with differing values (`0.03` vs `0.035`); later wins. Same for the duplicate `transition` at `:181` and `:445-447`.
+- **[publication.css:304-311]** `.pub-index-entry a`, `.pub-index-archive a`, and `.pub-index h3 a:hover` are dead 鈥?the entry itself is now the `<a>` (see `personal-home.tsx:136`), the `h3` holds only `<span>`s.
+- **[journal.tsx:45]** Adding `editorial-shell` is effectively a no-op: `.shell.journal-shell` (`max-width:1440px`, `padding 48px`) out-specifies `.editorial-shell` (`1320px`), and the sticky nav comes from the standalone `.editorial-nav-bar` rule. Harmless, but it adds a competing width/padding that only wins by specificity 鈥?fragile.
+- **[globals.css:1445-1447]** `.nav-edition-tag { display: none !important }` is redundant 鈥?the base rule is already `display:none` below 768px (`globals.css:239`); the `!important` is noise.
+- **[personal-home.tsx:147]** Hardcoded `VOL. 2026` on the archive card (matches the footer's `VOL. 2026 EDITION`, so consistent, but will go stale next year).
+- **[publication.css:135-143]** Desktop `aspect-ratio: 1.48` + `overflow: hidden` with absolutely-positioned copy means content is hard-clipped if a record ever has an unusually large number of item labels (odd-column copy grows down from `top:5%` toward the number at `top:77%`). Not reachable with realistic data (~14+ items), just a latent limit.
+- **[publication.css:276-278]** The `!important` triple on `.pub-index-entry-date` signals a specificity fight with an external rule; worth tracing the source instead of `!important`.
+- Modern-CSS dependency (`container-type`/`cqw`, `:has()`) degrades on older Safari/Firefox: numbers render at fallback size and empty state keeps the tall `aspect-ratio`. Acceptable for 2026, but note it.
+
+### Verdict
+**Approve with minor changes.** No blocking regressions 鈥?the prior horizontal-overflow bug stays fixed, the mobile 2-column book layout and empty/partial-archive state are correct, and the `article 鈫?<a>` change is a genuine a11y improvement. Before auto-deploy I'd fix the two 馃煛 items (the `both`鈫抈backwards` animation fill, and `.note-label` nowrap overflow) and delete the duplicate/dead CSS; the rest is cosmetic cleanup.
+
+---
+SESSION_ID: 2a5a465b-b1aa-4cb9-adb9-f0505cabd175

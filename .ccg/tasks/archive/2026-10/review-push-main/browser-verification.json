@@ -1,0 +1,155 @@
+{
+  "pagesChecked": [
+    {
+      "width": 320,
+      "route": "/",
+      "viewport": 320,
+      "scroll": 320,
+      "clipped": [
+        {
+          "class": "sr-only",
+          "text": "Want to start a new. project? Or just say hello.",
+          "x": 15,
+          "right": 16,
+          "scroll": 343,
+          "client": 1
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "route": "/learning",
+      "viewport": 320,
+      "scroll": 320,
+      "clipped": []
+    },
+    {
+      "width": 320,
+      "route": "/projects",
+      "viewport": 320,
+      "scroll": 320,
+      "clipped": []
+    },
+    {
+      "width": 390,
+      "route": "/",
+      "viewport": 390,
+      "scroll": 390,
+      "clipped": [
+        {
+          "class": "sr-only",
+          "text": "Want to start a new. project? Or just say hello.",
+          "x": 15,
+          "right": 16,
+          "scroll": 343,
+          "client": 1
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "route": "/learning",
+      "viewport": 390,
+      "scroll": 390,
+      "clipped": []
+    },
+    {
+      "width": 390,
+      "route": "/projects",
+      "viewport": 390,
+      "scroll": 390,
+      "clipped": []
+    },
+    {
+      "width": 768,
+      "route": "/",
+      "viewport": 768,
+      "scroll": 768,
+      "clipped": [
+        {
+          "class": "sr-only",
+          "text": "Want to start a new. project? Or just say hello.",
+          "x": 15,
+          "right": 16,
+          "scroll": 343,
+          "client": 1
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "route": "/learning",
+      "viewport": 768,
+      "scroll": 768,
+      "clipped": []
+    },
+    {
+      "width": 768,
+      "route": "/projects",
+      "viewport": 768,
+      "scroll": 768,
+      "clipped": []
+    },
+    {
+      "width": 1024,
+      "route": "/",
+      "viewport": 1024,
+      "scroll": 1024,
+      "clipped": [
+        {
+          "class": "sr-only",
+          "text": "Want to start a new. project? Or just say hello.",
+          "x": 87.3125,
+          "right": 88.3125,
+          "scroll": 343,
+          "client": 1
+        }
+      ]
+    },
+    {
+      "width": 1024,
+      "route": "/learning",
+      "viewport": 1024,
+      "scroll": 1024,
+      "clipped": []
+    },
+    {
+      "width": 1024,
+      "route": "/projects",
+      "viewport": 1024,
+      "scroll": 1024,
+      "clipped": []
+    },
+    {
+      "width": 1440,
+      "route": "/",
+      "viewport": 1440,
+      "scroll": 1440,
+      "clipped": [
+        {
+          "class": "sr-only",
+          "text": "Want to start a new. project? Or just say hello.",
+          "x": 126.1875,
+          "right": 127.1875,
+          "scroll": 343,
+          "client": 1
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "route": "/learning",
+      "viewport": 1440,
+      "scroll": 1440,
+      "clipped": []
+    },
+    {
+      "width": 1440,
+      "route": "/projects",
+      "viewport": 1440,
+      "scroll": 1440,
+      "clipped": []
+    }
+  ],
+  "errors": []
+}

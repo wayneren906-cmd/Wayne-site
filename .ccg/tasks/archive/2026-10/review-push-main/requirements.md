@@ -1,0 +1,1 @@
+Review all source changes from main to design/frontend; fix confirmed regressions; tests, typecheck, production build and responsive browser verification must pass before pushing main. Preserve unrelated screenshot files. Main push triggers production workflow. No auth/API/database changes intended.

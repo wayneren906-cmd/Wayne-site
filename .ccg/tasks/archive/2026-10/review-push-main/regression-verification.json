@@ -1,0 +1,83 @@
+{
+  "regressions": [
+    {
+      "width": 280,
+      "label": "嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习",
+      "scroll": 280,
+      "whiteSpace": "normal"
+    },
+    {
+      "width": 280,
+      "label": "VeryLongUnbrokenProgrammingCategoryLabel",
+      "scroll": 280,
+      "whiteSpace": "normal"
+    },
+    {
+      "width": 350,
+      "label": "嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习",
+      "scroll": 350,
+      "whiteSpace": "normal"
+    },
+    {
+      "width": 350,
+      "label": "VeryLongUnbrokenProgrammingCategoryLabel",
+      "scroll": 350,
+      "whiteSpace": "normal"
+    },
+    {
+      "width": 230,
+      "label": "嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习",
+      "scroll": 230,
+      "whiteSpace": "normal"
+    },
+    {
+      "width": 230,
+      "label": "VeryLongUnbrokenProgrammingCategoryLabel",
+      "scroll": 230,
+      "whiteSpace": "normal"
+    },
+    {
+      "width": 230,
+      "label": "嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习",
+      "scroll": 230,
+      "whiteSpace": "normal"
+    },
+    {
+      "width": 230,
+      "label": "VeryLongUnbrokenProgrammingCategoryLabel",
+      "scroll": 230,
+      "whiteSpace": "normal"
+    },
+    {
+      "width": 260,
+      "label": "嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习",
+      "scroll": 260,
+      "whiteSpace": "normal"
+    },
+    {
+      "width": 260,
+      "label": "VeryLongUnbrokenProgrammingCategoryLabel",
+      "scroll": 260,
+      "whiteSpace": "normal"
+    },
+    {
+      "width": 260,
+      "label": "嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习记录嵌入式研习",
+      "scroll": 260,
+      "whiteSpace": "normal"
+    },
+    {
+      "width": 260,
+      "label": "VeryLongUnbrokenProgrammingCategoryLabel",
+      "scroll": 260,
+      "whiteSpace": "normal"
+    }
+  ],
+  "focus": {
+    "focused": true,
+    "outline": "rgb(23, 23, 23) solid 2px",
+    "offset": "3px",
+    "focusVisible": true
+  },
+  "errors": []
+}

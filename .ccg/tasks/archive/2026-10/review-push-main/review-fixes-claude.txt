@@ -1,0 +1,29 @@
+[codeagent-wrapper]
+  Backend: claude
+  Command: claude -p --dangerously-skip-permissions --setting-sources  --output-format stream-json --verbose -
+  PID: 57780
+  Log: C:\Users\27466\AppData\Local\Temp\codeagent-wrapper-57780.log
+  Web UI: http://localhost:63392
+  Session-ID: 7b35c9f0-161d-4f74-a542-e149679ac70b
+## Review: Final corrections (3 CSS fixes)
+
+Verified against current file state (`globals.css`, `journal-reading.css`, `publication.css`).
+
+### Critical 馃敶
+None.
+
+### Major 馃煛
+None.
+
+### Minor 馃煝 / Info
+- **[journal-reading.css:63]** `white-space: normal` restates the default (fine as an explicit override of the old `nowrap`), and `min-width: 0` is redundant here since the parent track is `minmax(220px, 260px)` 鈥?the item can't shrink below 220px regardless. `overflow-wrap: anywhere` is the property doing the real work. No behavior change needed; just noting the redundancy. `anywhere` (vs `break-word`) is correct for your case and is the only one that guarantees breaking unbroken 40-char English strings.
+- **[globals.css:1421]** `1 / -1` is correct: the enclosing `@media (max-width: 1024px)` block (line 1415) sets `grid-template-columns: 1fr`, so the grid has exactly lines 1鈥? and `1 / -1` spans the single explicit track. `span 12` would have auto-placed the item across 1fr + 11 implicit `auto` tracks 鈥?the real defect this fixes. Verified base rule (line 1287) is `repeat(12, 鈥?`, so `-1` resolves correctly in both contexts.
+- **[publication.css:193-195]** Negative offset is the right tool: both selectors carry `overflow: hidden` (line 180), so a default outside-the-box outline would be clipped. `-3px` draws it inside. Note there's no `background-color` on `:focus-visible`, so keyboard focus is conveyed by the outline alone 鈥?acceptable and standard.
+
+### Summary
+All three fixes are correct and address the stated defects precisely. No functional issues introduced; the `span 12 鈫?1 / -1` change also doesn't regress the earlier `max-width: 900px` block (both resolve to full single-column width; source order makes `1 / -1` win, same visual result).
+
+**Verdict: Approve.** No real defects.
+
+---
+SESSION_ID: 7b35c9f0-161d-4f74-a542-e149679ac70b
