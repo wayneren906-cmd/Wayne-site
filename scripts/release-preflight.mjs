@@ -27,7 +27,7 @@ export function prepareStudioRelease(snapshot){
   for(const [name,text] of Object.entries(config.vars))if(bindings.find(b=>b.name===name&&b.type==='plain_text')?.text!==text)throw Error('Production identity configuration mismatch');
   const latest=snapshot.deployments?.[0];
   if(!latest?.versions?.length||latest.versions.reduce((sum,v)=>sum+v.percentage,0)!==100)throw Error('Current deployment baseline unavailable');
-  const roots=['app/studio','app/site-header.tsx','app/globals.css','app/api/studio','lib/studio-public.ts','lib/learning','lib/ui','migrations','tests','docs','scripts/migration-preflight.mjs','scripts/release-preflight.mjs',
+  const roots=['app/studio','app/site-header.tsx','app/globals.css','app/api/studio','lib/studio-public.ts','lib/studio-catalog.ts','lib/learning','lib/ui','migrations','tests','docs','scripts/migration-preflight.mjs','scripts/release-preflight.mjs',
     'AGENTS.md','.gitignore','app/journal.tsx','README.md','MIGRATION-STATUS.md','VALIDATION.md'];
   const changed=execFileSync('git',['diff','--name-only','HEAD','--',...roots],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']});
   const untracked=execFileSync('git',['ls-files','--others','--exclude-standard','--',...roots],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']});

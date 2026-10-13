@@ -6,8 +6,9 @@ import type {
   LearningAPIErrorDTO,
   LearningAPIErrorCode,
   ContextPurpose,
+  LearningCorrectionInput,LearningEventHistoryDTO,LearningDeletionInput,DeleteReceiptDTO,
 } from "@/lib/learning/contracts";
-import {receiptSchema,eventSchema,contextSchema,contextNotice} from './studio-protocol.ts';
+import {receiptSchema,eventSchema,contextSchema,contextNotice,historySchema,deletionReceiptSchema} from './studio-protocol.ts';
 
 export type StudioClientErrorType =
   | LearningAPIErrorCode
@@ -226,6 +227,18 @@ export class StudioHttpClient {
     return parsed.data;
   }
 
+  async getHistory(eventId:string,before?:number):Promise<LearningEventHistoryDTO>{
+    const history=await this.request<LearningEventHistoryDTO>(`/api/studio/events/${encodeURIComponent(eventId)}/revisions${before===undefined?'':'?before_revision='+before}`,{method:'GET'});
+    const parsed=historySchema.safeParse(history);if(!parsed.success||parsed.data.event_id!==eventId)throw new StudioClientError('修订历史响应无效。','INVALID_RESPONSE',200);return parsed.data;
+  }
+  async correctEvent(eventId:string,input:LearningCorrectionInput):Promise<SaveReceiptDTO>{
+    const receipt=await this.request<SaveReceiptDTO>(`/api/studio/events/${encodeURIComponent(eventId)}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
+    const parsed=receiptSchema.safeParse(receipt);if(!parsed.success||parsed.data.event_id!==eventId||parsed.data.revision!==input.expected_revision+1)throw new StudioClientError('修订回执无效，请保留原稿重试。','INVALID_RESPONSE',200);return parsed.data;
+  }
+  async deleteEvent(eventId:string,input:LearningDeletionInput):Promise<DeleteReceiptDTO>{
+    const receipt=await this.request<DeleteReceiptDTO>(`/api/studio/events/${encodeURIComponent(eventId)}`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
+    const parsed=deletionReceiptSchema.safeParse(receipt);if(!parsed.success||parsed.data.event_id!==eventId||parsed.data.deleted_revision!==input.expected_revision)throw new StudioClientError('删除回执无效，请保留原请求重试。','INVALID_RESPONSE',200);return parsed.data;
+  }
   async getContext(
     purpose: ContextPurpose = "teaching",
     options?: { signal?: AbortSignal; timeoutMs?: number }

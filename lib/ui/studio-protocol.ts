@@ -28,3 +28,8 @@ export function contextNotice(context:LearningContextDTO): string | null {
   const messages=[...new Set(context.unknown_ranges.map(code=>labels[code]??'另有未确认的覆盖范围'))];
   return messages.length?messages.join('；')+'。':null;
 }
+
+export const historySchema=z.object({event_id:id,current_revision:revision,data_version:revision,next_before_revision:revision.nullable(),
+  revisions:z.array(z.object({event:eventSchema,supersedes_revision:revision.nullable(),reason:z.string().min(1).max(1000),created_at:timestamp})).max(40)
+}).refine(h=>h.revisions.every((r,i)=>r.event.event_id===h.event_id&&r.event.revision<=h.current_revision&&r.supersedes_revision===(r.event.revision===1?null:r.event.revision-1)&&(i===0||h.revisions[i-1].event.revision>r.event.revision)));
+export const deletionReceiptSchema=z.object({event_id:id,deleted_revision:revision,data_version:revision,deleted_at:timestamp,deleted:z.literal(true),replayed:z.boolean()});

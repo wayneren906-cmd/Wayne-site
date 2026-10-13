@@ -32,8 +32,8 @@ const server=http.createServer(async(req,res)=>{
       if(req.method==='POST'){posts++;keys.push(JSON.parse(body).idempotency_key);}
       else if(req.url.startsWith('/api/studio/context'))reads++;
       if(fault==='offline'&&req.method==='POST'){fault=null;res.writeHead(503,{'content-type':'application/json'});res.end(JSON.stringify({error:{code:'SERVICE_UNAVAILABLE',message:'合成故障，请重试'}}));return;}
-      const request=new Request(base+req.url,{method:req.method,headers,...(req.method==='POST'?{body}:{})});
-      const response=useWorker?await f.runtime.dispatchFetch(base+req.url,{method:req.method,headers,...(req.method==='POST'?{body}:{})}):
+      const request=new Request(base+req.url,{method:req.method,headers,...(req.method!=='GET'&&req.method!=='HEAD'?{body}:{})});
+      const response=useWorker?await f.runtime.dispatchFetch(base+req.url,{method:req.method,headers,...(req.method!=='GET'&&req.method!=='HEAD'?{body}:{})}):
         await (req.method==='POST'?handleStudioEvents:handleStudioContext)(request,{DB:f.db,...auth.config},{now,verification:auth.verification});
       if(useWorker)console.log('Worker browser HTTP '+response.status+' '+req.url+' '+response.headers.get('content-type'));
       if(fault==='partial'&&req.method==='POST'){fault=null;res.writeHead(200,{'content-type':'application/json'});res.end('{"saved":true,"receipt_id":"partial"}');return;}
@@ -98,17 +98,40 @@ try {
   assert.equal(await evaluate(`document.activeElement.hasAttribute('data-event-id')`),true);
   const publicViews=[];
   if(useWorker){
+    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/private/workspace?practice=string-reverse`});await wait(()=>evaluate(`!!document.querySelector('.workbench-form')&&!document.body.innerText.includes('正在读取…')`));
+    assert.equal(await evaluate(`document.querySelector('select[aria-label="练习或项目里程碑"]').value`),'practice:string-reverse');
+    await evaluate(`document.querySelector('textarea').focus()`);await send('Input.insertText',{text:'合成工作区练习记录'});fault='offline';
+    await evaluate(`document.querySelector('button[type=submit]').click()`);await wait(()=>evaluate(`document.body.innerText.includes('合成故障')`));
+    assert.equal(await evaluate(`document.querySelector('textarea').value`),'合成工作区练习记录');
+    await evaluate(`document.querySelector('button[type=submit]').click()`);await wait(()=>evaluate(`document.body.innerText.includes('记录已保存')&&!!document.querySelector('.workbench-evidence a')`));
+    assert.equal(keys.at(-1),keys.at(-2));assert.equal(await rowCount(),3);
+    const recordURL=await evaluate(`document.querySelector('.workbench-evidence a').href`);
+    await send('Page.navigate',{url:recordURL});await wait(()=>evaluate(`!!document.querySelector('input[aria-label="修订原因"]')`));
+    await evaluate(`document.querySelector('textarea').focus();document.querySelector('textarea').select()`);await send('Input.insertText',{text:'合成工作区修订记录'});
+    await evaluate(`document.querySelector('input[aria-label="修订原因"]').focus()`);await send('Input.insertText',{text:'合成修订原因'});
+    await evaluate(`document.querySelector('button[type=submit]').click()`);await wait(()=>evaluate(`document.body.innerText.includes('修订已保存')&&document.body.innerText.includes('版本 r2')`));
+    await evaluate(`document.querySelector('details summary').click();document.querySelector('input[type=checkbox]').click();[...document.querySelectorAll('button')].find(b=>b.textContent==='确认删除私人记录').click()`);
+    await wait(()=>evaluate(`document.body.innerText.includes('记录已删除')`));assert.equal(await rowCount(),2);
+    const readsBeforePublic=reads;
     for(let n=1;n<=4;n++)await f.db.prepare('INSERT INTO records(date,items,practice,revision,updated_at) VALUES(?,?,?,?,?)').bind(`2000-01-0${n}`,JSON.stringify([{label:'合成公开主题',text:'合成公开手记，用于隔离界面验证'}]),'',1,'2000-01-01T00:00:00Z').run();
-    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio`});await wait(()=>evaluate(`!!document.querySelector('.studio-topic-list')`));
-    assert.equal(await evaluate(`document.querySelectorAll('.studio-note-list li').length`),4);
+    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio`});await wait(()=>evaluate(`!!document.querySelector('.workbench-content')`));
+    assert.equal(await evaluate(`document.querySelectorAll('.studio-note-list li').length`),0);
     assert.equal(await evaluate(`document.body.innerText.includes('合成浏览器学习记录')`),false,'private facts must not reach public Studio');
-    assert.equal(reads,3,'public Studio must not call the private context API');
+    assert.equal(reads,readsBeforePublic,'public Studio must not call the private context API');
     for(const width of [320,390,1280])for(const theme of ['light','dark']){
       await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});
       await evaluate(`document.documentElement.dataset.theme=${JSON.stringify(theme)}`);
+      await wait(()=>evaluate(`getComputedStyle(document.body).backgroundColor===${JSON.stringify(theme==='dark'?'rgb(18, 18, 17)':'rgb(243, 241, 236)')}&&document.querySelector('.editorial-shell').getBoundingClientRect().width>innerWidth*.95`));
+      await evaluate(`new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))`);
       const view=await evaluate(`({width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,controls:[...document.querySelectorAll('button,a')].every(e=>e.getBoundingClientRect().height>=44),headings:document.querySelectorAll('h1').length,studioActive:document.querySelector('.nav-links-cluster a[aria-current="page"]').textContent.trim()})`);
       assert.equal(view.overflow,false);assert.equal(view.controls,true);assert.equal(view.headings,1);assert.equal(view.studioActive,'Studio');
       const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(work,`public-${width}-${theme}.png`),Buffer.from(shot.data,'base64'));publicViews.push({...view,theme});
+    }
+    for(const pathname of ['roadmap','practice','projects','archive']){
+      await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/${pathname}`});await wait(()=>evaluate(`!!document.querySelector('.workbench-content')`));
+      for(const width of [320,1280]){await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});const view=await evaluate(`({overflow:document.documentElement.scrollWidth>innerWidth,controls:[...document.querySelectorAll('button,a')].every(e=>e.getBoundingClientRect().height>=44),headings:document.querySelectorAll('h1').length})`);assert.equal(view.overflow,false,pathname);assert.equal(view.controls,true,pathname);assert.equal(view.headings,1,pathname);}
+      if(pathname==='practice'){await evaluate(`document.querySelector('input[type=search]').focus()`);await send('Input.insertText',{text:'不存在的合成筛选'});await wait(()=>evaluate(`document.body.innerText.includes('没有符合条件')`));await evaluate(`[...document.querySelectorAll('button')].find(b=>b.textContent==='清除筛选').click()`);await wait(()=>evaluate(`document.querySelectorAll('.workbench-cards article').length===5`));}
+      assert.equal(reads,readsBeforePublic,'catalog pages must not request private data');
     }
   }
   const summary={posts,reads,rows:2,viewportResults,publicViews,passed:true,scope:useWorker?'Chrome + complete Worker build + actual Vinext dispatch + memory D1, synthetic Access JWT/JWKS':'synthetic browser + actual handlers + memory SQLite, not Worker route dispatch'};

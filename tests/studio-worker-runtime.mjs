@@ -16,7 +16,11 @@ const request=async(url,method='GET',body,token=auth.jwt,extra={})=>{
 };
 try {
   const publicPage=await request('/studio','GET',undefined,null);assert.equal(publicPage.status,200);
-  const publicHTML=await publicPage.text();assert.ok(publicHTML.includes('看见积累的方向'));assert.ok(publicHTML.includes('href="/studio/private"'));assert.ok(!publicHTML.includes('studio-supplement-input'));
+  const publicHTML=await publicPage.text();assert.ok(publicHTML.includes('学习工作台'));assert.ok(publicHTML.includes('href="/studio/private"'));assert.ok(!publicHTML.includes('studio-supplement-input'));
+  for(const path of ['/studio/roadmap','/studio/practice','/studio/projects','/studio/archive']){const r=await request(path,'GET',undefined,null);assert.equal(r.status,200);assert.ok(!(await r.text()).includes('synthetic private fact'));}
+  const deniedWorkspace=await request('/studio/private/workspace','GET',undefined,null);assert.ok((await deniedWorkspace.text()).includes('无法验证访问权限'));
+  const ownerWorkspace=await request('/studio/private/workspace');assert.equal(ownerWorkspace.status,200);assert.ok((await ownerWorkspace.text()).includes('实际过程与结果'));
+  const previewWorkspace=await request('/studio/private/workspace','GET',undefined,f.unregistered.jwt);assert.ok((await previewWorkspace.text()).includes('私人保存尚未开放'));
   const anonymous=await request('/studio/private','GET',undefined,null);assert.equal(anonymous.status,200);const deniedHTML=await anonymous.text();
   assert.ok(deniedHTML.includes('无法验证访问权限'));assert.ok(!deniedHTML.includes('studio-supplement-input'));
   assert.equal((await request('/api/studio/context','GET',undefined,null)).status,401);

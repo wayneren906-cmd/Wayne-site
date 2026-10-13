@@ -24,5 +24,5 @@ export default async function PrivateStudioPage(){
     }catch{/* Invalid identity stays denied. */}
     content??=<p role="alert">请使用已获授权的所有者账户登录。当前无法验证访问权限。</p>;
   }
-  return <div className="editorial-shell studio-private-shell"><SiteHeader active="studio"/><main className="studio-page"><a className="studio-back-link" href="/studio">← 返回 Studio</a><div className="studio-page__header"><div><p className="studio-private-kicker">PRIVATE NOTEBOOK / 私人手记</p><h1>私人学习空间</h1></div>{token&&<a href="/cdn-cgi/access/logout">退出登录</a>}</div>{content}</main><SiteFooter/></div>;
+  return <div className="editorial-shell studio-private-shell"><SiteHeader active="studio"/><main className="studio-page"><a className="studio-back-link" href="/studio">← 返回 Studio</a><div className="studio-page__header"><div><p className="studio-private-kicker">PRIVATE NOTEBOOK / 私人手记</p><h1>私人学习空间</h1></div>{token&&<a href="/cdn-cgi/access/logout">退出登录</a>}</div><a className="studio-back-link" href="/studio/private/workspace">练习与项目关联工作区 →</a>{content}</main><SiteFooter/></div>;
 }

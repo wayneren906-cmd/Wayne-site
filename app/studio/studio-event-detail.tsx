@@ -63,6 +63,7 @@ export default function StudioEventDetail({
   return (
     <aside className="studio-event-detail" aria-label="事件详细信息">
       <div className="studio-event-detail__card">
+        <a href={`/studio/private/record/${encodeURIComponent(event.event_id)}`}>修订正文与查看历史 →</a>
         <div className="studio-event-detail__header">
           <div className="studio-event-detail__header-text">
             <span className="studio-event-detail__kicker">EVENT DETAIL / 事件详情</span>

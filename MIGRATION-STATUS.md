@@ -1,5 +1,7 @@
 # wayneo.dev 迁移进度
 
+当前进度：**C2-L 公开 Studio 优化已部署。** 页眉新增 Studio，公开页包含进度统计/最近手记/学习计划/私人入口，只有 studio/private 与私人 API 登录保护。main 提交 3b988c8、Check/Deploy 成功，生产版本 5d7d1ccd-0643-4138-a879-36a2bf20028d；双域名公开 Studio200、私人302，页面资源正常、旧公开 API 哈希不变。138/138、类型/构建/30路由与三视口深浅主题通过。总体粗估55%–60%，本批+2个百分点。详见 [公开 Studio](docs/studio-public-preview.md)。
+
 当前进度：**C2-K Studio 已推送并部署成功。** 用户明确授权后，main 提交 8e043e9，GitHub Check/Deploy 均成功；生产版本 cd3f6cfe-8a22-476b-ac5f-791d26fb190b。Studio Access 四路径保护已更新，匿名入口均跳转登录；两域名公开页面和资源正常、旧公开 API 哈希一致。真实 owner 尚未登记，签名所有者先查看只读预览，私人保存禁用。总体粗估 53%–58%，本批 +3 个百分点。详见 [部署结果](docs/studio-deployment-result.md)。
 
 当前进度：**C2-J Studio 上线准备完成，尚未发布。** 已核对生产 Access/Worker 与空 owner 表，补齐签名身份的只读登记提案入口；不会创建或启用账户。136/136、非增量类型检查、隔离完整构建与 26 个实际 Worker 路由请求通过。代码哈希清单与既有 Access 四路径扩展、版本回退方案已准备；提交推送、生产发布和 Access 修改等待明确授权，真实登记另行授权。详见 [Studio 上线准备](docs/studio-release-readiness.md)。
