@@ -60,7 +60,7 @@
 .journal-shell .notes { border-top: 1px solid var(--line); padding: 4px 0 0; display: flex; flex-direction: column; gap: 0; }
 .journal-shell .note { display: grid; grid-template-columns: minmax(220px, 260px) minmax(0, 1fr); gap: 36px; padding: 22px 0; border-bottom: 1px dashed var(--line); align-items: baseline; }
 .journal-shell .note:last-child { border-bottom: none; }
-.journal-shell .note-label { font-family: var(--font-serif); font-size: 18px; font-weight: 500; letter-spacing: .01em; color: var(--ink); line-height: 1.45; white-space: nowrap; display: flex; align-items: center; gap: 10px; }
+.journal-shell .note-label { font-family: var(--font-serif); font-size: 18px; font-weight: 500; letter-spacing: .01em; color: var(--ink); line-height: 1.45; min-width: 0; white-space: normal; overflow-wrap: anywhere; display: flex; align-items: center; gap: 10px; }
 .journal-shell .note-label::before { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--ink); opacity: .45; flex-shrink: 0; }
 .journal-shell .note p { font-family: var(--font-sans); font-size: 15px; line-height: 1.85; color: var(--ink-secondary); max-width: 75ch; margin: 0; }
 .journal-shell .practice { background: transparent; padding: 20px 0 0; border-radius: 0; border-top: 1px solid var(--line); }

@@ -190,6 +190,10 @@ body::before {
   border-right: 0;
 }
 
+.pub-index-entry:focus-visible, .pub-index-archive:focus-visible {
+  outline-offset: -3px;
+}
+
 .pub-index-entry:hover, .pub-index-archive:hover {
   background-color: rgba(0, 0, 0, 0.03);
 }
@@ -407,16 +411,16 @@ body::before {
 
 /* 研习 4 列大数字阶梯入场 */
 .pub-index.is-revealed .pub-index-entry:nth-child(1) .pub-index-number {
-  animation: pub-num-enter-odd 0.9s 0.05s both cubic-bezier(0.16, 1, 0.3, 1);
+  animation: pub-num-enter-odd 0.9s 0.05s backwards cubic-bezier(0.16, 1, 0.3, 1);
 }
 .pub-index.is-revealed .pub-index-entry:nth-child(2) .pub-index-number {
-  animation: pub-num-enter-even 0.9s 0.18s both cubic-bezier(0.16, 1, 0.3, 1);
+  animation: pub-num-enter-even 0.9s 0.18s backwards cubic-bezier(0.16, 1, 0.3, 1);
 }
 .pub-index.is-revealed .pub-index-entry:nth-child(3) .pub-index-number {
-  animation: pub-num-enter-odd 0.9s 0.31s both cubic-bezier(0.16, 1, 0.3, 1);
+  animation: pub-num-enter-odd 0.9s 0.31s backwards cubic-bezier(0.16, 1, 0.3, 1);
 }
 .pub-index.is-revealed .pub-index-archive .pub-index-number {
-  animation: pub-num-enter-even 0.9s 0.44s both cubic-bezier(0.16, 1, 0.3, 1);
+  animation: pub-num-enter-even 0.9s 0.44s backwards cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes pub-num-enter-odd {
@@ -626,7 +630,7 @@ body::before {
     font-size: 16px;
     margin: 12px 0 24px;
   }
-  
+
   /* Hero Cover: 双栏并排杂志画幅，与网页端一致 */
   .pub-cover-grid {
     display: grid;

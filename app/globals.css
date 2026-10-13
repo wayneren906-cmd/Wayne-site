@@ -1418,7 +1418,7 @@ a {
   }
 
   .colophon-col-1, .colophon-col-2, .colophon-col-3 {
-    grid-column: span 12;
+    grid-column: 1 / -1;
     text-align: left;
   }
 }
