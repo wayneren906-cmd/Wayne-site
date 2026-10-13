@@ -1,0 +1,3 @@
+# Mobile editorial title direction
+
+Match the existing desktop composition rather than introducing a new design. Keep the three cover lines, mixed serif glyphs, and stepped 0/.6/1.2em indentation. Increase mobile title presence with tight desktop line-height. Preserve the four-line contact title's .34/.30/0/.74em offsets; scale the central ring and center-aligned contact details to phone width. Restrict all changes to existing mobile breakpoints in publication.css. Desktop geometry and other sections must stay unchanged. Verify 320–768px, font/glyph containment, themes and animation; directly self-review, no external models per user instruction.

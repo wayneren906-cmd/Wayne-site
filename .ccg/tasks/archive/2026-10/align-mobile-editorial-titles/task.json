@@ -1,0 +1,12 @@
+{
+  "domain": "frontend",
+  "nextAction": "手机排版已验证；源码修改保留本地，未推送",
+  "risk": "low",
+  "title": "手机端封面与联系标题对齐桌面排版",
+  "status": "completed",
+  "currentPhase": "completed",
+  "createdAt": "2026-10-13T05:35:35.632464Z",
+  "id": "align-mobile-editorial-titles",
+  "branch": "main",
+  "complexity": "S"
+}

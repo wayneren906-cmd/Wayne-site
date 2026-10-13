@@ -1,0 +1,99 @@
+{
+  "checks": [
+    {
+      "viewport": 320,
+      "scroll": 320,
+      "coverSize": 51.2,
+      "contactSize": 34,
+      "overflow": []
+    },
+    {
+      "viewport": 360,
+      "scroll": 360,
+      "coverSize": 57.6,
+      "contactSize": 37.8,
+      "overflow": []
+    },
+    {
+      "viewport": 375,
+      "scroll": 375,
+      "coverSize": 60,
+      "contactSize": 39.375,
+      "overflow": []
+    },
+    {
+      "viewport": 390,
+      "scroll": 390,
+      "coverSize": 62.4,
+      "contactSize": 40.95,
+      "overflow": []
+    },
+    {
+      "viewport": 430,
+      "scroll": 430,
+      "coverSize": 68.8,
+      "contactSize": 45.15,
+      "overflow": []
+    },
+    {
+      "viewport": 600,
+      "scroll": 600,
+      "coverSize": 80,
+      "contactSize": 60,
+      "overflow": []
+    },
+    {
+      "viewport": 601,
+      "scroll": 601,
+      "coverSize": 80,
+      "contactSize": 60.1,
+      "overflow": []
+    },
+    {
+      "viewport": 768,
+      "scroll": 768,
+      "coverSize": 80,
+      "contactSize": 64,
+      "overflow": []
+    },
+    {
+      "viewport": 769,
+      "scroll": 769,
+      "coverSize": 76.9,
+      "contactSize": 64,
+      "overflow": []
+    },
+    {
+      "viewport": 900,
+      "scroll": 900,
+      "coverSize": 90,
+      "contactSize": 64,
+      "overflow": []
+    },
+    {
+      "viewport": 901,
+      "scroll": 901,
+      "coverSize": 90.1,
+      "contactSize": 70.278,
+      "overflow": []
+    },
+    {
+      "viewport": 1024,
+      "scroll": 1024,
+      "coverSize": 102.4,
+      "contactSize": 79.872,
+      "overflow": []
+    },
+    {
+      "viewport": 1440,
+      "scroll": 1440,
+      "coverSize": 144,
+      "contactSize": 112.32,
+      "overflow": []
+    }
+  ],
+  "desktopUnchanged": true,
+  "errors": [],
+  "animationChecked": true,
+  "darkThemeChecked": true
+}
