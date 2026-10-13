@@ -5,3 +5,4 @@
 .workbench-delete-confirm{display:flex;align-items:center;gap:10px;min-height:44px;font-size:13px;margin-top:12px;}.workbench-delete-confirm input{width:20px;height:20px;accent-color:var(--ink);}.studio-workbench details>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:14px;}.studio-workbench details>summary:focus-visible{outline:2px solid var(--ink);outline-offset:4px;}
 .workbench-stage[id],.workbench-card[id]{scroll-margin-top:110px;}
 @media(max-width:600px){.workbench-stage[id],.workbench-card[id]{scroll-margin-top:128px;}}
+.workbench-section-title{font:500 22px/1.5 var(--font-serif);margin-bottom:18px!important;}
