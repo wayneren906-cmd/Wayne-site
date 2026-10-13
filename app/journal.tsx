@@ -42,7 +42,7 @@ export default function Journal({signInPath, apiPath = "/api/records"}:{signInPa
   const months=[...new Set(source.map(r=>r.date.slice(0,7)))].sort().reverse();
   const visible=source.filter(r=>(!selectedDate||r.date===selectedDate) && (month==="all"||r.date.startsWith(month)) && (r.date+" "+r.items.map(i=>i.label+" "+i.text).join(" ")+" "+r.practice).toLowerCase().includes(query.trim().toLowerCase()));
   function selectDate(date:string){setSelectedDate(current=>current===date?"":date);setMonth("all");setQuery("");}
-  return <div className="shell journal-shell">
+  return <div className="shell editorial-shell journal-shell">
     <SiteHeader active="learning"/>
     <main><section className="intro"><div><p className="eyebrow">JOURNAL / 学习档案</p><h1>写在学习之间。</h1><p className="subtitle">把每天学过的内容，留在这里。</p></div>{!loading&&(canEdit?<button className="primary" onClick={()=>edit()} disabled={!!snapshot}><Plus size={18}/>记一笔</button>:signedIn?<span className="readonly-label">只读查看</span>:<a className="secondary" href={signInPath} target="_top">登录编辑</a>)}</section>
     {!error&&<ActivityCalendar records={source} selectedDate={selectedDate} onSelectDate={selectDate} loading={loading}/> }

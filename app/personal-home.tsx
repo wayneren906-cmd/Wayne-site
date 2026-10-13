@@ -33,6 +33,7 @@ export default function PersonalHome() {
     const timer = window.setTimeout(() => setCopiedSocial(null), 2000);
     return () => window.clearTimeout(timer);
   }, [copiedSocial]);
+
   useEffect(() => {
     const controller = new AbortController();
     let refreshing = false;
@@ -132,14 +133,21 @@ export default function PersonalHome() {
         {error && <div className="pub-notice" role="status"><span>{records.length ? "暂时无法更新，以下保留上次读取的记录。" : "暂时无法读取学习记录。"}</span><button type="button" onClick={() => { setLoading(true); setRetry(v => v + 1); }} disabled={loading}><RefreshCw size={13} />{loading ? "读取中" : "重新读取"}</button></div>}
         <div className="pub-index pub-reveal" aria-busy={loading}>
           {loading && records.length === 0 ? <p className="pub-index-state" role="status">正在翻开学习档案…</p> : records.length === 0 ? <p className="pub-index-state">{error ? "记录恢复后，会在这里继续收录。" : "目录尚待写下，新的记录会从这里开始。"}</p> : records.slice(0, 3).map((record, index) => (
-            <article className="pub-index-entry" key={record.date}>
+            <a href={`/learning?date=${record.date}`} className="pub-index-entry" key={record.date}>
               <span className="pub-index-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
               <div className="pub-index-copy">
-                <h3><a href={`/learning?date=${record.date}`}>{record.items.map(item => <span key={item.label}>{item.label}</span>)}</a></h3>
+                <time className="pub-index-entry-date" dateTime={record.date}>{record.date.replace(/-/g, ".")}</time>
+                <h3>{record.items.map(item => <span key={item.label}>{item.label}</span>)}</h3>
               </div>
-            </article>
+            </a>
           ))}
-          <a href="/learning" className="pub-index-archive"><span className="pub-index-number" aria-hidden="true">{String(Math.min(records.length, 3) + 1).padStart(2, "0")}</span><div className="pub-index-copy"><h3>全部学习记录</h3></div></a>
+          <a href="/learning" className="pub-index-archive">
+            <span className="pub-index-number" aria-hidden="true">{String(Math.min(records.length, 3) + 1).padStart(2, "0")}</span>
+            <div className="pub-index-copy">
+              <span className="pub-index-entry-date">VOL. 2026</span>
+              <h3>全部学习记录</h3>
+            </div>
+          </a>
         </div>
       </section>
       <section className="pub-section pub-practice pub-reveal" aria-labelledby="practice-title">

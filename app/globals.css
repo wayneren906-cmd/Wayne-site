@@ -1262,15 +1262,16 @@ a {
 
 .colophon-editorial-footer {
   padding: 80px 0 max(48px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  margin-top: 56px;
 }
 
 .colophon-big-brand {
   font-family: var(--font-display);
-  font-size: clamp(48px, 11vw, 150px);
+  font-size: clamp(56px, 12vw, 150px);
   font-weight: 700;
   letter-spacing: -0.05em;
   line-height: 0.9;
-  color: var(--ink);
   margin-bottom: 40px;
   display: flex;
   align-items: baseline;
@@ -1302,7 +1303,23 @@ a {
   color: var(--ink);
   border-bottom: 1px solid var(--ink);
   padding-bottom: 1px;
+  text-decoration: none;
 }
+.colophon-link:hover {
+  opacity: 0.7;
+}
+
+@media (max-width: 900px) {
+  .colophon-details-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .colophon-col-1, .colophon-col-2, .colophon-col-3 {
+    grid-column: span 1;
+    text-align: left;
+  }
+}
+
 
 
 /* ==========================================================================
@@ -1406,18 +1423,38 @@ a {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .editorial-shell {
-    padding: 0 20px;
+    padding: 0 max(16px, env(safe-area-inset-left)) 0 max(16px, env(safe-area-inset-right));
+    max-width: 100vw;
   }
 
   .editorial-nav-bar {
-    height: 64px;
+    height: 58px;
+    gap: 12px;
+  }
+
+  .brand-anchor {
+    gap: 8px;
+  }
+
+  .wordmark-wrap img {
+    height: 18px;
+  }
+
+  .nav-edition-tag {
+    display: none !important;
   }
 
   .nav-links-cluster {
-    gap: 18px;
-    font-size: 12px;
+    gap: 14px;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+
+  .theme-toggle-btn {
+    width: 28px;
+    height: 28px;
   }
 
   .hero-editorial-spread {

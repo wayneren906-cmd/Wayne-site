@@ -1,7 +1,7 @@
 export default function SiteFooter() {
   return (
     <footer className="colophon-editorial-footer" role="contentinfo">
-      {/* 放大的 wayneo 品牌字标 */}
+      {/* 放大的 wayneo 品牌字标 (三种原版渐进色阶) */}
       <div className="colophon-big-brand" aria-label="wayneo">
         <span>way</span>
         <span>ne</span>

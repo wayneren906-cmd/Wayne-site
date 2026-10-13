@@ -32,8 +32,8 @@
 .journal-shell .activity-header h2 { font-family: var(--font-serif); font-size: 23px; font-weight: 400; margin-top: 10px; }
 .journal-shell .activity-header h2 span { font: 10px/1.8 var(--font-mono); color: var(--ink-secondary); }
 .journal-shell .year-select { border: 0; border-bottom: 1px solid var(--line-strong); border-radius: 0; background: transparent; font: 13px var(--font-mono); padding: 9px 20px 9px 4px; }
-.journal-shell .heatmap-layout { --cell: 15px; --gap: 4px; }
-.journal-shell .heatmap-cell { border-radius: 1px; }
+.journal-shell .heatmap-layout { --cell: 19px; --gap: 5px; grid-template-columns: 24px auto; grid-template-rows: 24px auto; gap: 10px; }
+.journal-shell .heatmap-cell { border-radius: 2.5px; }
 .journal-shell .heatmap-footer, .journal-shell .heatmap-months, .journal-shell .heatmap-weekdays { color: var(--ink-secondary); }
 .journal-shell .date-index { padding-top: 20px; margin-top: 20px; }
 .journal-shell .week-heading { color: var(--ink-secondary); }
@@ -56,11 +56,13 @@
 .journal-shell .weekday { color: var(--ink-secondary); font-size: 10px; }
 .journal-shell .latest { background: transparent; border-radius: 0; border-bottom: 1px solid var(--ink); padding: 2px 0; color: var(--ink); }
 .journal-shell .category-preview { color: var(--ink-secondary); max-width: 380px; }
-.journal-shell .entry-body { padding: 0 0 36px 26%; }
-.journal-shell .notes { border: 0; padding: 0; gap: 28px; }
-.journal-shell .note { grid-template-columns: 125px minmax(0,1fr); gap: 32px; }
-.journal-shell .note-label { font-family: var(--font-serif); font-size: 15px; font-weight: 400; color: var(--ink); }
-.journal-shell .note p { font-size: 14px; line-height: 2; color: var(--ink-secondary); max-width: 65ch; }
+.journal-shell .entry-body { padding: 0 0 36px 0; }
+.journal-shell .notes { border-top: 1px solid var(--line); padding: 4px 0 0; display: flex; flex-direction: column; gap: 0; }
+.journal-shell .note { display: grid; grid-template-columns: minmax(220px, 260px) minmax(0, 1fr); gap: 36px; padding: 22px 0; border-bottom: 1px dashed var(--line); align-items: baseline; }
+.journal-shell .note:last-child { border-bottom: none; }
+.journal-shell .note-label { font-family: var(--font-serif); font-size: 18px; font-weight: 500; letter-spacing: .01em; color: var(--ink); line-height: 1.45; white-space: nowrap; display: flex; align-items: center; gap: 10px; }
+.journal-shell .note-label::before { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--ink); opacity: .45; flex-shrink: 0; }
+.journal-shell .note p { font-family: var(--font-sans); font-size: 15px; line-height: 1.85; color: var(--ink-secondary); max-width: 75ch; margin: 0; }
 .journal-shell .practice { background: transparent; padding: 20px 0 0; border-radius: 0; border-top: 1px solid var(--line); }
 .journal-shell .practice p { color: var(--ink-secondary); }
 .journal-shell .empty { background: transparent; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 50px 0; }
@@ -74,24 +76,26 @@
 .journal-shell .field input, .journal-shell .field textarea { border-radius: 0; }
 @media (max-width: 1000px) {
   .shell.journal-shell { padding-left: 32px; padding-right: 32px; }
-  .journal-shell .entry-body { padding-left: 12%; }
+  .journal-shell .entry-body { padding: 0 0 32px 0; }
+  .journal-shell .heatmap-layout { --cell: 16px; --gap: 4.5px; }
+  .journal-shell .note { grid-template-columns: minmax(190px, 230px) minmax(0, 1fr); gap: 24px; }
 }
 @media (max-width: 700px) {
-  .shell.journal-shell { padding-left: max(22px,env(safe-area-inset-left)); padding-right: max(22px,env(safe-area-inset-right)); }
+  .shell.journal-shell { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
   .journal-shell .intro { padding: 34px 0 30px; gap: 20px; }
   .journal-shell .intro h1 { font-size: 31px; margin: 14px 0; }
   .journal-shell .intro .secondary { font-size: 10px; }
   .journal-shell .calendar-panel { padding: 22px 0; }
-  .journal-shell .heatmap-layout { --cell: 14px; --gap: 4px; }
+  .journal-shell .heatmap-layout { --cell: 20px; --gap: 4.5px; }
   .journal-shell .toolbar { gap: 16px; margin-bottom: 32px; }
   .journal-shell .entry summary { padding: 24px 0; }
   .journal-shell .date-line { gap: 10px; }
-  .journal-shell .entry-date { font-size: 26px; }
-  .journal-shell .entry-body { padding: 0 0 28px; }
-  .journal-shell .note { display: block; }
-  .journal-shell .note-label { padding: 0; background: transparent; margin-bottom: 10px; }
-  .journal-shell .note p { font-size: 14px; }
-  .journal-shell .colophon-big-brand { font-size: clamp(54px,15vw,90px); }
+  .journal-shell .entry-date { font-size: 24px; }
+  .journal-shell .entry-body { padding: 0 0 28px 0; }
+  .journal-shell .note { display: flex; flex-direction: column; gap: 8px; padding: 16px 0; }
+  .journal-shell .note-label { font-size: 16px; white-space: normal; }
+  .journal-shell .note p { font-size: 14.5px; line-height: 1.8; }
+  .journal-shell .colophon-big-brand { font-size: clamp(54px, 15vw, 90px); }
 }
 
 /* Readable journal type sizes across desktop and mobile. */
@@ -105,15 +109,13 @@
 .journal-shell .activity-header h2 span { font-size: 13px; }
 .journal-shell .year-select { font-size: 15px; }
 .journal-shell .heatmap-months, .journal-shell .heatmap-weekdays, .journal-shell .heatmap-footer { font-size: 12px; }
-.journal-shell .heatmap-layout { grid-template-rows: 22px auto; }
+.journal-shell .heatmap-layout { grid-template-rows: 24px auto; }
 .journal-shell .week-heading, .journal-shell .week-heading > span { font-size: 14px; }
 .journal-shell .week-controls .text-button, .journal-shell .week-day > span { font-size: 12px; }
 .journal-shell .month-field select, .journal-shell .search input { font-size: 16px; }
 .journal-shell .search input::placeholder { font-size: 14px; color: var(--ink-secondary); }
 .journal-shell .list-meta, .journal-shell .weekday, .journal-shell .latest { font-size: 12px; }
 .journal-shell .category-preview { font-size: 13px; }
-.journal-shell .note-label { font-size: 17px; }
-.journal-shell .note p, .journal-shell .practice p { font-size: 16px; line-height: 1.9; }
 .journal-shell .practice span, .journal-shell .edit-button { font-size: 13px; }
 .journal-shell main > footer, .journal-shell .history select { font-size: 12px; }
 .journal-shell .colophon-details-grid { font-size: 12px; letter-spacing: .02em; }
@@ -122,6 +124,4 @@
   .journal-shell .subtitle { font-size: 15px; }
   .journal-shell .intro { align-items: flex-start; flex-wrap: wrap; }
   .journal-shell .intro .secondary { padding-top: 4px; }
-  .journal-shell .note-label { font-size: 17px; }
-  .journal-shell .note p { font-size: 16px; }
 }
