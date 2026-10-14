@@ -39,7 +39,7 @@ export default function SiteHeader({ active }: { active: string }) {
     <header className="editorial-nav-bar" role="banner">
       <div className="brand-anchor">
         <a className="wordmark-wrap" href="/" aria-label="wayneo 首页">
-          <img src="/wayneo-logo-clean.png" alt="wayneo" width={1448} height={1086} />
+          <img src="/wayneo-logo-clean.png" alt="wayneo" width={1008} height={215} />
         </a>
         <span className="nav-edition-tag" aria-hidden="true">
           [ VOL. 2026 ]

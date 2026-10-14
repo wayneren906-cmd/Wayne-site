@@ -6,3 +6,8 @@
 .workbench-stage[id],.workbench-card[id]{scroll-margin-top:110px;}
 @media(max-width:600px){.workbench-stage[id],.workbench-card[id]{scroll-margin-top:128px;}}
 .workbench-section-title{font:500 22px/1.5 var(--font-serif);margin-bottom:18px!important;}
+@media(max-width:600px){
+  .workbench-tabs{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:20px;padding-bottom:1px;scrollbar-width:none;}
+  .workbench-tabs::-webkit-scrollbar{display:none;}
+  .workbench-tabs a{flex:0 0 auto;white-space:nowrap;}
+}

@@ -1624,12 +1624,19 @@ a {
   }
 }
 
-/* Keep all four primary destinations usable on narrow screens. */
+/* Keep the brand, three destinations and theme control on one mobile row. */
 .editorial-nav-bar :is(.nav-links-cluster a,.wordmark-wrap) {min-height:44px;display:inline-flex;align-items:center;}
 .editorial-nav-bar .theme-toggle-btn {width:44px;height:44px;flex-shrink:0;}
 @media(max-width:520px){
-  .editorial-nav-bar {height:auto;min-height:100px;flex-wrap:wrap;gap:0;padding-block:8px;}
-  .editorial-nav-bar .brand-anchor {width:100%;}
-  .editorial-nav-bar .nav-links-cluster {width:100%;justify-content:space-between;gap:8px;font-size:11.5px;letter-spacing:.025em;}
+  .editorial-nav-bar {height:64px;min-height:64px;flex-wrap:nowrap;gap:8px;padding-block:0;}
+  .editorial-nav-bar .brand-anchor {flex:0 0 auto;}
+  .editorial-nav-bar .wordmark-wrap img {height:16px;width:auto;}
+  .editorial-nav-bar .nav-links-cluster {flex:0 0 auto;gap:8px;font-size:11.5px;letter-spacing:0;white-space:nowrap;}
+  .editorial-nav-bar .nav-links-cluster a {justify-content:center;min-width:44px;}
 }
 .studio-works-back {display:inline-flex;align-items:center;min-height:44px;margin-top:16px;font-size:13px;color:var(--ink-secondary);}
+@media(max-width:360px){
+  .editorial-nav-bar {gap:4px;}
+  .editorial-nav-bar .wordmark-wrap img {height:14px;}
+  .editorial-nav-bar .nav-links-cluster {gap:4px;}
+}

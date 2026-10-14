@@ -48,7 +48,9 @@ const server=http.createServer(async(req,res)=>{
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const profile=path.join(work,'profile-'+Date.now());let chrome,ws;
 try {
-  chrome=spawn('C:/Program Files/Google/Chrome/Application/chrome.exe',['--headless=new','--disable-gpu','--no-first-run','--no-default-browser-check','--remote-debugging-port=0',`--user-data-dir=${profile}`,'about:blank'],{windowsHide:true,stdio:'ignore'});
+  // Optional opt-in for restricted Windows runners; this browser only visits synthetic localhost data.
+  const chromeRunnerFlags=process.env.CHROME_TEST_NO_SANDBOX==='1'?['--no-sandbox']:[];
+  chrome=spawn('C:/Program Files/Google/Chrome/Application/chrome.exe',['--headless=new','--disable-gpu',...chromeRunnerFlags,'--no-first-run','--no-default-browser-check','--remote-debugging-port=0',`--user-data-dir=${profile}`,'about:blank'],{windowsHide:true,stdio:'ignore'});
   const portFile=path.join(profile,'DevToolsActivePort');
   const wait=async condition=>{for(let n=0;n<150;n++){if(await condition())return;await new Promise(r=>setTimeout(r,100));}throw Error('browser condition timed out');};
   await wait(()=>fs.existsSync(portFile));
@@ -118,6 +120,15 @@ try {
     assert.equal(await evaluate(`document.querySelectorAll('.studio-note-list li').length`),0);
     assert.equal(await evaluate(`document.body.innerText.includes('合成浏览器学习记录')`),false,'private facts must not reach public Studio');
     assert.equal(reads,readsBeforePublic,'public Studio must not call the private context API');
+    await wait(()=>evaluate(`document.querySelectorAll('.dashboard-bar-column').length===6`));
+    await evaluate(`document.querySelector('.dashboard-segment button:last-child').click()`);
+    await wait(()=>evaluate(`document.querySelector('.dashboard-segment button:last-child').getAttribute('aria-pressed')==='true'&&document.querySelector('.dashboard-chart-caption').textContent.includes('累计')`));
+    await evaluate(`const select=document.querySelector('.dashboard-period select');select.value='12';select.dispatchEvent(new Event('change',{bubbles:true}))`);
+    await wait(()=>evaluate(`document.querySelectorAll('.dashboard-bar-column').length===12`));
+    await evaluate(`document.querySelector('.dashboard-chart-table summary').click()`);
+    assert.equal(await evaluate(`document.querySelectorAll('.dashboard-chart-table tbody tr').length`),12);
+    assert.equal(await evaluate(`document.querySelector('.dashboard-chart-table tbody tr:last-child td:last-child').textContent`),'4');
+    await evaluate(`document.querySelector('.dashboard-chart-table summary').click()`);
     for(const width of [320,390,1280])for(const theme of ['light','dark']){
       await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});
       await evaluate(`document.documentElement.dataset.theme=${JSON.stringify(theme)}`);
@@ -125,13 +136,26 @@ try {
       await evaluate(`new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))`);
       const view=await evaluate(`({width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,controls:[...document.querySelectorAll('button,a')].every(e=>e.getBoundingClientRect().height>=44),headings:document.querySelectorAll('h1').length,studioActive:document.querySelector('.nav-links-cluster a[aria-current="page"]').textContent.trim()})`);
       assert.equal(view.overflow,false);assert.equal(view.controls,true);assert.equal(view.headings,1);assert.equal(view.studioActive,'Studio');
+      const header=await evaluate(`(()=>{const box=e=>e.getBoundingClientRect();const brand=box(document.querySelector('.brand-anchor')),nav=box(document.querySelector('.nav-links-cluster')),bar=box(document.querySelector('.editorial-nav-bar')),logo=box(document.querySelector('.wordmark-wrap img'));return {sameRow:Math.abs(brand.top+brand.height/2-nav.top-nav.height/2)<1,height:bar.height,logoRatio:logo.width/logo.height,inside:nav.right<=bar.right+1&&brand.right<=nav.left,brandRight:brand.right,navLeft:nav.left,navRight:nav.right,barRight:bar.right};})()`);
+      if(!header.inside){const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(work,'header-failure.png'),Buffer.from(shot.data,'base64'));}
+      assert.equal(header.sameRow,true,JSON.stringify(header));assert.equal(header.inside,true,JSON.stringify(header));assert.ok(Math.abs(header.logoRatio-1008/215)<.01,JSON.stringify(header));if(width<=390)assert.equal(header.height,64);
       const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(work,`public-${width}-${theme}.png`),Buffer.from(shot.data,'base64'));publicViews.push({...view,theme});
+      if(theme==='light'&&width!==320){const metrics=await send('Page.getLayoutMetrics');const full=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip:{x:0,y:0,width:metrics.cssContentSize.width,height:metrics.cssContentSize.height,scale:1}});fs.writeFileSync(path.join(work,`public-full-${width}.png`),Buffer.from(full.data,'base64'));}
     }
     for(const pathname of ['roadmap','practice','projects','archive']){
       await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/${pathname}`});await wait(()=>evaluate(`!!document.querySelector('.workbench-content')`));
       for(const width of [320,1280]){await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});const view=await evaluate(`({overflow:document.documentElement.scrollWidth>innerWidth,controls:[...document.querySelectorAll('button,a')].every(e=>e.getBoundingClientRect().height>=44),headings:document.querySelectorAll('h1').length})`);assert.equal(view.overflow,false,pathname);assert.equal(view.controls,true,pathname);assert.equal(view.headings,1,pathname);}
       if(pathname==='practice'){await evaluate(`document.querySelector('input[type=search]').focus()`);await send('Input.insertText',{text:'不存在的合成筛选'});await wait(()=>evaluate(`document.body.innerText.includes('没有符合条件')`));await evaluate(`[...document.querySelectorAll('button')].find(b=>b.textContent==='清除筛选').click()`);await wait(()=>evaluate(`document.querySelectorAll('.workbench-cards article').length===5`));}
       assert.equal(reads,readsBeforePublic,'catalog pages must not request private data');
+    }
+    for(const pathname of ['/','/learning']){
+      await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}${pathname}`});await wait(()=>evaluate(`!!document.querySelector('.editorial-nav-bar')`));
+      for(const width of [320,390,1280]){
+        await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});
+        await evaluate(`new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))`);
+        const view=await evaluate(`(()=>{const bar=document.querySelector('.editorial-nav-bar').getBoundingClientRect(),brand=document.querySelector('.brand-anchor').getBoundingClientRect(),nav=document.querySelector('.nav-links-cluster').getBoundingClientRect();return {sameRow:Math.abs(brand.top+brand.height/2-nav.top-nav.height/2)<1,inside:nav.right<=bar.right+1&&brand.right<=nav.left,height:bar.height};})()`);
+        assert.equal(view.sameRow,true,pathname+JSON.stringify(view));assert.equal(view.inside,true,pathname+JSON.stringify(view));if(width<520)assert.equal(view.height,64);
+      }
     }
   }
   const summary={posts,reads,rows:2,viewportResults,publicViews,passed:true,scope:useWorker?'Chrome + complete Worker build + actual Vinext dispatch + memory D1, synthetic Access JWT/JWKS':'synthetic browser + actual handlers + memory SQLite, not Worker route dispatch'};
