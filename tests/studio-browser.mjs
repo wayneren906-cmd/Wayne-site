@@ -21,7 +21,7 @@ fs.writeFileSync(path.join(work,'entry.tsx'),`import React from 'react';import{c
 if(!useWorker)await build({configFile:false,root:work,base:'/',resolve:{alias:{'@':root}},esbuild:{jsx:'automatic'},build:{outDir:path.join(work,'dist'),emptyOutDir:false}});
 const cleanups=[],f=useWorker?await createStudioWorkerEnvironment():await fixture({after:fn=>cleanups.push(fn)}),auth=useWorker?f.auth:await signedOwner();
 const rowCount=async()=>(await f.db.prepare('SELECT COUNT(*) n FROM learning_events').first()).n;
-let fault=null,posts=0,reads=0;const keys=[];
+let fault=null,posts=0,reads=0,managementReads=0;const keys=[];
 const server=http.createServer(async(req,res)=>{
   try {
     if(useWorker||req.url.startsWith('/api/studio/')){
@@ -31,10 +31,15 @@ const server=http.createServer(async(req,res)=>{
       const body=Buffer.concat(chunks).toString();
       if(req.method==='POST'){posts++;keys.push(JSON.parse(body).idempotency_key);}
       else if(req.url.startsWith('/api/studio/context'))reads++;
+      if(req.url.startsWith('/api/studio/management')){
+        managementReads++;
+        if(fault==='management'){fault=null;res.writeHead(503,{'content-type':'application/json'});res.end(JSON.stringify({error:{code:'SERVICE_UNAVAILABLE',message:'synthetic private error'}}));return;}
+      }
       if(fault==='offline'&&req.method==='POST'){fault=null;res.writeHead(503,{'content-type':'application/json'});res.end(JSON.stringify({error:{code:'SERVICE_UNAVAILABLE',message:'合成故障，请重试'}}));return;}
       const request=new Request(base+req.url,{method:req.method,headers,...(req.method!=='GET'&&req.method!=='HEAD'?{body}:{})});
       const response=useWorker?await f.runtime.dispatchFetch(base+req.url,{method:req.method,headers,...(req.method!=='GET'&&req.method!=='HEAD'?{body}:{})}):
         await (req.method==='POST'?handleStudioEvents:handleStudioContext)(request,{DB:f.db,...auth.config},{now,verification:auth.verification});
+      if(fault==='project-partial'&&req.method==='POST'&&req.url.startsWith('/api/studio/projects')){fault=null;res.writeHead(200,{'content-type':'application/json'});res.end('{"saved":true}');return;}
       if(useWorker)console.log('Worker browser HTTP '+response.status+' '+req.url+' '+response.headers.get('content-type'));
       if(fault==='partial'&&req.method==='POST'){fault=null;res.writeHead(200,{'content-type':'application/json'});res.end('{"saved":true,"receipt_id":"partial"}');return;}
       res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;
@@ -114,6 +119,64 @@ try {
     await evaluate(`document.querySelector('button[type=submit]').click()`);await wait(()=>evaluate(`document.body.innerText.includes('修订已保存')&&document.body.innerText.includes('版本 r2')`));
     await evaluate(`document.querySelector('details summary').click();document.querySelector('input[type=checkbox]').click();[...document.querySelectorAll('button')].find(b=>b.textContent==='确认删除私人记录').click()`);
     await wait(()=>evaluate(`document.body.innerText.includes('记录已删除')`));assert.equal(await rowCount(),2);
+    await f.db.prepare("UPDATE processing_jobs SET status='failed',attempts=1,last_error_code='SYNTHETIC_PRIVATE_DIAGNOSTIC' WHERE job_id=(SELECT job_id FROM processing_jobs ORDER BY job_id LIMIT 1)").run();
+    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/private/management`});await wait(()=>evaluate(`!!document.querySelector('.management-metrics')`));
+    assert.equal(await evaluate(`document.querySelector('.management-metrics dd').textContent`),'2');
+    assert.equal(await evaluate(`document.body.innerText.includes('任务执行器尚未接入')`),true);
+    assert.equal(await evaluate(`document.body.innerText.includes('SYNTHETIC_PRIVATE_DIAGNOSTIC')`),false);
+    assert.equal(managementReads,0,'management page uses the authorized server snapshot without a duplicate client load');
+    await evaluate(`const select=document.querySelector('.management-section-heading select');select.value='attention';select.dispatchEvent(new Event('change',{bubbles:true}))`);
+    await wait(()=>evaluate(`document.querySelectorAll('.management-job-list li').length===1`));
+    await evaluate(`document.querySelector('.management-toolbar button').click()`);await wait(()=>managementReads===1);await wait(()=>evaluate(`!document.querySelector('.management-toolbar button').disabled`));
+    fault='management';await evaluate(`document.querySelector('.management-toolbar button').click()`);await wait(()=>evaluate(`!!document.querySelector('[role=alert]')&&!document.querySelector('.management-metrics')`));
+    assert.equal(await evaluate(`document.body.innerText.includes('synthetic private error')`),false);
+    await evaluate(`document.querySelector('.management-toolbar button').click()`);await wait(()=>evaluate(`!!document.querySelector('.management-metrics')&&!document.querySelector('[role=alert]')`));
+    for(const width of [320,390,1280])for(const theme of ['light','dark']){
+      await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});await evaluate(`document.documentElement.dataset.theme=${JSON.stringify(theme)}`);
+      const view=await evaluate(`({overflow:document.documentElement.scrollWidth>innerWidth,controls:[...document.querySelectorAll('button,a,select')].every(e=>e.getBoundingClientRect().height>=44)})`);
+      assert.equal(view.overflow,false);assert.equal(view.controls,true);
+      const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(work,`management-${width}-${theme}.png`),Buffer.from(shot.data,'base64'));
+    }
+    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/private/projects`});await wait(()=>evaluate(`!!document.querySelector('.project-editor[data-ready=true] textarea')`));
+    await evaluate(`document.querySelector('textarea').focus()`);await send('Input.insertText',{text:'合成公开项目进展，用于隔离验证'});
+    await evaluate(`document.querySelectorAll('textarea')[1].focus()`);await send('Input.insertText',{text:'SYNTHETIC_PRIVATE_EDITOR_NOTE'});
+    fault='project-partial';await evaluate(`document.querySelector('.project-editor form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))`);
+    await wait(()=>evaluate(`document.querySelector('[role=alert]')?.textContent.includes('回执不完整')`));
+    assert.equal(await evaluate(`document.querySelectorAll('textarea')[1].value`),'SYNTHETIC_PRIVATE_EDITOR_NOTE');
+    await evaluate(`document.querySelector('.project-editor form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))`);
+    await wait(()=>evaluate(`document.querySelector('[role=status]')?.textContent.includes('私人草稿已保存')`));
+    assert.equal(keys.at(-1),keys.at(-2),'lost project receipt must retry the original operation key');
+    assert.equal((await f.db.prepare('SELECT revision FROM studio_project_records WHERE project_id=?').bind('c-engine').first()).revision,1);
+    await evaluate(`[...document.querySelectorAll('.project-editor button')].find(button=>button.textContent==='预览并发布').click()`);
+    await wait(()=>evaluate(`!!document.querySelector('.project-editor-preview')`));
+    assert.equal(await evaluate(`document.querySelector('.project-editor-preview').textContent.includes('SYNTHETIC_PRIVATE_EDITOR_NOTE')`),false);
+    assert.equal(await evaluate(`[...document.querySelectorAll('button')].find(button=>button.textContent==='确认发布').disabled`),true);
+    await evaluate(`document.querySelector('.project-editor-confirm input').click()`);
+    await wait(()=>evaluate(`[...document.querySelectorAll('button')].find(button=>button.textContent==='确认发布')?.disabled===false`));
+    await evaluate(`[...document.querySelectorAll('button')].find(button=>button.textContent==='确认发布').click()`);
+    await wait(()=>evaluate(`document.querySelector('[role=status]')?.textContent.includes('公开发布')`));
+    for(const width of [320,390,1280])for(const theme of ['light','dark']){
+      await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});await evaluate(`document.documentElement.dataset.theme=${JSON.stringify(theme)}`);
+      await evaluate(`window.scrollTo(0,0)`);
+      const view=await evaluate(`({overflow:document.documentElement.scrollWidth>innerWidth,controls:[...document.querySelectorAll('button,a,select,input')].every(element=>element.getBoundingClientRect().height>=44)})`);
+      assert.equal(view.overflow,false);assert.equal(view.controls,true);
+      const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(work,`project-editor-${width}-${theme}.png`),Buffer.from(shot.data,'base64'));
+      if(theme==='light'&&width!==320){const metrics=await send('Page.getLayoutMetrics');const full=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip:{x:0,y:0,width:metrics.cssContentSize.width,height:metrics.cssContentSize.height,scale:1}});fs.writeFileSync(path.join(work,`project-editor-full-${width}.png`),Buffer.from(full.data,'base64'));}
+    }
+    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/projects`});await wait(()=>evaluate(`document.body.innerText.includes('合成公开项目进展')`));
+    assert.equal(await evaluate(`document.body.innerText.includes('SYNTHETIC_PRIVATE_EDITOR_NOTE')`),false);
+    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/private/projects`});await wait(()=>evaluate(`!!document.querySelector('.project-editor[data-ready=true] textarea')`));
+    await evaluate(`document.querySelector('textarea').focus();document.querySelector('textarea').select()`);await send('Input.insertText',{text:'合成未发布的第二版进展'});
+    await evaluate(`document.querySelector('.project-editor form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))`);await wait(()=>evaluate(`document.querySelector('[role=status]')?.textContent.includes('私人草稿已保存')`));
+    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/projects`});await wait(()=>evaluate(`document.body.innerText.includes('合成公开项目进展')`));
+    assert.equal(await evaluate(`document.body.innerText.includes('合成未发布的第二版进展')`),false);
+    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/private/projects`});await wait(()=>evaluate(`!!document.querySelector('.project-editor[data-ready=true] textarea')`));
+    await evaluate(`[...document.querySelectorAll('button')].find(button=>button.textContent==='撤下公开状态').click()`);
+    await wait(()=>evaluate(`[...document.querySelectorAll('button')].some(button=>button.textContent==='确认撤下')`));
+    await evaluate(`[...document.querySelectorAll('button')].find(button=>button.textContent==='确认撤下').click()`);
+    await wait(()=>evaluate(`document.querySelector('[role=status]')?.textContent.includes('公开状态已撤下')`));
+    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/projects`});await wait(()=>evaluate(`!!document.querySelector('.workbench-project')`));
+    assert.equal(await evaluate(`document.body.innerText.includes('合成公开项目进展')`),false);
     const readsBeforePublic=reads;
     for(let n=1;n<=4;n++)await f.db.prepare('INSERT INTO records(date,items,practice,revision,updated_at) VALUES(?,?,?,?,?)').bind(`2000-01-0${n}`,JSON.stringify([{label:'合成公开主题',text:'合成公开手记，用于隔离界面验证'}]),'',1,'2000-01-01T00:00:00Z').run();
     await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio`});await wait(()=>evaluate(`!!document.querySelector('.workbench-content')`));
@@ -158,6 +221,6 @@ try {
       }
     }
   }
-  const summary={posts,reads,rows:2,viewportResults,publicViews,passed:true,scope:useWorker?'Chrome + complete Worker build + actual Vinext dispatch + memory D1, synthetic Access JWT/JWKS':'synthetic browser + actual handlers + memory SQLite, not Worker route dispatch'};
+  const summary={posts,reads,managementReads,rows:2,viewportResults,publicViews,passed:true,scope:useWorker?'Chrome + complete Worker build + actual Vinext dispatch + memory D1, synthetic Access JWT/JWKS':'synthetic browser + actual handlers + memory SQLite, not Worker route dispatch'};
   fs.writeFileSync(path.join(work,'summary.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
 }finally{ws?.close();chrome?.kill();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));for(const cleanup of cleanups)cleanup();if(useWorker)await f.runtime.dispose();}

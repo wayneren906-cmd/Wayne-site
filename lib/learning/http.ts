@@ -5,7 +5,8 @@ import {LearningWriteError} from './event-validation.ts';
 import {correctLearningEvent, saveLearningEvent} from './events.ts';
 import {deleteLearningEvent} from './deletions.ts';
 import {prepareOwnerRegistration} from './registration.ts';
-import {getLearningContext, getLearningEvent, getLearningEventHistory, LearningReadError} from './reads.ts';
+import {getStudioProjectDrafts,mutateStudioProject} from '../studio-projects.ts';
+import {getLearningContext, getLearningEvent, getLearningEventHistory, getStudioManagement, LearningReadError} from './reads.ts';
 import type {ContextPurpose, LearningAPIErrorCode, LearningAPIErrorDTO} from './contracts.ts';
 
 type StudioEnv = Parameters<typeof verifyLearningOwner>[1] & {DB: D1Database};
@@ -124,5 +125,33 @@ export async function handleStudioRegistration(request:Request,env:StudioEnv,opt
     if(request.method!=='GET')return errorResponse('INVALID_INPUT','不支持此方法',405);
     const candidate=await prepareOwnerRegistration(request.headers.get('cf-access-jwt-assertion'),env,env.DB,options);
     return json(candidate);
+  }catch(error){return failed(error);}
+}
+
+export async function handleStudioManagement(request:Request,env:StudioEnv,options:ServerOptions={}):Promise<Response>{
+  const denied=missingIdentity(request);if(denied)return denied;
+  try{
+    const identity=await owner(request,env,options);
+    if(request.method!=='GET')return errorResponse('INVALID_INPUT','不支持此方法',405);
+    if([...new URL(request.url).searchParams].length)throw new LearningReadError('INVALID_INPUT');
+    const response=json(await getStudioManagement(env.DB,identity,{now:options.now}));
+    response.headers.set('Vary','cf-access-jwt-assertion');
+    return response;
+  }catch(error){return failed(error);}
+}
+
+export async function handleStudioProjects(request:Request,env:StudioEnv,options:ServerOptions={}):Promise<Response>{
+  const denied=missingIdentity(request);if(denied)return denied;
+  try{
+    const identity=await owner(request,env,options);
+    if([...new URL(request.url).searchParams].length)throw new LearningWriteError('INVALID_INPUT');
+    let response:Response;
+    if(request.method==='GET')response=json({projects:await getStudioProjectDrafts(env.DB,identity)});
+    else if(request.method==='POST'){
+      if(!sameOrigin(request))return errorResponse('PRIVATE_ACCESS_DENIED','请求来源无效');
+      if(request.headers.get('content-type')?.split(';')[0].trim().toLowerCase()!=='application/json')return errorResponse('INVALID_INPUT','请提交JSON内容',415);
+      response=json(await mutateStudioProject(env.DB,identity,await boundedJSON(request),{now:options.now}));
+    }else return errorResponse('INVALID_INPUT','不支持此方法',405);
+    response.headers.set('Vary','cf-access-jwt-assertion');return response;
   }catch(error){return failed(error);}
 }

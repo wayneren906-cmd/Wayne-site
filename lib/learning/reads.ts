@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import {LearningAccessError, learningScopes, requireLearningPermission, type LearningPrincipal, type LearningScope} from './auth.ts';
-import type {ContextPurpose, LearningAPIErrorCode, LearningContextDTO, LearningEventDTO, LearningEventHistoryDTO} from './contracts.ts';
+import type {ContextPurpose, LearningAPIErrorCode, LearningContextDTO, LearningEventDTO, LearningEventHistoryDTO, StudioManagementDTO, StudioJobStatus} from './contracts.ts';
+import {studioManagementSchema} from './management-schema.ts';
 import {dateSchema, learningDate} from '../records.ts';
 
 export class LearningReadError extends Error {
@@ -174,4 +175,50 @@ export async function getLearningContext(db: D1Database, identity: LearningPrinc
     }
     return context;
   } catch (error) {return failure(error);}
+}
+
+export async function getStudioManagement(db:D1Database,identity:LearningPrincipal|null,options:{now?:Date}={}):Promise<StudioManagementDTO>{
+  requireLearningPermission(identity,identity?.userId??'','events:read');
+  // Management is an owner capability, never implied by an integration's event-read scope.
+  if(identity!.kind!=='owner'||identity!.grantId!==null)throw new LearningAccessError();
+  const now=options.now??new Date();
+  if(!Number.isFinite(now.getTime()))throw new LearningReadError('INVALID_INPUT');
+  try{
+    const owner=identity!.userId;
+    const [state,events,receipts,sources,jobCounts,recent]=await snapshot(db,identity!,'events:read',now,[
+      db.prepare('SELECT data_version,updated_at FROM learning_state WHERE owner_id=?').bind(owner),
+      db.prepare(`SELECT COUNT(*) AS total FROM learning_events e WHERE e.owner_id=? AND ${visibleEvent}`).bind(owner),
+      db.prepare(`SELECT COUNT(*) AS total,MAX(r.received_at) AS latest FROM ingest_receipts r JOIN learning_events e ON e.event_id=r.event_id AND e.owner_id=r.owner_id WHERE e.owner_id=? AND ${visibleEvent}`).bind(owner),
+      db.prepare(`SELECT CASE WHEN e.source_type IN ('studio','studio_supplement') THEN 'studio' WHEN e.source_type='chatgpt' THEN 'chatgpt' ELSE 'other' END AS type,
+        COUNT(DISTINCT e.event_id) AS event_count,MAX(COALESCE(r.received_at,e.received_at)) AS latest_received_at
+        FROM learning_events e LEFT JOIN ingest_receipts r ON r.event_id=e.event_id AND r.owner_id=e.owner_id
+        WHERE e.owner_id=? AND ${visibleEvent} GROUP BY 1 ORDER BY 1`).bind(owner),
+      db.prepare(`SELECT j.status,COUNT(*) AS total FROM processing_jobs j JOIN learning_events e ON e.event_id=j.event_id AND e.owner_id=j.owner_id WHERE e.owner_id=? AND ${visibleEvent} GROUP BY j.status`).bind(owner),
+      db.prepare(`SELECT j.job_id,j.event_id,j.revision,j.data_version,j.status,j.attempts,j.created_at,
+        j.revision=e.current_revision AS is_current_revision,
+        (j.last_error_code IS NOT NULL AND length(j.last_error_code)>0) AS has_error
+        FROM processing_jobs j JOIN learning_events e ON e.event_id=j.event_id AND e.owner_id=j.owner_id
+        WHERE e.owner_id=? AND ${visibleEvent} ORDER BY j.created_at DESC,j.job_id DESC LIMIT 21`).bind(owner),
+    ]);
+    const current=state.results[0] as {data_version:number;updated_at:string}|undefined;
+    const total=(events.results[0] as {total:number}).total;
+    const received=receipts.results[0] as {total:number;latest:string|null};
+    if(!current&&(total>0||received.total>0||recent.results.length>0))throw new LearningReadError('SERVICE_UNAVAILABLE');
+    if(current?.data_version===0&&(total>0||received.total>0))throw new LearningReadError('SERVICE_UNAVAILABLE');
+    const counts:Record<StudioJobStatus,number>={pending:0,running:0,succeeded:0,failed:0,needs_attention:0};
+    for(const row of jobCounts.results as {status:StudioJobStatus;total:number}[]){
+      if(!Object.hasOwn(counts,row.status))throw new LearningReadError('SERVICE_UNAVAILABLE');
+      counts[row.status]=row.total;
+    }
+    const jobs=recent.results.slice(0,20).map(raw=>{
+      const row=raw as Omit<StudioManagementDTO['jobs']['recent'][number],'is_current_revision'|'has_error'>&{is_current_revision:number;has_error:number};
+      if(![0,1].includes(row.is_current_revision)||![0,1].includes(row.has_error)||row.data_version>(current?.data_version??0))throw new LearningReadError('SERVICE_UNAVAILABLE');
+      return {...row,is_current_revision:row.is_current_revision===1,has_error:row.has_error===1};
+    });
+    return studioManagementSchema.parse({
+      generated_at:now.toISOString(),data_version:current?.data_version??0,last_data_change_at:current?.updated_at??null,
+      private_event_count:total,received_change_count:received.total,latest_received_at:received.latest,sources:sources.results,
+      jobs:{counts,recent:jobs,truncated:recent.results.length>20},processor_connected:false,
+    });
+  }catch(error){return failure(error);}
 }

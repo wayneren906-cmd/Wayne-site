@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {input} from './helpers/learning-fixture.mjs';
+import {emptyProjectContent} from '../lib/ui/project-protocol.ts';
 import {createStudioWorkerEnvironment} from './helpers/studio-worker-environment.mjs';
 const f=await createStudioWorkerEnvironment();
 const {runtime,db,auth,work}=f;
@@ -17,6 +18,25 @@ const request=async(url,method='GET',body,token=auth.jwt,extra={})=>{
 try {
   const publicPage=await request('/studio','GET',undefined,null);assert.equal(publicPage.status,200);
   const publicHTML=await publicPage.text();assert.ok(publicHTML.includes('PERSONAL DASHBOARD'));assert.ok(publicHTML.includes('href="/studio/private"'));assert.ok(!publicHTML.includes('studio-supplement-input'));
+  assert.ok(publicHTML.includes('href="/studio/private/management"'));
+  assert.equal((await request('/api/studio/management','GET',undefined,null)).status,401);
+  assert.equal((await request('/api/studio/management','GET',undefined,f.unregistered.jwt)).status,403);
+  const management=await request('/api/studio/management');assert.equal(management.status,200);
+  const initialManagement=await management.json();assert.equal(initialManagement.private_event_count,0);assert.equal(initialManagement.processor_connected,false);
+  assert.match(management.headers.get('cache-control'),/no-store/);
+  const ownerManagement=await request('/studio/private/management');assert.equal(ownerManagement.status,200);assert.match(ownerManagement.headers.get('cache-control'),/private|no-store/);assert.ok((await ownerManagement.text()).includes('任务执行器尚未接入'));
+  for(const identity of [null,f.unregistered.jwt]){const deniedManagement=await request('/studio/private/management','GET',undefined,identity);const html=await deniedManagement.text();assert.ok(html.includes('无法验证管理权限'));assert.ok(!html.includes('management-metrics'));}
+  assert.equal((await request('/api/studio/projects','GET',undefined,null)).status,401);
+  assert.equal((await request('/api/studio/projects','GET',undefined,f.unregistered.jwt)).status,403);
+  for(const identity of [null,f.unregistered.jwt]){const response=await request('/studio/private/projects','GET',undefined,identity);const html=await response.text();assert.ok(html.includes('无法验证管理权限'));assert.ok(!html.includes('class="project-editor"'));}
+  const projectPage=await request('/studio/private/projects');assert.equal(projectPage.status,200);assert.match(projectPage.headers.get('cache-control'),/private|no-store/);assert.ok((await projectPage.text()).includes('保存私人草稿'));
+  const draft={action:'save_draft',project_id:'c-engine',expected_revision:0,idempotency_key:'synthetic-project-draft',content:{...emptyProjectContent(),summary:'synthetic publishable project status',private_note:'SYNTHETIC_PRIVATE_PROJECT_NOTE'}};
+  assert.equal((await request('/api/studio/projects','POST',draft)).status,200);
+  assert.ok(!(await (await request('/studio','GET',undefined,null)).text()).includes('synthetic publishable project status'));
+  assert.equal((await request('/api/studio/projects','POST',{action:'publish',project_id:'c-engine',expected_revision:1,idempotency_key:'synthetic-publish',confirm_public:true})).status,200);
+  for(const path of ['/studio','/studio/projects']){const html=await(await request(path,'GET',undefined,null)).text();assert.ok(html.includes('synthetic publishable project status'));assert.ok(!html.includes('SYNTHETIC_PRIVATE_PROJECT_NOTE'));}
+  assert.equal((await request('/api/studio/projects','POST',{action:'unpublish',project_id:'c-engine',expected_revision:2,idempotency_key:'synthetic-unpublish'})).status,200);
+  assert.ok(!(await(await request('/studio','GET',undefined,null)).text()).includes('synthetic publishable project status'));
   for(const path of ['/studio/roadmap','/studio/practice','/studio/projects','/studio/archive']){const r=await request(path,'GET',undefined,null);assert.equal(r.status,200);assert.ok(!(await r.text()).includes('synthetic private fact'));}
   const deniedWorkspace=await request('/studio/private/workspace','GET',undefined,null);assert.ok((await deniedWorkspace.text()).includes('无法验证访问权限'));
   const ownerWorkspace=await request('/studio/private/workspace');assert.equal(ownerWorkspace.status,200);assert.ok((await ownerWorkspace.text()).includes('实际过程与结果'));

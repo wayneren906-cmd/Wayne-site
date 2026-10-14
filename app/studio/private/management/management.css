@@ -1,0 +1,18 @@
+.management-navigation{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:13px;margin-bottom:24px;}
+.management-toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px;}
+.management-toolbar p{font:12px/1.8 var(--font-mono);color:var(--ink-secondary);}
+.management-toolbar .workbench-action{margin-top:0;white-space:nowrap;background:var(--paper);color:var(--ink);cursor:pointer;}
+.management-toolbar button:disabled{opacity:.6;cursor:wait;}
+.management-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0 0 28px;border-block:1px solid var(--line-strong);}
+.management-metrics>div{padding:20px;border-right:1px solid var(--line);min-width:0;}
+.management-metrics>div:first-child{padding-left:0;}.management-metrics>div:last-child{border-right:0;}
+.management-metrics dt{font-size:13px;color:var(--ink-secondary);}.management-metrics dd{font:400 34px/1.5 var(--font-serif);font-variant-numeric:tabular-nums;margin:8px 0 0;}
+.management-details{margin:0;}.management-details>div,.management-status-list>div{display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding:12px 0;font-size:13px;line-height:1.8;}
+.management-details dd,.management-status-list dd{margin:0;color:var(--ink-secondary);text-align:right;}
+.management-sources{list-style:none;margin:18px 0 0;padding:0;}.management-sources li{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);}.management-sources span{font:13px/1.8 var(--font-mono);white-space:nowrap;}.management-sources li p{font-size:12px;}
+.management-status-list{margin:14px 0 0;}
+.management-jobs{border-top:1px solid var(--line-strong);padding-top:24px;margin-top:32px;}
+.management-section-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;}.management-section-heading h2{font:500 24px/1.5 var(--font-serif);margin-top:6px;}.management-section-heading label{display:flex;align-items:center;gap:10px;font-size:13px;}.management-section-heading select{min-height:44px;max-width:100%;padding:8px 12px;background:var(--paper);color:var(--ink);border:1px solid var(--line-strong);font:inherit;}
+.management-job-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;list-style:none;padding:0;margin:20px 0;}.management-job-list li{border:1px solid var(--line);padding:20px;min-width:0;}.management-job-top,.management-job-bottom{display:flex;align-items:center;justify-content:space-between;gap:16px;}.management-job-top h3{font-size:16px;font-weight:500;}.management-job-status{font-size:12px;border:1px solid var(--line-strong);padding:4px 8px;white-space:nowrap;}.management-job-status:is([data-status=failed],[data-status=needs_attention]){border-color:var(--ink);font-weight:600;}.management-job-list li>p{font:12px/1.8 var(--font-mono);color:var(--ink-secondary);margin-top:16px;}.management-job-bottom{margin-top:12px;font-size:13px;}.management-job-bottom>span{color:var(--ink-secondary);}
+@media(max-width:760px){.management-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.management-metrics>div{padding:18px 0;}.management-metrics>div:nth-child(odd){padding-right:16px;}.management-metrics>div:nth-child(even){padding-left:16px;border-right:0;}.management-metrics>div:nth-child(-n+2){border-bottom:1px solid var(--line);}}
+@media(max-width:600px){.management-toolbar{align-items:flex-start;}.management-job-list{grid-template-columns:1fr;}.management-section-heading{align-items:flex-start;flex-direction:column;gap:12px;}.management-job-list li{padding:18px;}}

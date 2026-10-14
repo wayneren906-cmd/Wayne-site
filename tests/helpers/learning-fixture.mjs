@@ -11,7 +11,7 @@ export async function fixture(t, scopes = ['events:read', 'context:read', 'event
   const sqlite = new DatabaseSync(':memory:');
   t.after(() => sqlite.close());
   sqlite.exec('PRAGMA foreign_keys=ON');
-  for (const file of ['0001_initial.sql', '0002_learning_events.sql', '0003_ingest_outbox.sql', '0004_correction_authority.sql', '0005_private_deletion.sql']) sqlite.exec(readFileSync(new URL('../../migrations/' + file, import.meta.url), 'utf8'));
+  for (const file of ['0001_initial.sql', '0002_learning_events.sql', '0003_ingest_outbox.sql', '0004_correction_authority.sql', '0005_private_deletion.sql','0006_studio_projects.sql']) sqlite.exec(readFileSync(new URL('../../migrations/' + file, import.meta.url), 'utf8'));
   for (const [id, sub] of [['synthetic-owner', 'synthetic-sub'], ['synthetic-other', 'synthetic-other-sub']]) {
     sqlite.prepare('INSERT INTO users VALUES(?,?,?,?,?,?)').run(id, 'https://synthetic.cloudflareaccess.com', sub, 'owner', 'active', now.toISOString());
   }

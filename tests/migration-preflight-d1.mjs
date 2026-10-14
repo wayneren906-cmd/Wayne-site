@@ -28,11 +28,11 @@ try{
   const checkpoint={schema:await schema(),ledger:await ledger()};
   await assert.rejects(db.batch([...sqlStatements(sql(plan.pending[1].name)).map(statement=>db.prepare(statement)),db.prepare("SELECT json('synthetic migration failure')"),db.prepare('INSERT INTO d1_migrations(name) VALUES(?)').bind(plan.pending[1].name)]));
   assert.deepEqual(await schema(),checkpoint.schema);assert.deepEqual(await ledger(),checkpoint.ledger);
-  const resumed=planLearningMigrations(await schema(),await ledger());assert.equal(resumed.pending.length,3);
+  const resumed=planLearningMigrations(await schema(),await ledger());assert.equal(resumed.pending.length,plan.pending.length-1);
   for(const migration of resumed.pending)await apply(migration.name);
   assert.deepEqual(await legacy(),before);
   const final=planLearningMigrations(await schema(),await ledger());assert.equal(final.pending.length,0);
   for(const table of final.private_tables)assert.equal((await db.prepare(`SELECT COUNT(*) n FROM ${table}`).first()).n,0);
   assert.deepEqual((await db.prepare('PRAGMA foreign_key_check').all()).results,[]);
-  console.log(JSON.stringify({passed:true,legacy_records:4,legacy_snapshots:5,new_private_tables:9,remaining_migrations:0,failed_migration_rolled_back:true,schema_sha256:final.schema_sha256}));
+  console.log(JSON.stringify({passed:true,legacy_records:4,legacy_snapshots:5,new_private_tables:final.private_tables.length,remaining_migrations:0,failed_migration_rolled_back:true,schema_sha256:final.schema_sha256}));
 }finally{await runtime.dispose();}

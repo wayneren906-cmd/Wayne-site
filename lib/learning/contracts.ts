@@ -93,3 +93,35 @@ export type LearningAPIErrorCode = 'PRIVATE_ACCESS_DENIED' | 'INVALID_INPUT' |
   'IDEMPOTENCY_CONFLICT' | 'REVISION_CONFLICT' | 'PAYLOAD_TOO_LARGE' |
   'RATE_LIMITED' | 'SERVICE_UNAVAILABLE' | 'EVENT_DELETED' | 'EVENT_NOT_FOUND';
 export type LearningAPIErrorDTO = {error: {code: LearningAPIErrorCode; message: string}};
+
+export type StudioJobStatus = 'pending' | 'running' | 'succeeded' | 'failed' | 'needs_attention';
+export type StudioManagementDTO = {
+  generated_at: string;
+  data_version: number;
+  last_data_change_at: string | null;
+  private_event_count: number;
+  received_change_count: number;
+  latest_received_at: string | null;
+  sources: {type:'studio'|'chatgpt'|'other';event_count:number;latest_received_at:string}[];
+  jobs: {
+    counts: Record<StudioJobStatus,number>;
+    recent: {
+      job_id:string;event_id:string;revision:number;data_version:number;
+      status:StudioJobStatus;attempts:number;created_at:string;
+      is_current_revision:boolean;has_error:boolean;
+    }[];
+    truncated:boolean;
+  };
+  processor_connected:false;
+};
+
+export type StudioProjectStatus='not_started'|'in_progress'|'paused'|'completed';
+export type StudioMilestoneStatus='not_started'|'in_progress'|'completed';
+export type StudioProjectContent={status:StudioProjectStatus;summary:string;next_step:string;milestones:Record<'interface'|'implementation'|'verification',StudioMilestoneStatus>};
+export type StudioProjectDraftDTO={project_id:string;revision:number;draft:StudioProjectContent;private_note:string;updated_at:string;publication:{revision:number;content:StudioProjectContent;published_at:string}|null};
+export type StudioProjectPublicDTO={project_id:string;revision:number;content:StudioProjectContent;published_at:string};
+export type StudioProjectMutation=
+  | {action:'save_draft';project_id:string;expected_revision:number;idempotency_key:string;content:StudioProjectContent&{private_note:string}}
+  | {action:'publish';project_id:string;expected_revision:number;idempotency_key:string;confirm_public:true}
+  | {action:'unpublish';project_id:string;expected_revision:number;idempotency_key:string};
+export type StudioProjectReceiptDTO={project_id:string;revision:number;action:StudioProjectMutation['action'];saved:true;replayed:boolean};
