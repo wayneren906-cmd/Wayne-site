@@ -28,12 +28,10 @@ test('existing disabled/member mapping needs operator review and is never upgrad
   assert.deepEqual(candidate,{registration_required:false,status:'requires_operator_review'});
   assert.deepEqual(sqlite.prepare("SELECT role,status FROM users WHERE user_id='synthetic-owner'").get(),Object.assign(Object.create(null),{role:'member',status:'disabled'}));
 });
-test('registration HTTP is signed-owner-only GET/no-store; bearer and forwarded email do not grant access',async t=>{
-  const {db}=await fixture(t),auth=await signedOwner('new-sub'),env={DB:db,...auth.config},options={now,verification:auth.verification};
-  const anonymous=await handleStudioRegistration(new Request('https://synthetic.invalid/api/studio/registration',{headers:{authorization:'Bearer synthetic','cf-access-authenticated-user-email':'owner@example.com'}}),env,options);
-  assert.equal(anonymous.status,401);
-  const response=await handleStudioRegistration(new Request('https://synthetic.invalid/api/studio/registration',{headers:{'cf-access-jwt-assertion':auth.jwt}}),env,options);
-  assert.equal(response.status,200);assert.match(response.headers.get('cache-control'),/no-store/);assert.equal((await response.json()).proposal.status,'disabled');
-  const invalid=await handleStudioRegistration(new Request('https://synthetic.invalid/api/studio/registration',{method:'POST',headers:{'cf-access-jwt-assertion':auth.jwt}}),env,options);
-  assert.equal(invalid.status,405);
+test('removed Access registration endpoint returns 410 and no proposal regardless of old credentials',async t=>{
+  const {db}=await fixture(t),auth=await signedOwner('new-sub'),env={DB:db,...auth.config};
+  for(const headers of [{},{'cf-access-jwt-assertion':auth.jwt},{authorization:'Bearer synthetic'}]){
+    const response=await handleStudioRegistration(new Request('https://synthetic.invalid/api/studio/registration',{headers}),env);
+    assert.equal(response.status,410);assert.match(response.headers.get('cache-control'),/no-store/);assert.ok(!(await response.text()).includes('proposal'));
+  }
 });

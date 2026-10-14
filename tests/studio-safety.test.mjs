@@ -42,7 +42,7 @@ test('concurrent submit sends one POST; late context cannot overwrite newer cont
 test('signed synthetic owner adapter saves through real HTTP handlers and SQLite then reads matching event',async t=>{
   const {db,sqlite}=await fixture(t);const auth=await signedOwner();const base='https://synthetic.invalid';let contexts=0;
   const client=new StudioHttpClient({fetchFn:async(url,init)=>{
-    const headers=new Headers(init.headers);headers.set('cf-access-jwt-assertion',auth.jwt);if(init.method==='POST')headers.set('origin',base);
+    const headers=new Headers(init.headers);headers.set('cookie',auth.cookie);if(init.method==='POST')headers.set('origin',base);
     const request=new Request(base+url,{...init,headers});const env={DB:db,...auth.config},options={now,verification:auth.verification};
     if(url.includes('/context')){contexts++;return handleStudioContext(request,env,options);}
     if(init.method==='POST')return handleStudioEvents(request,env,options);

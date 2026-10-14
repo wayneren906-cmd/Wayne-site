@@ -32,10 +32,5 @@
   },
   "observability": {
     "enabled": true
-  },
-  "vars": {
-    "CF_ACCESS_TEAM_DOMAIN": "https://wayne-profile-pages.cloudflareaccess.com",
-    "CF_ACCESS_AUD": "35006a286e94d49799bd537f61a282a7bd62ae45b683588d37938661457b456e",
-    "JOURNAL_OWNER_EMAIL": "wayne.ren906@gmail.com"
   }
 }

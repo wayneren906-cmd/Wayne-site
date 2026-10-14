@@ -11,9 +11,14 @@ export async function fixture(t, scopes = ['events:read', 'context:read', 'event
   const sqlite = new DatabaseSync(':memory:');
   t.after(() => sqlite.close());
   sqlite.exec('PRAGMA foreign_keys=ON');
-  for (const file of ['0001_initial.sql', '0002_learning_events.sql', '0003_ingest_outbox.sql', '0004_correction_authority.sql', '0005_private_deletion.sql','0006_studio_projects.sql']) sqlite.exec(readFileSync(new URL('../../migrations/' + file, import.meta.url), 'utf8'));
+  for (const file of ['0001_initial.sql', '0002_learning_events.sql', '0003_ingest_outbox.sql', '0004_correction_authority.sql', '0005_private_deletion.sql','0006_studio_projects.sql','0007_studio_plans.sql','0008_email_auth.sql']) sqlite.exec(readFileSync(new URL('../../migrations/' + file, import.meta.url), 'utf8'));
   for (const [id, sub] of [['synthetic-owner', 'synthetic-sub'], ['synthetic-other', 'synthetic-other-sub']]) {
     sqlite.prepare('INSERT INTO users VALUES(?,?,?,?,?,?)').run(id, 'https://synthetic.cloudflareaccess.com', sub, 'owner', 'active', now.toISOString());
+  }
+  for(const [id,sub] of [['synthetic-owner','synthetic-sub'],['synthetic-other','synthetic-other-sub']]){
+    const session=createHash('sha256').update(sub).digest('hex');
+    sqlite.prepare('INSERT INTO admin_accounts VALUES(?,?,?,?,?,?,?,?)').run(id+'-account',id,id+'@example.com','scrypt-v1$'+'0'.repeat(32)+'$'+'0'.repeat(64),'owner','active',1,now.toISOString());
+    sqlite.prepare('INSERT INTO admin_sessions VALUES(?,?,?,?,?)').run(createHash('sha256').update(session).digest('hex'),id+'-account',1,Math.floor(Date.now()/1000)+86400,now.toISOString());
   }
   sqlite.prepare('INSERT INTO integration_grants(grant_id,owner_id,token_sha256,scopes,expires_at,created_at) VALUES(?,?,?,?,?,?)').run('synthetic-grant', 'synthetic-owner', createHash('sha256').update(token).digest('hex'), JSON.stringify(scopes), now.getTime()/1000 + 3600, now.toISOString());
   const db = {prepare(sql) {
@@ -34,5 +39,6 @@ export async function signedOwner(sub = 'synthetic-sub', overrides = {}, kid = '
   const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
   const text = encode({alg: 'RS256', kid: key.kid}) + '.' + encode({iss: config.CF_ACCESS_TEAM_DOMAIN, aud: config.CF_ACCESS_AUD, exp: now.getTime()/1000 + 3600, sub, email: config.JOURNAL_OWNER_EMAIL, ...overrides});
   const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', pair.privateKey, new TextEncoder().encode(text));
-  return {config, jwt: text + '.' + Buffer.from(signature).toString('base64url'), verification: {keys: [key], now: now.getTime()/1000}};
+  const cookie='__Host-wayneo_session='+createHash('sha256').update(sub+(Object.keys(overrides).length?JSON.stringify(overrides):'')).digest('hex');
+  return {cookie,config, jwt: text + '.' + Buffer.from(signature).toString('base64url'), verification: {keys: [key], now: now.getTime()/1000}};
 }

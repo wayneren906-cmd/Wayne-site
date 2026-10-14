@@ -4,6 +4,7 @@ import {createRequire} from 'node:module';
 import {pathToFileURL} from 'node:url';
 import assert from 'node:assert/strict';
 import {signedOwner} from './learning-fixture.mjs';
+import {hashAdminPassword,authDigest} from '../../lib/admin-auth.ts';
 
 export function sqlStatements(sql){let text='',trigger=false;const result=[];for(const line of sql.split('\n')){text+=line+'\n';if(/^CREATE TRIGGER/i.test(line.trim()))trigger=true;if(line.trim().endsWith(';')&&(!trigger||/END;\s*$/.test(line.trim()))){result.push(text.trim());text='';trigger=false;}}assert.equal(text.trim(),'');return result;}
 
@@ -31,6 +32,8 @@ export async function createStudioWorkerEnvironment(){
     const db=await runtime.getD1Database('DB');
     for(const file of fs.readdirSync(path.join(work,'migrations')).filter(n=>n.endsWith('.sql')).sort())for(const sql of sqlStatements(fs.readFileSync(path.join(work,'migrations',file),'utf8')))await db.prepare(sql).run();
     await db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?)').bind('synthetic-owner',auth.config.CF_ACCESS_TEAM_DOMAIN,'synthetic-sub','owner','active',new Date().toISOString()).run();
+    await db.prepare('INSERT INTO admin_accounts VALUES(?,?,?,?,?,?,?,?)').bind('synthetic-worker-account','synthetic-owner','owner@example.com',hashAdminPassword('Synthetic-worker-password-42'),'owner','active',1,new Date().toISOString()).run();
+    await db.prepare('INSERT INTO admin_sessions VALUES(?,?,?,?,?)').bind(await authDigest(auth.cookie.split('=')[1]),'synthetic-worker-account',1,Math.floor(Date.now()/1000)+86400,new Date().toISOString()).run();
     return {runtime,db,auth,unregistered,work,certificateRequests:()=>certificateRequests};
   }catch(error){await runtime.dispose();throw error;}
 }

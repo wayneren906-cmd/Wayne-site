@@ -24,10 +24,10 @@ export function prepareStudioRelease(snapshot){
   const hosts=config.routes.map(route=>route.pattern);
   const bindings=snapshot.settings?.bindings;
   if(!Array.isArray(bindings)||bindings.find(b=>b.name==='DB')?.database_id!==config.d1_databases[0].database_id)throw Error('Production database binding mismatch');
-  for(const [name,text] of Object.entries(config.vars))if(bindings.find(b=>b.name===name&&b.type==='plain_text')?.text!==text)throw Error('Production identity configuration mismatch');
+  for(const [name,text] of Object.entries(config.vars??{}))if(bindings.find(b=>b.name===name&&b.type==='plain_text')?.text!==text)throw Error('Production identity configuration mismatch');
   const latest=snapshot.deployments?.[0];
   if(!latest?.versions?.length||latest.versions.reduce((sum,v)=>sum+v.percentage,0)!==100)throw Error('Current deployment baseline unavailable');
-  const roots=['app/studio','app/site-header.tsx','app/globals.css','app/api/studio','lib/studio-public.ts','lib/studio-catalog.ts','lib/studio-projects.ts','lib/learning','lib/ui','migrations','tests','docs','scripts/migration-preflight.mjs','scripts/release-preflight.mjs',
+  const roots=['app/studio','app/login','app/admin','app/site-header.tsx','app/globals.css','app/api/studio','app/api/auth','app/api/admin','lib/admin-auth.ts','lib/admin-bootstrap.ts','lib/studio-public.ts','lib/studio-catalog.ts','lib/studio-projects.ts','lib/studio-plans.ts','lib/learning','lib/ui','migrations','tests','docs','scripts/migration-preflight.mjs','scripts/release-preflight.mjs','scripts/prepare-admin-bootstrap.mjs','wrangler.jsonc',
     'AGENTS.md','.gitignore','app/journal.tsx','README.md','MIGRATION-STATUS.md','VALIDATION.md'];
   const changed=execFileSync('git',['diff','--name-only','HEAD','--',...roots],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']});
   const untracked=execFileSync('git',['ls-files','--others','--exclude-standard','--',...roots],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']});
@@ -37,10 +37,20 @@ export function prepareStudioRelease(snapshot){
     return {path:name,sha256:sha(fs.readFileSync(full)),bytes:fs.statSync(full).size};
   });
   return {format_version:1,worker:config.name,git_head:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),
-    files,access_change:planStudioAccessExtension(snapshot.app,config.vars.JOURNAL_OWNER_EMAIL,config.vars.CF_ACCESS_AUD,hosts),
+    files,access_change:config.vars?.CF_ACCESS_AUD?planStudioAccessExtension(snapshot.app,config.vars.JOURNAL_OWNER_EMAIL,config.vars.CF_ACCESS_AUD,hosts):planNativeAccessRetirement(snapshot.app,
+      bindings.find(b=>b.name==='JOURNAL_OWNER_EMAIL')?.text,bindings.find(b=>b.name==='CF_ACCESS_AUD')?.text,hosts),
     rollback_versions:latest.versions,keep_secret_bindings:bindings.filter(b=>b.type==='secret_text').map(b=>b.name),
-    preserve_routes:hosts,preserve_crons:config.triggers.crons,requires_explicit_authorization:['git_commit_push','production_worker_deploy','access_path_extension'],
-    owner_registration:'verified signed identity proposal only; no owner activation or private import authorized'};
+    preserve_routes:hosts,preserve_crons:config.triggers.crons,requires_explicit_authorization:['git_commit_push','production_worker_deploy','production_migrations','retire_old_access_app','bootstrap_primary_admin'],
+    owner_registration:'Native email account initializer: salted password hash, empty target, atomic owner/account write; never print credentials'};
+}
+
+export function planNativeAccessRetirement(app,ownerEmail,audience,hosts){
+  const before=planStudioAccessExtension(app,ownerEmail,audience,hosts);
+  const expected=hosts.flatMap(host=>[host+'/admin',host+'/api/admin/*',host+'/studio/private',host+'/api/studio']).sort();
+  if(before.add_public_paths.length||before.remove_public_paths.length||JSON.stringify(before.before_destinations.slice().sort())!==JSON.stringify(expected))throw Error('Unexpected Access paths: do not retire unrelated protection');
+  return {delete_app_id:app.id,before_destinations:before.before_destinations,after_destinations:[],replacement:'native email login and server-verified sessions',
+    sequence:['deploy_verified_native_auth','bootstrap_primary_admin','verify_native_login_and_private_permissions','retire_old_access_app','verify_public_and_private_paths'],
+    rollback:'Before retirement, old Access protection stays in place. After retirement, use only a Worker version that enforces native sessions, or restore the reviewed Access app before rolling back.'};
 }
 if(process.argv[1]===import.meta.filename){
   if(!process.argv[2])throw Error('Provide ignored live configuration snapshot JSON');

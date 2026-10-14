@@ -1,20 +1,22 @@
 # 私人备份与恢复：本地服务
 
-2026-10-14。离线备份数据格式 v2 已覆盖私人学习数据与项目草稿，支持空目标隔离恢复；没有上线备份入口或配置存储提供方。
+2026-10-14。离线备份数据格式 v3 已覆盖私人学习数据、项目草稿与目标计划，支持空目标隔离恢复；没有上线备份入口或配置存储提供方。
 
 ## 服务边界
 
 `exportPrivateLearningBackup` 只接受经验证的 active owner；integration grant、伪造身份和停用 owner 无权导出。鉴权和各表读取位于同一D1 batch快照。返回加密的私人备份、单独加密的无正文删除检查点和版本；不读取/写入文件、不创建HTTP端点。
 
-完整私人备份涵盖该 owner 的 users、integration_grants、learning_state、learning_events、event_revisions、ingest_receipts、processing_jobs、deleted_learning_events、deleted_learning_keys、studio_project_records、studio_project_receipts，共 11 张表。项目草稿、私人备注、发布快照和操作回执保存在加密归档中。公开 records/snapshots 不属于此格式。导出前检查列、所有者、来源/当前修订、完整前序修订、回执/任务关系、项目内容及版本；不截断损坏或超限数据。
+私人内容备份涵盖该 owner 的 users、integration_grants、learning_state、learning_events、event_revisions、ingest_receipts、processing_jobs、deleted_learning_events、deleted_learning_keys、studio_project_records、studio_project_receipts、studio_plan_records、studio_plan_receipts，共 13 张表。项目与目标的草稿、私人备注、发布快照和操作回执保存在加密归档中。公开 records/snapshots 不属于此格式；邮箱登录的账号密码哈希、会话和限速表也不进入内容备份，恢复后须独立重新配置登录，不能复活旧会话。导出前检查列、所有者、来源/当前修订、完整前序修订、回执/任务关系、项目与计划内容及版本；不截断损坏或超限数据。
 
-加密使用 Web Crypto AES-256-GCM、新随机 96bit nonce，格式版本和用途作为关联认证数据。外层加密信封仍为 v1，内层备份与检查点数据为 v2，以兼容旧归档。32字节密钥由可信调用者提供，不进入数据库、源码、日志或返回值；备份与检查点互换、密文篡改或错误密钥均拒绝。当前总计最多150行、明文最多4MiB；这是保守离线批次上限，不代表所有账号的 Worker/D1 生产额度。
+加密使用 Web Crypto AES-256-GCM、新随机 96bit nonce，格式版本和用途作为关联认证数据。外层加密信封仍为 v1，内层备份与检查点数据为 v3，兼容旧 v1 学习归档与 v2 项目归档。32字节密钥由可信调用者提供，不进入数据库、源码、日志或返回值；备份与检查点互换、密文篡改或错误密钥均拒绝。当前总计最多150行、明文最多4MiB；这是保守离线批次上限，不代表所有账号的 Worker/D1 生产额度。
 
 ## 恢复
 
-`restorePrivateLearningBackup` 仅接受已应用 schema、全部 11 张私人表为空的隔离目标，可信调用者显式声明 `isolated:true`、expectedOwnerId 与 minimumCheckpointVersion。声明不是隔离环境探测器。检查点必须从旧备份之外存活，并达到可信外部高水位；服务无法凭旧文件自动识别是否存在更新检查点。
+`restorePrivateLearningBackup` 仅接受已应用 schema、全部 16 张私人及登录表为空的隔离目标，可信调用者显式声明 `isolated:true`、expectedOwnerId 与 minimumCheckpointVersion。声明不是隔离环境探测器。检查点必须从旧备份之外存活，并达到可信外部高水位；服务无法凭旧文件自动识别是否存在更新检查点。
 
 v2 检查点还包含每个项目的当前版本。调用者必须为检查点中的每个项目提供独立保留、可信且为正整数的 `minimumProjectRevisions`；缺失、过旧、未知项目或项目集合不完整均拒绝。旧 v1 学习备份和检查点仍可恢复，但不能用它们绕过后来新增的项目状态。
+
+v3 检查点还包含目标计划的版本；有计划时必须提供独立可信的正整数 `minimumPlanRevision`。目标计划与检查点的存在性必须一致，旧格式不能忽略后来新增的计划。目标恢复保留私人草稿和回执、清空公开快照并推进版本，旧发布回执不会重新发布。
 
 在一个D1 batch内完成空目标守卫、原始事件/修订/回执导入、删除检查点合并与过滤、版本推进及权限关闭。为遵守既有历史回执的事务内授权/版本触发器，临时导入权限和旧版本只存在于此事务；不删除或禁用触发器。提交结果是owner disabled、所有旧grant revoked、无旧任务。任务元数据保存在加密备份中用于核对，但不恢复旧租约或重新执行任务。重新开放owner和新工具授权是独立明确操作。
 
@@ -24,9 +26,9 @@ v2 检查点还包含每个项目的当前版本。调用者必须为检查点�
 
 ## 验证
 
-- 原有学习备份测试及新增 8 项项目备份行为测试通过；全套 177/177、非增量 TypeScript noEmit 通过。
+- 学习、项目、目标备份及旧格式兼容测试通过；当前全套测试与类型检查结果以本批实际验证为准。
 - SQLite验证原记录/修订/回执完整核对、加密不含正文/内部标识、nonce更新、旧备份防复活、密文/密钥/用途/owner/检查点/隔离拒绝、空owner、快照内权限变化、损坏历史、18种ABORT/IGNORE回滚、历史窄/撤销grant、响应丢失关闭状态。
-- `tests/learning-backup-d1.mjs` 使用实际仅内存 D1：28 种 ABORT/IGNORE 整体回滚、grant 关联历史导入、旧备份加新删除检查点过滤、学习版本 3/4→5、保留 1 条无关事件、无旧任务/FK 正常、owner 及旧 grant 拒绝；项目私人备注保留、版本推进到 4、公开字段清空、旧发布回执不重新发布。显式重新启用合成测试 owner 后旧 grant 和已删除来源仍拒绝。
+- `tests/learning-backup-d1.mjs` 使用实际仅内存 D1：34 种 ABORT/IGNORE 整体回滚、grant 关联历史导入、旧备份加新删除检查点过滤、学习版本 3/4→5、保留 1 条无关事件、无旧任务/FK 正常、owner 及旧 grant 拒绝；项目和目标的私人备注保留、版本推进到 4、公开字段清空、旧发布回执不重新发布。显式重新启用合成测试 owner 后旧 grant 和已删除来源仍拒绝。
 - 合成数据只在内存处理，没有把明文备份、密钥或密文备份另存文件。测试不加载生产Wrangler配置、Secret或共享数据库。
 
 ## 仍待完成

@@ -78,16 +78,16 @@ test('management bounds recent jobs while counts and source coverage include all
 
 test('management HTTP denies anonymous, invalid and unregistered identities; authenticated responses are non-cacheable and read-only',async t=>{
   const f=await environment(t);
-  const request=(jwt=f.auth.jwt,path='/api/studio/management',method='GET')=>new Request('https://synthetic.invalid'+path,{method,headers:jwt?{'cf-access-jwt-assertion':jwt}:{}});
+  const request=(jwt=f.auth.cookie,path='/api/studio/management',method='GET')=>new Request('https://synthetic.invalid'+path,{method,headers:jwt?{'cookie':jwt}:{}});
   assert.equal((await handleStudioManagement(request(null),f.env,f.options)).status,401);
   assert.equal((await handleStudioManagement(request('forged'),f.env,f.options)).status,403);
   const missing=await signedOwner('unregistered');
   assert.equal((await handleStudioManagement(request(missing.jwt),f.env,{now,verification:missing.verification})).status,403);
-  for(const query of ['?owner_id=synthetic-other','?status=pending'])assert.equal((await handleStudioManagement(request(f.auth.jwt,'/api/studio/management'+query),f.env,f.options)).status,400);
-  assert.equal((await handleStudioManagement(request(f.auth.jwt,undefined,'POST'),f.env,f.options)).status,405);
+  for(const query of ['?owner_id=synthetic-other','?status=pending'])assert.equal((await handleStudioManagement(request(f.auth.cookie,'/api/studio/management'+query),f.env,f.options)).status,400);
+  assert.equal((await handleStudioManagement(request(f.auth.cookie,undefined,'POST'),f.env,f.options)).status,405);
   const result=await handleStudioManagement(request(),f.env,f.options);
   assert.equal(result.status,200);assert.match(result.headers.get('cache-control'),/no-store/);
-  assert.equal(result.headers.get('vary'),'cf-access-jwt-assertion');assert.equal(result.headers.get('access-control-allow-origin'),null);
+  assert.equal(result.headers.get('vary'),'Cookie');assert.equal(result.headers.get('access-control-allow-origin'),null);
   assert.equal(f.sqlite.prepare('SELECT COUNT(*) n FROM learning_state').get().n,0);
 });
 
@@ -97,6 +97,6 @@ test('management rejects corrupt state and sanitizes database failures',async t=
   f.sqlite.prepare('UPDATE learning_state SET data_version=0').run();
   await assert.rejects(getStudioManagement(f.db,f.owner,{now}),{code:'SERVICE_UNAVAILABLE'});
   const broken={...f.db,async batch(){throw Error('PRIVATE_DATABASE_DIAGNOSTIC');}};
-  const result=await handleStudioManagement(new Request('https://synthetic.invalid/api/studio/management',{headers:{'cf-access-jwt-assertion':f.auth.jwt}}),{...f.env,DB:broken},f.options);
+  const result=await handleStudioManagement(new Request('https://synthetic.invalid/api/studio/management',{headers:{'cookie':f.auth.cookie}}),{...f.env,DB:broken},f.options);
   assert.equal(result.status,503);assert.ok(!(await result.text()).includes('PRIVATE_DATABASE_DIAGNOSTIC'));
 });

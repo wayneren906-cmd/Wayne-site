@@ -3,6 +3,9 @@ import {readRecords} from '@/lib/database';
 import {summarizePublicActivity,summarizePublicLearning} from '@/lib/studio-public';
 import {studioProjects} from '@/lib/studio-catalog';
 import {readPublicStudioProjects} from '@/lib/studio-projects';
+import {readPublicStudioPlans} from '@/lib/studio-plans';
+import GoalList from './goal-list';
+import './studio-goals.css';
 import {projectStatusLabels} from '@/lib/ui/project-protocol';
 import StudioShell from './studio-shell';
 import StudioActivityChart from './studio-activity-chart';
@@ -12,10 +15,11 @@ export const dynamic='force-dynamic';
 export const metadata={title:'Studio · 个人数字仪表盘',description:'Wayneo Studio — A living dashboard of my growth, work, and exploration. 公开的成长、项目与数字活动，私人的管理空间。'};
 
 export default async function StudioPage(){
-  const [recordsResult,projectsResult]=await Promise.allSettled([readRecords(env.DB),readPublicStudioProjects(env.DB)]);
+  const [recordsResult,projectsResult,plansResult]=await Promise.allSettled([readRecords(env.DB),readPublicStudioProjects(env.DB),readPublicStudioPlans(env.DB)]);
   const summary=recordsResult.status==='fulfilled'?summarizePublicLearning(recordsResult.value):null;
   const activity=recordsResult.status==='fulfilled'?summarizePublicActivity(recordsResult.value):[];
   const publishedProjects=projectsResult.status==='fulfilled'?projectsResult.value:null;
+  const publishedPlan=plansResult.status==='fulfilled'?plansResult.value[0]??null:undefined;
   const recent=summary?.recent[0];
   return <StudioShell active="overview" title="成长、工作与探索。" description="一个持续更新的个人数字仪表盘，让成长可见，让进展可追踪。">
     <div className="dashboard-intro"><p>A living dashboard of my growth, work, and exploration.</p><span className="dashboard-status">公开浏览 · 私人管理</span></div>
@@ -35,13 +39,17 @@ export default async function StudioPage(){
         <p className="dashboard-source">{recent?`依据 ${recent.date} 的公开手记`:'暂无可读取的近期公开记录'}</p>
         {recent?<ul className="dashboard-focus-list">{recent.items.slice(0,3).map((item,index)=><li key={index}><h3>{item.label}</h3><p>{item.text}</p></li>)}</ul>:<p className="dashboard-empty">学习方向会随公开记录更新，在有依据时呈现。</p>}
         <a className="dashboard-text-link" href="/studio/roadmap">探索学习与知识 →</a>
-        <p className="dashboard-source">当前目标尚未公开 · 此处为近期记录摘要</p>
+        <p className="dashboard-source">此处为近期记录摘要 · 当前目标见下方公开安排</p>
       </section>
     </div>
     <section className="dashboard-section dashboard-projects" aria-labelledby="projects-title">
       <header className="dashboard-section-heading"><div><p className="workbench-kicker">03 / WORK & EXPLORATION</p><h2 id="projects-title">从想法走向作品</h2></div><a href="/studio/projects">全部项目 ↗</a></header>
       <div className="dashboard-project-grid">{studioProjects.map(project=>{const published=publishedProjects?.find(item=>item.project_id===project.id);return <article key={project.id}><div className="dashboard-project-meta"><p className="workbench-kicker">{project.num.split(' / ')[0]}</p><span className="dashboard-status">{published?projectStatusLabels[published.content.status]:'方向蓝图'}</span></div><h3>{project.title}</h3><p>{published?.content.summary??project.desc}</p><div className="dashboard-project-next"><span>{published?'公开下一步':'下一步参考'}</span><p>{published?published.content.next_step||'暂无公开安排':project.milestones[0].title}</p></div><a href={`/studio/projects#${project.id}`}>查看里程碑 →</a></article>;})}</div>
       <p className="dashboard-source">{publishedProjects===null?'动态项目状态暂时无法读取，方向蓝图仍可浏览。':'项目状态由管理员明确发布。未发布的方向保留蓝图，私人草稿与证据不会自动公开。'}</p>
+    </section>
+    <section id="goals" className="dashboard-section" aria-labelledby="goals-title">
+      <header className="dashboard-section-heading"><div><p className="workbench-kicker">GOALS / NEXT STEPS</p><h2 id="goals-title">目标与下一步</h2></div></header>
+      {publishedPlan?<><GoalList content={publishedPlan.content}/><p className="dashboard-source">状态由本人确认 · 发布日期 <time dateTime={publishedPlan.published_at}>{new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',dateStyle:'medium'}).format(new Date(publishedPlan.published_at))}</time></p></>:<p className="dashboard-empty" role="status">{publishedPlan===undefined?'公开目标暂时无法读取，请稍后刷新。':'当前暂无公开目标。新的安排会在确认发布后呈现。'}</p>}
     </section>
     <div className="dashboard-main-grid">
       <section className="dashboard-section" aria-labelledby="activity-title">

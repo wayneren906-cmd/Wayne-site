@@ -1,11 +1,12 @@
 import {sameOrigin} from '../access.ts';
 import {json} from '../database.ts';
-import {LearningAccessError, verifyLearningOwner} from './auth.ts';
+import {LearningAccessError, verifyLearningOwner, verifyStudioSession} from './auth.ts';
 import {LearningWriteError} from './event-validation.ts';
 import {correctLearningEvent, saveLearningEvent} from './events.ts';
 import {deleteLearningEvent} from './deletions.ts';
-import {prepareOwnerRegistration} from './registration.ts';
 import {getStudioProjectDrafts,mutateStudioProject} from '../studio-projects.ts';
+import {getStudioPlanDrafts,mutateStudioPlan} from '../studio-plans.ts';
+import {guardPrivateDatabase} from './session-db.ts';
 import {getLearningContext, getLearningEvent, getLearningEventHistory, getStudioManagement, LearningReadError} from './reads.ts';
 import type {ContextPurpose, LearningAPIErrorCode, LearningAPIErrorDTO} from './contracts.ts';
 
@@ -20,7 +21,7 @@ const statuses: Record<LearningAPIErrorCode, number> = {
 function errorResponse(code: LearningAPIErrorCode, message: string, status = statuses[code]) {
   const payload: LearningAPIErrorDTO = {error: {code, message}};
   const response = json(payload, status);
-  response.headers.set('Vary', 'cf-access-jwt-assertion');
+  response.headers.set('Vary', 'Cookie');
   return response;
 }
 
@@ -32,11 +33,11 @@ function failed(error: unknown) {
 async function owner(request: Request, env: StudioEnv, options: ServerOptions) {
   // HTTP Studio is browser-owner only. Grant authentication belongs to a separately
   // scoped integration adapter, not a bearer fallback for this browser endpoint.
-  return verifyLearningOwner(request.headers.get('cf-access-jwt-assertion'), env, env.DB, options.verification);
+  return verifyStudioSession(request.headers,env.DB,options.now?options.now.getTime()/1000:undefined);
 }
 
 function missingIdentity(request: Request) {
-  return request.headers.get('cf-access-jwt-assertion') ? null : errorResponse('PRIVATE_ACCESS_DENIED', '请先使用所有者账户登录', 401);
+  return request.headers.get('cookie') ? null : errorResponse('PRIVATE_ACCESS_DENIED', '请先使用所有者账户登录', 401);
 }
 
 async function boundedJSON(request: Request): Promise<unknown> {
@@ -66,6 +67,7 @@ export async function handleStudioEvents(request: Request, env: StudioEnv, optio
   const denied = missingIdentity(request); if (denied) return denied;
   try {
     const identity = await owner(request, env, options);
+    env={...env,DB:await guardPrivateDatabase(env.DB,request.headers,options.now)};
     if (request.method !== 'POST') return errorResponse('INVALID_INPUT', '不支持此方法', 405);
     if (!sameOrigin(request)) return errorResponse('PRIVATE_ACCESS_DENIED', '请求来源无效');
     if (request.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json') return errorResponse('INVALID_INPUT', '请提交JSON内容', 415);
@@ -78,6 +80,7 @@ export async function handleStudioEvent(request: Request, env: StudioEnv, eventI
   const denied = missingIdentity(request); if (denied) return denied;
   try {
     const identity = await owner(request, env, options);
+    env={...env,DB:await guardPrivateDatabase(env.DB,request.headers,options.now)};
     if (request.method === 'PATCH' || request.method === 'DELETE') {
       if (!sameOrigin(request)) return errorResponse('PRIVATE_ACCESS_DENIED', '请求来源无效');
       if (request.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json') return errorResponse('INVALID_INPUT', '请提交JSON内容', 415);
@@ -97,6 +100,7 @@ export async function handleStudioEventHistory(request: Request, env: StudioEnv,
   const denied = missingIdentity(request); if (denied) return denied;
   try {
     const identity = await owner(request, env, options);
+    env={...env,DB:await guardPrivateDatabase(env.DB,request.headers,options.now)};
     if (request.method !== 'GET') return errorResponse('INVALID_INPUT', '不支持此方法', 405);
     const query = new URL(request.url).searchParams;
     if ([...query.keys()].some(key => key !== 'before_revision') || query.getAll('before_revision').length > 1) throw new LearningReadError('INVALID_INPUT');
@@ -111,6 +115,7 @@ export async function handleStudioContext(request: Request, env: StudioEnv, opti
   const denied = missingIdentity(request); if (denied) return denied;
   try {
     const identity = await owner(request, env, options);
+    env={...env,DB:await guardPrivateDatabase(env.DB,request.headers,options.now)};
     if (request.method !== 'GET') return errorResponse('INVALID_INPUT', '不支持此方法', 405);
     const query = new URL(request.url).searchParams;
     if ([...query.keys()].some(key => key !== 'purpose') || query.getAll('purpose').length > 1) throw new LearningReadError('INVALID_INPUT');
@@ -120,22 +125,18 @@ export async function handleStudioContext(request: Request, env: StudioEnv, opti
 }
 
 export async function handleStudioRegistration(request:Request,env:StudioEnv,options:ServerOptions={}):Promise<Response>{
-  const denied=missingIdentity(request);if(denied)return denied;
-  try{
-    if(request.method!=='GET')return errorResponse('INVALID_INPUT','不支持此方法',405);
-    const candidate=await prepareOwnerRegistration(request.headers.get('cf-access-jwt-assertion'),env,env.DB,options);
-    return json(candidate);
-  }catch(error){return failed(error);}
+  return errorResponse('PRIVATE_ACCESS_DENIED','旧登录登记流程已停用，请使用邮箱登录',410);
 }
 
 export async function handleStudioManagement(request:Request,env:StudioEnv,options:ServerOptions={}):Promise<Response>{
   const denied=missingIdentity(request);if(denied)return denied;
   try{
     const identity=await owner(request,env,options);
+    env={...env,DB:await guardPrivateDatabase(env.DB,request.headers,options.now)};
     if(request.method!=='GET')return errorResponse('INVALID_INPUT','不支持此方法',405);
     if([...new URL(request.url).searchParams].length)throw new LearningReadError('INVALID_INPUT');
     const response=json(await getStudioManagement(env.DB,identity,{now:options.now}));
-    response.headers.set('Vary','cf-access-jwt-assertion');
+    response.headers.set('Vary','Cookie');
     return response;
   }catch(error){return failed(error);}
 }
@@ -144,6 +145,7 @@ export async function handleStudioProjects(request:Request,env:StudioEnv,options
   const denied=missingIdentity(request);if(denied)return denied;
   try{
     const identity=await owner(request,env,options);
+    env={...env,DB:await guardPrivateDatabase(env.DB,request.headers,options.now)};
     if([...new URL(request.url).searchParams].length)throw new LearningWriteError('INVALID_INPUT');
     let response:Response;
     if(request.method==='GET')response=json({projects:await getStudioProjectDrafts(env.DB,identity)});
@@ -152,6 +154,23 @@ export async function handleStudioProjects(request:Request,env:StudioEnv,options
       if(request.headers.get('content-type')?.split(';')[0].trim().toLowerCase()!=='application/json')return errorResponse('INVALID_INPUT','请提交JSON内容',415);
       response=json(await mutateStudioProject(env.DB,identity,await boundedJSON(request),{now:options.now}));
     }else return errorResponse('INVALID_INPUT','不支持此方法',405);
-    response.headers.set('Vary','cf-access-jwt-assertion');return response;
+    response.headers.set('Vary','Cookie');return response;
+  }catch(error){return failed(error);}
+}
+
+export async function handleStudioPlans(request:Request,env:StudioEnv,options:ServerOptions={}):Promise<Response>{
+  const denied=missingIdentity(request);if(denied)return denied;
+  try{
+    const identity=await owner(request,env,options);
+    env={...env,DB:await guardPrivateDatabase(env.DB,request.headers,options.now)};
+    if([...new URL(request.url).searchParams].length)throw new LearningWriteError('INVALID_INPUT');
+    let response:Response;
+    if(request.method==='GET')response=json({plans:await getStudioPlanDrafts(env.DB,identity)});
+    else if(request.method==='POST'){
+      if(!sameOrigin(request))return errorResponse('PRIVATE_ACCESS_DENIED','请求来源无效');
+      if(request.headers.get('content-type')?.split(';')[0].trim().toLowerCase()!=='application/json')return errorResponse('INVALID_INPUT','请提交JSON内容',415);
+      response=json(await mutateStudioPlan(env.DB,identity,await boundedJSON(request),{now:options.now}));
+    }else return errorResponse('INVALID_INPUT','不支持此方法',405);
+    response.headers.set('Vary','Cookie');return response;
   }catch(error){return failed(error);}
 }

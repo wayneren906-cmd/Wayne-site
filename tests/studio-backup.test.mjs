@@ -6,8 +6,9 @@ import {saveLearningEvent} from '../lib/learning/events.ts';
 import {exportPrivateLearningBackup,restorePrivateLearningBackup} from '../lib/learning/private-backup.ts';
 import {mutateStudioProject,getStudioProjectDrafts,readPublicStudioProjects} from '../lib/studio-projects.ts';
 import {emptyProjectContent} from '../lib/ui/project-protocol.ts';
+import {mutateStudioPlan} from '../lib/studio-plans.ts';
 
-const tables=['users','integration_grants','learning_state','learning_events','event_revisions','ingest_receipts','processing_jobs','deleted_learning_events','deleted_learning_keys','studio_project_records','studio_project_receipts'];
+const tables=['users','integration_grants','learning_state','learning_events','event_revisions','ingest_receipts','processing_jobs','deleted_learning_events','deleted_learning_keys','studio_project_records','studio_project_receipts','studio_plan_records','studio_plan_receipts'];
 const snapshot=sqlite=>Object.fromEntries(tables.map(table=>[table,sqlite.prepare(`SELECT * FROM ${table}`).all()]));
 const options={isolated:true,expectedOwnerId:'synthetic-owner',minimumCheckpointVersion:0,now};
 const draft=(revision=0,key='project-save',summary='synthetic draft')=>({action:'save_draft',project_id:'c-engine',expected_revision:revision,idempotency_key:key,content:{...emptyProjectContent(),summary,private_note:'SYNTHETIC_PRIVATE_BACKUP_NOTE'}});
@@ -31,13 +32,13 @@ async function seal(value,purpose,key){
   return {schema_version:1,purpose,iv:Buffer.from(iv).toString('hex'),ciphertext:Buffer.from(encrypted).toString('hex')};
 }
 
-test('v2 encrypts learning, private notes, draft/public snapshots and receipts from one authorized database snapshot',async t=>{
+test('v3 encrypts learning, private notes, draft/public snapshots and receipts from one authorized database snapshot',async t=>{
   const f=await setup(t);let reads=0;const db={...f.db,async batch(statements){reads++;return f.db.batch(statements);}};
   const bundle=await exportPrivateLearningBackup(db,f.owner,f.key,{now});assert.equal(reads,1);
   assert.ok(!JSON.stringify(bundle).includes('SYNTHETIC_PRIVATE_BACKUP_NOTE'));
   assert.ok(!JSON.stringify(bundle).includes('synthetic unpublished draft'));
-  const decoded=await decode(bundle.backup,f.key);assert.equal(decoded.schema_version,2);
-  assert.equal(Object.keys(decoded.tables).length,11);assert.equal(decoded.tables.studio_project_receipts.length,3);
+  const decoded=await decode(bundle.backup,f.key);assert.equal(decoded.schema_version,3);
+  assert.equal(Object.keys(decoded.tables).length,13);assert.equal(decoded.tables.studio_project_receipts.length,3);
   assert.equal(JSON.parse(decoded.tables.studio_project_records[0].published_json).summary,'synthetic draft');
   assert.equal(JSON.parse(decoded.tables.studio_project_records[0].draft_json).summary,'synthetic unpublished draft');
   assert.deepEqual(bundle.project_revisions,{'c-engine':3});
@@ -82,7 +83,7 @@ test('project restore requires explicit fresh revision floors and refuses to sil
 
 test('legacy v1 learning backup remains readable but cannot bypass the newer project checkpoint',async t=>{
   const f=await setup(t,{project:false}),bundle=await exportPrivateLearningBackup(f.db,f.owner,f.key,{now}),decoded=await decode(bundle.backup,f.key),checkpoint=await decode(bundle.checkpoint,f.key);
-  delete decoded.tables.studio_project_records;delete decoded.tables.studio_project_receipts;decoded.schema_version=1;
+  delete decoded.tables.studio_project_records;delete decoded.tables.studio_project_receipts;delete decoded.tables.studio_plan_records;delete decoded.tables.studio_plan_receipts;decoded.schema_version=1;
   const legacyBackup=await seal(decoded,'private_backup',f.key),legacyCheckpoint=await seal(checkpoint.learning,'deletion_checkpoint',f.key),target=await blank(t);
   const result=await restorePrivateLearningBackup(target.db,legacyBackup,legacyCheckpoint,f.key,options);assert.equal(result.projects_restored,0);
   assert.equal(target.sqlite.prepare('SELECT COUNT(*) n FROM learning_events').get().n,1);
@@ -90,13 +91,25 @@ test('legacy v1 learning backup remains readable but cannot bypass the newer pro
   await assert.rejects(restorePrivateLearningBackup(fresh.db,legacyBackup,current.checkpoint,f.key,{...options,minimumProjectRevisions:current.project_revisions}),{code:'INVALID_INPUT'});
 });
 
-test('project restore aborts and rolls back all eleven tables on failed or ignored project writes',async t=>{
+test('project restore aborts and rolls back all thirteen tables on failed or ignored project writes',async t=>{
   const f=await setup(t),bundle=await exportPrivateLearningBackup(f.db,f.owner,f.key,{now}),target=await blank(t),before=snapshot(target.sqlite);
   for(const [table,operation] of [['studio_project_records','INSERT'],['studio_project_records','UPDATE'],['studio_project_receipts','INSERT']])for(const mode of ['ABORT','IGNORE']){
     target.sqlite.exec(`CREATE TRIGGER synthetic_backup_failure BEFORE ${operation} ON ${table} BEGIN SELECT RAISE(${mode}${mode==='ABORT'?',\'synthetic failure\'':''}); END;`);
     await assert.rejects(restorePrivateLearningBackup(target.db,bundle.backup,bundle.checkpoint,f.key,{...options,minimumProjectRevisions:bundle.project_revisions}),{code:'SERVICE_UNAVAILABLE'});
     assert.deepEqual(snapshot(target.sqlite),before);target.sqlite.exec('DROP TRIGGER synthetic_backup_failure');
   }
+});
+
+test('legacy v2 project archives stay readable but cannot omit a newer personal-goal checkpoint',async t=>{
+  const f=await setup(t),bundle=await exportPrivateLearningBackup(f.db,f.owner,f.key,{now}),decoded=await decode(bundle.backup,f.key),checkpoint=await decode(bundle.checkpoint,f.key);
+  delete decoded.tables.studio_plan_records;delete decoded.tables.studio_plan_receipts;decoded.schema_version=2;
+  delete checkpoint.plan_revision;checkpoint.schema_version=2;
+  const old=await seal(decoded,'private_backup',f.key),oldCheckpoint=await seal(checkpoint,'deletion_checkpoint',f.key),target=await blank(t);
+  const result=await restorePrivateLearningBackup(target.db,old,oldCheckpoint,f.key,{...options,minimumProjectRevisions:bundle.project_revisions});assert.equal(result.projects_restored,1);assert.equal(result.plans_restored,0);
+  await mutateStudioPlan(f.db,f.owner,{action:'save_draft',plan_id:'personal-goals',expected_revision:0,idempotency_key:'backup-new-plan',content:{goals:[],private_note:'synthetic note'}},{now});
+  const current=await exportPrivateLearningBackup(f.db,f.owner,f.key,{now}),fresh=await blank(t);
+  await assert.rejects(restorePrivateLearningBackup(fresh.db,old,current.checkpoint,f.key,{...options,minimumProjectRevisions:current.project_revisions,minimumPlanRevision:current.plan_revision}),{code:'INVALID_INPUT'});
+  await assert.rejects(restorePrivateLearningBackup(fresh.db,old,oldCheckpoint,f.key,{...options,minimumProjectRevisions:current.project_revisions,minimumPlanRevision:current.plan_revision}),{code:'INVALID_INPUT'});
 });
 
 test('project backup validates ownership, content schema and receipt associations before mutation',async t=>{

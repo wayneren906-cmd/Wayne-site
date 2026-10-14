@@ -101,10 +101,10 @@ test('public project snapshots hide disabled owners and reject malformed publica
 });
 
 test('project HTTP denies forged or anonymous identity, cross-origin writes and unsupported input while retaining no-store',async t=>{
-  const f=await environment(t),request=(token=f.auth.jwt,method='GET',body,origin='https://synthetic.invalid')=>new Request('https://synthetic.invalid/api/studio/projects',{method,headers:{...(token?{'cf-access-jwt-assertion':token}:{}),...(body?{'content-type':'application/json',origin}:{})},...(body?{body:JSON.stringify(body)}:{})});
+  const f=await environment(t),request=(token=f.auth.cookie,method='GET',body,origin='https://synthetic.invalid')=>new Request('https://synthetic.invalid/api/studio/projects',{method,headers:{...(token?{'cookie':token}:{}),...(body?{'content-type':'application/json',origin}:{})},...(body?{body:JSON.stringify(body)}:{})});
   assert.equal((await handleStudioProjects(request(null),f.env,f.options)).status,401);assert.equal((await handleStudioProjects(request('forged'),f.env,f.options)).status,403);
-  assert.equal((await handleStudioProjects(request(f.auth.jwt,'POST',save(),'https://foreign.invalid'),f.env,f.options)).status,403);
-  const result=await handleStudioProjects(request(f.auth.jwt,'POST',save()),f.env,f.options);assert.equal(result.status,200);assert.match(result.headers.get('cache-control'),/no-store/);assert.equal(result.headers.get('vary'),'cf-access-jwt-assertion');
-  assert.equal((await handleStudioProjects(request(f.auth.jwt,'POST',{...publish(1),confirm_public:false}),f.env,f.options)).status,400);
+  assert.equal((await handleStudioProjects(request(f.auth.cookie,'POST',save(),'https://foreign.invalid'),f.env,f.options)).status,403);
+  const result=await handleStudioProjects(request(f.auth.cookie,'POST',save()),f.env,f.options);assert.equal(result.status,200);assert.match(result.headers.get('cache-control'),/no-store/);assert.equal(result.headers.get('vary'),'Cookie');
+  assert.equal((await handleStudioProjects(request(f.auth.cookie,'POST',{...publish(1),confirm_public:false}),f.env,f.options)).status,400);
   const read=await handleStudioProjects(request(),f.env,f.options);assert.equal((await read.json()).projects[0].private_note,'synthetic PRIVATE NOTE');
 });

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {planStudioAccessExtension} from '../scripts/release-preflight.mjs';
+import {planStudioAccessExtension,planNativeAccessRetirement} from '../scripts/release-preflight.mjs';
 const app={type:'self_hosted',id:'synthetic-app',aud:'synthetic-aud',destinations:[{type:'public',uri:'synthetic.example/admin'},{type:'public',uri:'synthetic.example/api/admin/*'}],
   policies:[{id:'synthetic-owner-policy',decision:'allow',include:[{email:{email:'owner@example.com'}}],exclude:[],require:[]}],allowed_idps:['synthetic-idp']};
 test('Studio Access plan adds only page/API paths and preserves original app audience and owner policy',()=>{
@@ -12,6 +12,14 @@ test('Studio Access plan adds only page/API paths and preserves original app aud
   const broad={...already,destinations:[...already.destinations,{type:'public',uri:'synthetic.example/studio'}]};
   const narrowed=planStudioAccessExtension(broad,'owner@example.com','synthetic-aud',['synthetic.example']);
   assert.deepEqual(narrowed.remove_public_paths,['synthetic.example/studio']);assert.ok(!narrowed.after_destinations.includes('synthetic.example/studio'));assert.ok(narrowed.after_destinations.includes('synthetic.example/studio/private'));
+});
+
+test('native auth retirement only removes the exact website Access app after replacement verification',()=>{
+  const current={...app,destinations:[...app.destinations,{type:'public',uri:'synthetic.example/studio/private'},{type:'public',uri:'synthetic.example/api/studio'}]};
+  const before=JSON.stringify(current),plan=planNativeAccessRetirement(current,'owner@example.com','synthetic-aud',['synthetic.example']);
+  assert.equal(plan.delete_app_id,'synthetic-app');assert.deepEqual(plan.after_destinations,[]);assert.equal(JSON.stringify(current),before);
+  assert.ok(plan.sequence.indexOf('verify_native_login_and_private_permissions')<plan.sequence.indexOf('retire_old_access_app'));
+  assert.throws(()=>planNativeAccessRetirement({...current,destinations:[...current.destinations,{type:'public',uri:'synthetic.example/unrelated'}]},'owner@example.com','synthetic-aud',['synthetic.example']));
 });
 test('wrong audience, broadened policy, unrelated destination or public bypass abort release planning',()=>{
   for(const value of [{...app,aud:'wrong'},{...app,policies:[{...app.policies[0],include:[{everyone:{}}]}]},

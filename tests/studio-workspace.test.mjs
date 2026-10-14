@@ -60,7 +60,7 @@ test('record correction preserves source, association, uncertainty and expected 
 });
 test('signed owner workspace saves, reads association, corrects, reads history and deletes via real handlers',async t=>{
   const f=await fixture(t),auth=await signedOwner(),base='https://synthetic.invalid';
-  const client=new StudioHttpClient({fetchFn:async(url,init)=>{const headers=new Headers(init.headers);headers.set('cf-access-jwt-assertion',auth.jwt);if(init.method!=='GET')headers.set('origin',base);const request=new Request(base+url,{...init,headers}),env={DB:f.db,...auth.config},options={now,verification:auth.verification};
+  const client=new StudioHttpClient({fetchFn:async(url,init)=>{const headers=new Headers(init.headers);headers.set('cookie',auth.cookie);if(init.method!=='GET')headers.set('origin',base);const request=new Request(base+url,{...init,headers}),env={DB:f.db,...auth.config},options={now,verification:auth.verification};
     if(url.includes('/context'))return handleStudioContext(request,env,options);if(url==='/api/studio/events')return handleStudioEvents(request,env,options);
     const parts=url.split('/');if(url.includes('/revisions'))return handleStudioEventHistory(request,env,parts[4],options);return handleStudioEvent(request,env,parts[4],options);}});
   const saved=await client.saveEvent(buildWorkspaceInput(target,draft,keys));let view=projectWorkspace(await client.getContext('review'));assert.equal(view.practices.find(e=>e.id===target.id).events.length,1);

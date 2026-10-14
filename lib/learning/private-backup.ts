@@ -4,6 +4,7 @@ import {activeWriter,requiredWrite} from './write-support.ts';
 import {LearningWriteError,normalizeLearningEvent} from './event-validation.ts';
 import {checkpointSchema,deletionRestoreStatements} from './restore-deletions.ts';
 import {projectIds,projectDraftSchema} from '../ui/project-protocol.ts';
+import {planDraftSchema} from '../ui/plan-protocol.ts';
 
 const id=z.string().min(1).max(255), text=z.string(), stamp=z.string().datetime({offset:true});
 const natural=z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER-1), positive=natural.refine(n=>n>0);
@@ -28,7 +29,11 @@ const projectSchemas={
   studio_project_receipts:z.object({owner_id:id,idempotency_key:id,project_id:z.enum(projectIds),payload_sha256:z.string().regex(/^[a-f0-9]{64}$/),
     action:z.enum(['save_draft','publish','unpublish']),revision:positive}).strict(),
 };
-const schemas={...learningSchemas,...projectSchemas};
+const planSchemas={
+  studio_plan_records:projectSchemas.studio_project_records.omit({project_id:true}).extend({plan_id:z.literal('personal-goals')}),
+  studio_plan_receipts:projectSchemas.studio_project_receipts.omit({project_id:true}).extend({plan_id:z.literal('personal-goals')}),
+};
+const schemas={...learningSchemas,...projectSchemas,...planSchemas};
 type Table=keyof typeof schemas;
 type Row=Record<string,string|number|null>;
 const tables=Object.keys(schemas) as Table[];
@@ -38,11 +43,13 @@ const learningRowsSchema=z.object({users:z.array(schemas.users).max(maxRows),int
   event_revisions:z.array(schemas.event_revisions).max(maxRows),ingest_receipts:z.array(schemas.ingest_receipts).max(maxRows),
   processing_jobs:z.array(schemas.processing_jobs).max(maxRows),deleted_learning_events:z.array(schemas.deleted_learning_events).max(maxRows),
   deleted_learning_keys:z.array(schemas.deleted_learning_keys).max(maxRows)}).strict();
-const rowsSchema=learningRowsSchema.extend({studio_project_records:z.array(projectSchemas.studio_project_records).max(3),
+const v2RowsSchema=learningRowsSchema.extend({studio_project_records:z.array(projectSchemas.studio_project_records).max(3),
   studio_project_receipts:z.array(projectSchemas.studio_project_receipts).max(maxRows)}).strict();
+const rowsSchema=v2RowsSchema.extend({studio_plan_records:z.array(planSchemas.studio_plan_records).max(1),studio_plan_receipts:z.array(planSchemas.studio_plan_receipts).max(maxRows)}).strict();
 const projectHeadsSchema=z.array(z.object({project_id:z.enum(projectIds),revision:positive}).strict()).max(3)
   .refine(heads=>new Set(heads.map(head=>head.project_id)).size===heads.length);
 const studioCheckpointSchema=z.object({schema_version:z.literal(2),learning:checkpointSchema,project_heads:projectHeadsSchema}).strict();
+const planCheckpointSchema=studioCheckpointSchema.extend({schema_version:z.literal(3),plan_revision:positive.nullable()}).strict();
 const projectFloorSchema=z.object({'c-engine':positive.optional(),'embedded-controller':positive.optional(),'automotive-bus':positive.optional()}).strict();
 const envelopeSchema=z.object({schema_version:z.literal(1),purpose:z.enum(['private_backup','deletion_checkpoint']),
   iv:z.string().regex(/^[a-f0-9]{24}$/),ciphertext:z.string().regex(/^[a-f0-9]+$/).max((maxBytes+16)*2)}).strict();
@@ -69,10 +76,12 @@ async function open(raw:unknown,purpose:EncryptedLearningBackup['purpose'],key:U
     return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
   }catch{throw new LearningWriteError('INVALID_INPUT');}
 }
-function validateRows(ownerId:string,raw:unknown,format:1|2=2):Record<Table,Row[]>{
+function validateRows(ownerId:string,raw:unknown,format:1|2|3=3):Record<Table,Row[]>{
   const legacy=format===1?learningRowsSchema.safeParse(raw):null;
   if(legacy&&!legacy.success)throw new LearningWriteError('INVALID_INPUT');
-  const parsed=rowsSchema.safeParse(legacy?.success?{...legacy.data,studio_project_records:[],studio_project_receipts:[]}:raw);
+  const studio=format===2?v2RowsSchema.safeParse(raw):null;
+  if(studio&&!studio.success)throw new LearningWriteError('INVALID_INPUT');
+  const parsed=rowsSchema.safeParse(legacy?.success?{...legacy.data,studio_project_records:[],studio_project_receipts:[],studio_plan_records:[],studio_plan_receipts:[]}:studio?.success?{...studio.data,studio_plan_records:[],studio_plan_receipts:[]}:raw);
   if(!parsed.success)throw new LearningWriteError('INVALID_INPUT');
   const data:Record<Table,Row[]>=parsed.data;
   if(tables.reduce((sum,t)=>sum+data[t].length,0)>maxRows||data.users.length!==1||data.users[0].user_id!==ownerId||data.learning_state.length>1
@@ -126,10 +135,25 @@ function validateRows(ownerId:string,raw:unknown,format:1|2=2):Record<Table,Row[
     if(!project||Number(receipt.revision)>Number(project.revision)||projectKeys.has(String(receipt.idempotency_key))||projectVersions.has(versionKey))throw new LearningWriteError('INVALID_INPUT');
     projectKeys.add(String(receipt.idempotency_key));projectVersions.add(versionKey);
   }
+  const plan=data.studio_plan_records[0];
+  if(plan){
+    if([plan.published_revision,plan.published_json,plan.published_at].some(value=>value===null)
+      &&![plan.published_revision,plan.published_json,plan.published_at].every(value=>value===null))throw new LearningWriteError('INVALID_INPUT');
+    try{
+      const checked=planDraftSchema.parse({plan_id:plan.plan_id,revision:plan.revision,draft:JSON.parse(String(plan.draft_json)),private_note:plan.private_note,updated_at:plan.updated_at,
+        publication:plan.published_json===null?null:{revision:plan.published_revision,content:JSON.parse(String(plan.published_json)),published_at:plan.published_at}});
+      if(checked.publication&&!checked.publication.content.goals.length)throw Error('empty publication');
+    }catch{throw new LearningWriteError('INVALID_INPUT');}
+  }
+  const planKeys=new Set<string>(),planVersions=new Set<number>();
+  for(const receipt of data.studio_plan_receipts){
+    if(!plan||receipt.plan_id!==plan.plan_id||Number(receipt.revision)>Number(plan.revision)||planKeys.has(String(receipt.idempotency_key))||planVersions.has(Number(receipt.revision)))throw new LearningWriteError('INVALID_INPUT');
+    planKeys.add(String(receipt.idempotency_key));planVersions.add(Number(receipt.revision));
+  }
   return data;
 }
 
-/** v2 covers learning + project rows in one authorized snapshot. Returns encrypted values only. */
+/** v3 covers learning, projects and goals in one authorized snapshot. Returns encrypted values only. */
 export async function exportPrivateLearningBackup(db:D1Database,identity:LearningPrincipal|null,key:Uint8Array,options:{now?:Date}={}){
   requireLearningPermission(identity,identity?.userId??'','events:read');
   if(identity!.kind!=='owner'||identity!.grantId!==null)throw new LearningAccessError();
@@ -146,28 +170,35 @@ export async function exportPrivateLearningBackup(db:D1Database,identity:Learnin
     const version=Number(data.learning_state[0]?.data_version??0);
     const checkpoint={schema_version:1,owners:[{owner_id:owner,data_version:version}],markers:data.deleted_learning_events,keys:data.deleted_learning_keys};
     const projectHeads=data.studio_project_records.map(project=>({project_id:project.project_id,revision:project.revision}));
-    return {backup:await seal({schema_version:2,owner_id:owner,exported_at:now.toISOString(),tables:data},'private_backup',key),
-      checkpoint:await seal({schema_version:2,learning:checkpoint,project_heads:projectHeads},'deletion_checkpoint',key),data_version:version,
+    const planRevision=data.studio_plan_records[0]?.revision??null;
+    return {backup:await seal({schema_version:3,owner_id:owner,exported_at:now.toISOString(),tables:data},'private_backup',key),
+      checkpoint:await seal({schema_version:3,learning:checkpoint,project_heads:projectHeads,plan_revision:planRevision},'deletion_checkpoint',key),data_version:version,plan_revision:planRevision===null?null:Number(planRevision),
       project_revisions:Object.fromEntries(projectHeads.map(project=>[String(project.project_id),Number(project.revision)]))};
   }catch(error){if(error instanceof LearningWriteError||error instanceof LearningAccessError)throw error;throw new LearningWriteError('SERVICE_UNAVAILABLE');}
 }
 
 /** Restore only to a fully empty isolated destination with schema already applied. */
 export async function restorePrivateLearningBackup(db:D1Database,backup:unknown,checkpoint:unknown,key:Uint8Array,
-  options:{isolated:true;expectedOwnerId:string;minimumCheckpointVersion:number;minimumProjectRevisions?:Partial<Record<typeof projectIds[number],number>>;now?:Date}){
+  options:{isolated:true;expectedOwnerId:string;minimumCheckpointVersion:number;minimumProjectRevisions?:Partial<Record<typeof projectIds[number],number>>;minimumPlanRevision?:number;now?:Date}){
   const now=options.now??new Date();
   if(options.isolated!==true||!id.safeParse(options.expectedOwnerId).success||!natural.safeParse(options.minimumCheckpointVersion).success||!Number.isFinite(now.getTime()))throw new LearningWriteError('INVALID_INPUT');
   const decoded=await open(backup,'private_backup',key);
-  const envelope=z.object({schema_version:z.union([z.literal(1),z.literal(2)]),owner_id:id,exported_at:stamp,tables:z.unknown()}).strict().safeParse(decoded);
+  const envelope=z.object({schema_version:z.union([z.literal(1),z.literal(2),z.literal(3)]),owner_id:id,exported_at:stamp,tables:z.unknown()}).strict().safeParse(decoded);
   if(!envelope.success||envelope.data.owner_id!==options.expectedOwnerId)throw new LearningWriteError('INVALID_INPUT');
   const rows=validateRows(options.expectedOwnerId,envelope.data.tables,envelope.data.schema_version);
   const decodedCheckpoint=await open(checkpoint,'deletion_checkpoint',key);
-  const extended=studioCheckpointSchema.safeParse(decodedCheckpoint);
+  const planCheckpoint=planCheckpointSchema.safeParse(decodedCheckpoint);
+  const extended=studioCheckpointSchema.safeParse(planCheckpoint.success?{schema_version:2,learning:planCheckpoint.data.learning,project_heads:planCheckpoint.data.project_heads}:decodedCheckpoint);
   const surviving=checkpointSchema.safeParse(extended.success?extended.data.learning:decodedCheckpoint);
   if(!surviving.success||surviving.data.owners.length!==1||surviving.data.owners[0].owner_id!==options.expectedOwnerId
     ||surviving.data.owners[0].data_version<Math.max(options.minimumCheckpointVersion,Number(rows.learning_state[0]?.data_version??0)))throw new LearningWriteError('INVALID_INPUT');
   const floors=projectFloorSchema.safeParse(options.minimumProjectRevisions??{});
-  if(!floors.success||envelope.data.schema_version===2&&!extended.success)throw new LearningWriteError('INVALID_INPUT');
+  if(!floors.success||envelope.data.schema_version>=2&&!extended.success||envelope.data.schema_version===3&&!planCheckpoint.success)throw new LearningWriteError('INVALID_INPUT');
+  const planHead=planCheckpoint.success?planCheckpoint.data.plan_revision:null,plan=rows.studio_plan_records[0];
+  if(options.minimumPlanRevision!==undefined&&!positive.safeParse(options.minimumPlanRevision).success)throw new LearningWriteError('INVALID_INPUT');
+  if(Boolean(plan)!==(planHead!==null)||(planHead===null&&options.minimumPlanRevision!==undefined)
+    ||(planHead!==null&&(options.minimumPlanRevision===undefined||planHead<Math.max(options.minimumPlanRevision,Number(plan?.revision??0))||planHead>=Number.MAX_SAFE_INTEGER-1)))throw new LearningWriteError('INVALID_INPUT');
+  const restoredPlanRevision=planHead===null?null:planHead+1;
   const heads=extended.success?extended.data.project_heads:[];
   if(heads.length!==rows.studio_project_records.length||Object.keys(floors.data).length!==heads.length)throw new LearningWriteError('INVALID_INPUT');
   const restoredProjectVersions=new Map<string,number>();
@@ -178,7 +209,7 @@ export async function restorePrivateLearningBackup(db:D1Database,backup:unknown,
   }
   const owner=options.expectedOwnerId,at=now.toISOString(),statements:D1PreparedStatement[]=[];
   const write=(sql:string,values:(string|number|null)[])=>requiredWrite(db,statements,sql,values);
-  statements.push(db.prepare(`SELECT CASE WHEN ${tables.map(t=>`NOT EXISTS(SELECT 1 FROM ${t})`).join(' AND ')} THEN 1 ELSE json('restore destination not empty') END AS empty_guard`));
+  statements.push(db.prepare(`SELECT CASE WHEN ${[...tables,'admin_accounts','admin_sessions','admin_login_limits'].map(t=>`NOT EXISTS(SELECT 1 FROM ${t})`).join(' AND ')} THEN 1 ELSE json('restore destination not empty') END AS empty_guard`));
   const insert=(table:Table,row:Row)=>{const columns=Object.keys(schemas[table].shape);write(`INSERT INTO ${table}(${columns.join(',')}) VALUES(${columns.map(()=>'?').join(',')})`,columns.map(c=>row[c]));};
   // Temporary import authority is confined to this transaction. No enabled identities commit.
   insert('users',{...rows.users[0],status:'active'});
@@ -203,9 +234,19 @@ export async function restorePrivateLearningBackup(db:D1Database,backup:unknown,
     }
     write('UPDATE studio_project_records SET revision=?,updated_at=? WHERE owner_id=? AND project_id=?',[restoredProjectVersions.get(String(project.project_id))!,at,owner,project.project_id]);
   }
+  if(plan){
+    insert('studio_plan_records',{...plan,published_revision:null,published_json:null,published_at:null});
+    for(const receipt of [...rows.studio_plan_receipts].sort((a,b)=>Number(a.revision)-Number(b.revision))){
+      write('UPDATE studio_plan_records SET revision=? WHERE owner_id=? AND plan_id=?',[receipt.revision,owner,plan.plan_id]);
+      insert('studio_plan_receipts',receipt);
+    }
+    write('UPDATE studio_plan_records SET revision=?,updated_at=? WHERE owner_id=? AND plan_id=?',[restoredPlanRevision!,at,owner,plan.plan_id]);
+  }
   statements.push(...deletionRestoreStatements(db,surviving.data,{isolated:true,now}));
   for(const g of rows.integration_grants)write('UPDATE integration_grants SET scopes=?,revoked_at=? WHERE grant_id=? AND owner_id=?',[g.scopes,at,g.grant_id,owner]);
   write("UPDATE users SET status='disabled' WHERE user_id=?",[owner]);
+  if(plan)statements.push(db.prepare(`SELECT CASE WHEN EXISTS(SELECT 1 FROM studio_plan_records WHERE owner_id=? AND plan_id=? AND revision=?
+    AND published_revision IS NULL AND published_json IS NULL AND published_at IS NULL) THEN 1 ELSE json('invalid restored plan') END AS plan_restore_guard`).bind(owner,plan.plan_id,restoredPlanRevision));
   for(const [projectId,revision] of restoredProjectVersions)statements.push(db.prepare(`SELECT CASE WHEN EXISTS(
     SELECT 1 FROM studio_project_records WHERE owner_id=? AND project_id=? AND revision=?
     AND published_revision IS NULL AND published_json IS NULL AND published_at IS NULL
@@ -216,6 +257,7 @@ export async function restorePrivateLearningBackup(db:D1Database,backup:unknown,
     if(typeof version!=='number'||version<=surviving.data.owners[0].data_version)throw new LearningWriteError('SERVICE_UNAVAILABLE');
     return {owner_id:owner,data_version:version,owner_status:'disabled' as const,grants_revoked:true as const,jobs_restored:0 as const,
       projects_restored:rows.studio_project_records.length,project_publications_restored:0 as const,
+      plans_restored:rows.studio_plan_records.length,plan_publications_restored:0 as const,plan_revision:restoredPlanRevision,
       project_revisions:Object.fromEntries(restoredProjectVersions)};
   }catch{throw new LearningWriteError('SERVICE_UNAVAILABLE');}
 }

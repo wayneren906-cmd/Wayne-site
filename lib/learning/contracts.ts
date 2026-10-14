@@ -125,3 +125,10 @@ export type StudioProjectMutation=
   | {action:'publish';project_id:string;expected_revision:number;idempotency_key:string;confirm_public:true}
   | {action:'unpublish';project_id:string;expected_revision:number;idempotency_key:string};
 export type StudioProjectReceiptDTO={project_id:string;revision:number;action:StudioProjectMutation['action'];saved:true;replayed:boolean};
+export type StudioGoal = {id:string;title:string;status:'planned'|'in_progress'|'paused'|'completed';summary:string;next_step:string;target_date:string|null};
+export type StudioPlanContent = {goals:StudioGoal[]};
+export type StudioPlanDraftDTO = {plan_id:'personal-goals';revision:number;draft:StudioPlanContent;private_note:string;updated_at:string;publication:{revision:number;content:StudioPlanContent;published_at:string}|null};
+export type StudioPlanPublicDTO = {plan_id:'personal-goals';revision:number;content:StudioPlanContent;published_at:string};
+export type StudioPlanMutation = {plan_id:'personal-goals';expected_revision:number;idempotency_key:string}&(
+  {action:'save_draft';content:StudioPlanContent&{private_note:string}}|{action:'publish';confirm_public:true}|{action:'unpublish'});
+export type StudioPlanReceiptDTO = {plan_id:'personal-goals';revision:number;action:'save_draft'|'publish'|'unpublish';saved:true;replayed:boolean};

@@ -127,16 +127,16 @@ test('isolated restore of pre-delete backup merges surviving ledger, filters bod
 
 test('DELETE HTTP requires signed owner and same-origin JSON; replay/no-store and missing isolation remain correct',async t=>{
   const f=await setup(t),env={DB:f.db,...f.auth.config},options={now,verification:f.auth.verification};
-  const request=(jwt=f.auth.jwt,origin='https://synthetic.invalid',body=deletion())=>new Request('https://synthetic.invalid/api/studio/events/'+f.saved.event_id,
-    {method:'DELETE',headers:{...(jwt?{'cf-access-jwt-assertion':jwt}:{}),origin,'content-type':'application/json'},body:JSON.stringify(body)});
+  const request=(jwt=f.auth.cookie,origin='https://synthetic.invalid',body=deletion())=>new Request('https://synthetic.invalid/api/studio/events/'+f.saved.event_id,
+    {method:'DELETE',headers:{...(jwt?{'cookie':jwt}:{}),origin,'content-type':'application/json'},body:JSON.stringify(body)});
   assert.equal((await handleStudioEvent(request(null),env,f.saved.event_id,options)).status,401);
-  assert.equal((await handleStudioEvent(request(f.auth.jwt,'https://foreign.invalid'),env,f.saved.event_id,options)).status,403);
-  assert.equal((await handleStudioEvent(request(f.auth.jwt,undefined,deletion('stale',1)),env,f.saved.event_id,options)).status,409);
+  assert.equal((await handleStudioEvent(request(f.auth.cookie,'https://foreign.invalid'),env,f.saved.event_id,options)).status,403);
+  assert.equal((await handleStudioEvent(request(f.auth.cookie,undefined,deletion('stale',1)),env,f.saved.event_id,options)).status,409);
   const response=await handleStudioEvent(request(),env,f.saved.event_id,options);assert.equal(response.status,200);assert.match(response.headers.get('cache-control'),/no-store/);
   assert.equal((await response.json()).deleted,true);
   assert.equal((await (await handleStudioEvent(request(),env,f.saved.event_id,options)).json()).replayed,true);
   assert.equal((await handleStudioEvent(request(),env,'missing',options)).status,409); // same owner key, different target
-  assert.equal((await handleStudioEvent(request(f.auth.jwt,undefined,deletion('missing')),env,'missing',options)).status,404);
+  assert.equal((await handleStudioEvent(request(f.auth.cookie,undefined,deletion('missing')),env,'missing',options)).status,404);
   f.sqlite.exec(readFileSync(new URL('../migrations/0005_private_deletion.sql',import.meta.url),'utf8'));
 });
 

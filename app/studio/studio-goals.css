@@ -1,0 +1,11 @@
+.studio-goal-list{list-style:none;margin:0;padding:0;display:grid;gap:20px;}
+.studio-goal-list>li{min-width:0;border-top:1px solid var(--line);padding-top:16px;overflow-wrap:anywhere;}
+.studio-goal-list h3{font:500 20px/1.5 var(--font-serif);margin:10px 0;}
+.studio-goal-list .studio-goal-copy{white-space:pre-wrap;line-height:1.8;color:var(--ink-secondary);}
+.studio-goal-list .workbench-note{margin-top:12px;}
+.plan-editor .workbench-grid{align-items:start;}.plan-editor fieldset{border:0;padding:0;margin:0;min-width:0;display:grid;gap:16px;}
+.plan-editor .plan-goal-fields{border-top:1px solid var(--line-strong);padding-top:18px;display:grid;gap:14px;}
+.plan-editor .plan-actions{display:flex;flex-wrap:wrap;gap:12px;margin-block:16px;}
+.plan-editor .plan-actions .workbench-action{margin:0;}
+.plan-editor button:disabled{opacity:.5;cursor:not-allowed;}.plan-editor .workbench-feedback{margin-bottom:20px;}
+.plan-editor .plan-note{white-space:pre-wrap;overflow-wrap:anywhere;}

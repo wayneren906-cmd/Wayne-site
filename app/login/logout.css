@@ -1,0 +1,1 @@
+.email-logout{display:inline-flex;align-items:center;min-height:44px;padding:8px 14px;border:1px solid var(--line-strong);background:transparent;color:var(--ink);font:inherit;font-size:13px;cursor:pointer;}.email-logout:disabled{opacity:.5;cursor:not-allowed;}.email-logout:focus-visible{outline:2px solid var(--ink);outline-offset:4px;}

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {DatabaseSync} from 'node:sqlite';
 import {planLearningMigrations} from '../scripts/migration-preflight.mjs';
 
-const files=['0001_initial.sql','0002_learning_events.sql','0003_ingest_outbox.sql','0004_correction_authority.sql','0005_private_deletion.sql','0006_studio_projects.sql'];
+const files=['0001_initial.sql','0002_learning_events.sql','0003_ingest_outbox.sql','0004_correction_authority.sql','0005_private_deletion.sql','0006_studio_projects.sql','0007_studio_plans.sql','0008_email_auth.sql'];
 const sql=name=>fs.readFileSync(new URL('../migrations/'+name,import.meta.url),'utf8');
 const schema=db=>db.prepare("SELECT type,name,tbl_name,sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY type,name").all();
 function baseline(t,count=1){const db=new DatabaseSync(':memory:');t.after(()=>db.close());db.exec('PRAGMA foreign_keys=ON');
@@ -12,10 +12,10 @@ function baseline(t,count=1){const db=new DatabaseSync(':memory:');t.after(()=>d
   for(const name of files.slice(0,count)){db.exec(sql(name));db.prepare('INSERT INTO d1_migrations(name) VALUES(?)').run(name);}return db;}
 const snapshot=db=>({schema:schema(db),records:db.prepare('SELECT * FROM records ORDER BY date').all(),snapshots:db.prepare('SELECT * FROM snapshots ORDER BY date').all()});
 
-test('live-compatible baseline plans additive hashed migrations and eleven private tables without mutating input',t=>{
+test('live-compatible baseline plans additive hashed migrations and sixteen private tables without mutating input',t=>{
   const db=baseline(t);const before=snapshot(db),applied=db.prepare('SELECT name FROM d1_migrations ORDER BY id').all();
   const plan=planLearningMigrations(before.schema,applied);
-  assert.deepEqual(plan.pending.map(row=>row.name),files.slice(1));assert.equal(plan.private_tables.length,11);
+  assert.deepEqual(plan.pending.map(row=>row.name),files.slice(1));assert.equal(plan.private_tables.length,16);
   assert.ok(plan.pending.every(row=>/^[a-f0-9]{64}$/.test(row.sha256)&&row.bytes>0));
   assert.deepEqual(snapshot(db),before);
 });

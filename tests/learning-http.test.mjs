@@ -4,10 +4,10 @@ import * as http from '../lib/learning/http.ts';
 import {fixture, signedOwner, now, input, token} from './helpers/learning-fixture.mjs';
 
 const origin = 'https://synthetic.invalid';
-const request = (path, jwt, options = {}) => new Request(origin + path, {...options, headers: {...(jwt ? {'cf-access-jwt-assertion': jwt} : {}), ...options.headers}});
+const request = (path, jwt, options = {}) => new Request(origin + path, {...options, headers: {...(jwt ? {'cookie': jwt} : {}), ...options.headers}});
 async function environment(t) {
   const {db, sqlite} = await fixture(t);
-  const {config, jwt, verification} = await signedOwner();
+  const {config, cookie:jwt, verification} = await signedOwner();
   return {db, sqlite, jwt, env: {DB: db, ...config}, options: {now, verification}};
 }
 const post = (jwt, body = input(), headers = {}) => request('/api/studio/events', jwt, {method: 'POST', body: JSON.stringify(body), headers: {origin, 'content-type': 'application/json', ...headers}});
@@ -36,7 +36,7 @@ test('C2-B HTTP anonymous, forged, expired, wrong-audience and unregistered owne
   }
   for (const claims of [{exp: now.getTime()/1000}, {aud: 'foreign'}, {email: 'member@example.com'}, {sub: 'unregistered'}]) {
     const auth = await signedOwner('synthetic-sub', claims);
-    const result = await http.handleStudioContext(request('/api/studio/context', auth.jwt), env, {now, verification: auth.verification});
+    const result = await http.handleStudioContext(request('/api/studio/context', auth.cookie), env, {now, verification: auth.verification});
     assert.equal(result.status, 403);
   }
   const grantRequest = request('/api/studio/context', null, {headers: {authorization: 'Bearer ' + token}});
@@ -66,8 +66,8 @@ test('C2-B HTTP maps conflicts and missing/foreign event reads without leaking i
   assert.equal(conflict.status, 409); assert.equal((await conflict.json()).error.code, 'IDEMPOTENCY_CONFLICT');
   const foreign = await signedOwner('synthetic-other-sub');
   const otherOptions = {now, verification: foreign.verification};
-  const hidden = await http.handleStudioEvent(request('/api/studio/events/' + saved.event_id, foreign.jwt), env, saved.event_id, otherOptions);
-  const missing = await http.handleStudioEvent(request('/api/studio/events/missing', foreign.jwt), env, 'missing', otherOptions);
+  const hidden = await http.handleStudioEvent(request('/api/studio/events/' + saved.event_id, foreign.cookie), env, saved.event_id, otherOptions);
+  const missing = await http.handleStudioEvent(request('/api/studio/events/missing', foreign.cookie), env, 'missing', otherOptions);
   assert.equal(hidden.status, 404); assert.equal(missing.status, 404); assert.deepEqual(await hidden.json(), await missing.json());
   sqlite.exec("UPDATE users SET status='disabled' WHERE user_id='synthetic-owner'");
   assert.equal((await http.handleStudioEvents(post(jwt), env, options)).status, 403);
@@ -149,11 +149,11 @@ test('C2-C HTTP foreign and missing history are indistinguishable; foreign corre
   const {env, jwt, options, sqlite} = await environment(t);
   const saved = await (await http.handleStudioEvents(post(jwt), env, options)).json();
   const other = await signedOwner('synthetic-other-sub'); const opt = {now, verification: other.verification};
-  const hidden = await revisions(request('/revisions', other.jwt), env, saved.event_id, opt);
-  const missing = await revisions(request('/revisions', other.jwt), env, 'missing', opt);
+  const hidden = await revisions(request('/revisions', other.cookie), env, saved.event_id, opt);
+  const missing = await revisions(request('/revisions', other.cookie), env, 'missing', opt);
   assert.equal(hidden.status, 404); assert.equal(missing.status, 404); assert.deepEqual(await hidden.json(), await missing.json());
-  const foreign = await http.handleStudioEvent(patch(saved.event_id, other.jwt), env, saved.event_id, opt);
-  const absent = await http.handleStudioEvent(patch('missing', other.jwt), env, 'missing', opt);
+  const foreign = await http.handleStudioEvent(patch(saved.event_id, other.cookie), env, saved.event_id, opt);
+  const absent = await http.handleStudioEvent(patch('missing', other.cookie), env, 'missing', opt);
   assert.equal(foreign.status, 409); assert.deepEqual(await foreign.json(), await absent.json());
   assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM event_revisions').get().n, 1);
 });

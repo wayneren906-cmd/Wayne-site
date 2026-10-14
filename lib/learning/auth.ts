@@ -1,4 +1,5 @@
 import { accessIssuer, verifyOwner } from '../access.ts';
+import {readAdminSession} from '../admin-auth.ts';
 
 export const learningScopes = Object.freeze(['context:read', 'events:read', 'events:write', 'events:correct'] as const);
 export type LearningScope = typeof learningScopes[number];
@@ -72,6 +73,11 @@ export async function verifyLearningGrant(token: string | null, db: D1Database, 
   try { scopes = JSON.parse(grant.scopes); } catch { throw new LearningAccessError(); }
   if (!Array.isArray(scopes) || !scopes.length || scopes.length > learningScopes.length || !scopes.every(isScope) || new Set(scopes).size !== scopes.length) throw new LearningAccessError();
   return principal(grant.owner_id, 'integration', grant.grant_id, scopes);
+}
+
+export async function verifyStudioSession(headers:Headers,db:D1Database,now=Date.now()/1000):Promise<LearningPrincipal>{
+  const account=await readAdminSession(headers,db,now);if(!account)throw new LearningAccessError();
+  return principal(account.owner_id,'owner',null,learningScopes);
 }
 
 export function requireLearningPermission(identity: LearningPrincipal | null, ownerId: string, scope: LearningScope): void {
