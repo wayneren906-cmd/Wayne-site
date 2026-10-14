@@ -21,6 +21,7 @@
   box-sizing: border-box;
   color: var(--ink, #171717);
 }
+.studio-client--records .studio-client__body{grid-template-columns:minmax(0,1fr);}
 
 .studio-client__top {
   width: 100%;

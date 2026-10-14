@@ -1,0 +1,40 @@
+[
+  {
+    "slot": "cover",
+    "src": "/studio-photography/ana-skobe-falling-out-of-time.webp",
+    "author": "Ana Skobe",
+    "title": "Falling Out of Time",
+    "award": "2024 · Open Architecture · Winner",
+    "source": "https://www.worldphoto.org/sony-world-photography-awards/winners-galleries/2024/open/architecture-0",
+    "original": "https://www.worldphoto.org/sites/default/files/styles/full/public/11617_5159373_0_%20%C2%A9%20Ana%20Skobe%2C%20Slovenia%2C%20Shortlist%2C%20Open%20Competition%2C%20Architecture%2C%202024%20Sony%20World%20Photography%20Awards.jpg.webp?itok=obHH_bDM",
+    "width": 2000,
+    "height": 3000
+  },
+  {
+    "slot": "essayMain",
+    "src": "/studio-photography/owen-davies-salt-shed.jpg",
+    "author": "Owen Davies",
+    "title": "Spring Street Salt Shed",
+    "award": "2025 · Architecture & Design · 3rd Place",
+    "source": "https://www.worldphoto.org/sony-world-photography-awards/winners-galleries/2025/professional/3rd-place-lightmass-owen-davies?back=category",
+    "original": "https://www.worldphoto.org/sites/default/files/styles/max_2600x2600/public/4ef4af2bfc4edaf2ea447f119d1bd07c.O_Davies_light_mass_005.jpg?itok=xiobtqk4"
+  },
+  {
+    "slot": "essayDetail",
+    "src": "/studio-photography/ulana-switucha-nishisando.jpg",
+    "author": "Ulana Switucha",
+    "title": "Nishisando by Sou Fujimoto",
+    "award": "2025 · Architecture & Design · 1st Place",
+    "source": "https://www.worldphoto.org/sony-world-photography-awards/winners-galleries/2025/professional/1st-place-tokyo-toilet-project?back=category",
+    "original": "https://www.worldphoto.org/sites/default/files/styles/max_2600x2600/public/f4f93ae16d5986fb8f31c6af620e3ff7.02DSC_1230-Edit.jpg?itok=hy7Jlr-S"
+  },
+  {
+    "slot": "private",
+    "src": "/studio-photography/owen-davies-bathhouse.jpg",
+    "author": "Owen Davies",
+    "title": "Jacob Riis Bathhouse",
+    "award": "2025 · Architecture & Design · 3rd Place",
+    "source": "https://www.worldphoto.org/sony-world-photography-awards/winners-galleries/2025/professional/3rd-place-lightmass-owen-davies?back=category",
+    "original": "https://www.worldphoto.org/sites/default/files/styles/max_2600x2600/public/4315130785e2525df1dcc9f5d93dd8b6.O_Davies_light_mass_001.jpg?itok=KmSQP9bL"
+  }
+]

@@ -14,6 +14,9 @@ const files = [
   'studio-event-detail.tsx',
   'studio-supplement-form.tsx',
   'studio-client.tsx',
+  'studio-private-navigation.tsx',
+  'studio-workbench.tsx',
+  'studio-publication-changes.tsx',
 ];
 
 export function compileAllStudioComponents() {

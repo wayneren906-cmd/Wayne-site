@@ -65,12 +65,14 @@ export default function StudioEventList({
     <section className="studio-event-list" aria-label="学习事件记录列表">
       <div className="studio-event-list__header">
         <div className="studio-event-list__title-group">
-          <h2 className="studio-event-list__heading">学习事件列表</h2>
+          <h2 className="studio-event-list__heading">近期学习记录</h2>
           <span className="studio-event-list__count">
-            {loading ? "正在读取…" : `${events.length} 条记录`}
+            {loading ? "正在读取…" : `本次读取 ${events.length} 条`}
           </span>
         </div>
       </div>
+
+      <p className="workbench-note">此处展示当前读取范围内的近期记录，不是完整档案；未显示不代表没有记录。</p>
 
       {errorMessage ? (
         <div className="studio-event-list__error" role="alert">

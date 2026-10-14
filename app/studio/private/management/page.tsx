@@ -1,27 +1,29 @@
 import {env} from 'cloudflare:workers';
 import {headers} from 'next/headers';
-import {readAdminSession} from '@/lib/admin-auth';
 import LogoutButton from '../../../login/logout-button';
-import AccountManager from './account-manager';
 import {verifyStudioSession} from '@/lib/learning/auth';
-import {getStudioManagement} from '@/lib/learning/reads';
-import type {StudioManagementDTO} from '@/lib/learning/contracts';
+import {getLearningContext,getStudioManagement} from '@/lib/learning/reads';
+import {getStudioProjectDrafts} from '@/lib/studio-projects';
+import {getStudioPlanDrafts} from '@/lib/studio-plans';
 import StudioShell from '../../studio-shell';
-import ManagementClient from './management-client';
-import './management.css';
+import StudioWorkbench from '../../studio-workbench';
+import StudioCover from '../../studio-cover';
+import StudioLoginLink from '../../studio-login-link';
 
 export const dynamic='force-dynamic';
-export const metadata={title:'管理总览 · Studio',robots:{index:false,follow:false}};
+export const metadata={title:'私人工作台 · Studio',robots:{index:false,follow:false}};
 export default async function ManagementPage(){
-  let allowed=false,accountOwner=false,initialData:StudioManagementDTO|null=null,initialError:string|null=null;
-  try{
-    const identity=await verifyStudioSession(await headers(),env.DB);
-    allowed=true;
-    accountOwner=(await readAdminSession(await headers(),env.DB))?.role==='owner';
-    initialData=await getStudioManagement(env.DB,identity);
-  }catch{if(allowed)initialError='管理数据暂时无法读取，请重试。';}
-  return <StudioShell active="management" title="管理我的数字空间" description="查看私人数据、接收来源与任务状态，让每一次更新都有迹可循。">
-    <nav className="management-navigation" aria-label="管理员工作区"><a href="/studio">← 公开仪表盘</a><a href="/studio/private">私人记录</a><a href="/studio/private/projects">项目状态与发布</a><a href="/studio/private/plans">目标与计划</a><a href="/studio/private/workspace">练习与项目证据</a></nav>
-    {allowed?<><LogoutButton/><ManagementClient initialData={initialData} initialError={initialError}/>{accountOwner&&<AccountManager/>}</>:<div className="workbench-empty" role="alert">请登录管理员账号。当前无法验证管理权限。<a href="/login">邮箱登录 →</a></div>}
+  let identity;
+  try{identity=await verifyStudioSession(await headers(),env.DB);}catch{}
+  const results=identity?await Promise.allSettled([
+    getStudioPlanDrafts(env.DB,identity),getStudioProjectDrafts(env.DB,identity),getLearningContext(env.DB,identity,'review'),getStudioManagement(env.DB,identity),
+  ]):null;
+  return <StudioShell active="management" privateSection="management" title="私人工作台" description="查看当前目标与项目，记录实际过程，再决定哪些变化公开。" cover={<StudioCover privateView/>} sessionControl={results?<LogoutButton/>:undefined}>
+    {results?<StudioWorkbench
+      plans={results[0].status==='fulfilled'?results[0].value:null}
+      projects={results[1].status==='fulfilled'?results[1].value:null}
+      context={results[2].status==='fulfilled'?results[2].value:null}
+      systemNeedsAttention={results[3].status==='fulfilled'?results[3].value.jobs.counts.failed+results[3].value.jobs.counts.needs_attention:null}
+    />:<p className="workbench-empty" role="alert">请登录管理员账号。当前无法验证管理权限。<StudioLoginLink returnTo="/studio/private/management"/></p>}
   </StudioShell>;
 }

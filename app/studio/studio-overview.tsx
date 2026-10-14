@@ -66,12 +66,12 @@ export default function StudioOverview({
           </div>
         </div>
 
-        <h1 className="studio-overview__heading">当前学习安排</h1>
+        <h2 className="studio-overview__heading">私人记录概况</h2>
       </div>
 
       <div className="studio-overview__card">
         {loading ? (
-          <div className="studio-overview__loading" aria-label="正在读取安排…">
+          <div className="studio-overview__loading" aria-label="正在读取记录概况…">
             <span className="studio-overview__skeleton-bar" />
             <span className="studio-overview__skeleton-bar studio-overview__skeleton-bar--short" />
           </div>
@@ -82,10 +82,11 @@ export default function StudioOverview({
           </div>
         ) : (
           <div className="studio-overview__empty">
-            <h2 className="studio-overview__empty-title">当前暂无已确认安排</h2>
+            <h3 className="studio-overview__empty-title">记录实际学习与实践</h3>
             <p className="studio-overview__empty-hint">
-              目前可保存和查看学习记录；能力评估与学习计划尚未接入。
+              这里保存和查看私人记录。手动目标在目标管理中维护，自动学习计划与能力评估尚未接入。
             </p>
+            <a href="/studio/private/plans">管理目标与下一步 →</a>
           </div>
         )}
 
@@ -106,7 +107,7 @@ export default function StudioOverview({
               href={supplementHref}
               className="studio-overview__supplement-button"
             >
-              <span>补充学习记录</span>
+              <span>新增学习记录</span>
               <span aria-hidden="true">→</span>
             </a>
           )}

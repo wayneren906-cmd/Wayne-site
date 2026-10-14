@@ -2,6 +2,20 @@
 
 所有者：Codex。本文件只由Codex更新；Gemini历史交接保留不改。
 
+## 当前交接：版本16，2026-10-14
+
+- 今天06:00的一次性heartbeat 6-wayneo，用户要求多做实质阶段；本轮C2-N完成工作台重整、建议目录和私人关联/编辑闭环，没有其他模型或子代理，没有执行已取消的学习记录同步。
+- 五个公开路由overview/roadmap/practice/projects/archive，compact标题/内导航；3阶段10知识点前置/公开引用、5可筛选练习步骤与验收、3项目各3里程碑。目录是建议，不是已确认个人路线/计划；取消频次能力条与重复手记铺陈。
+- source.record_id带UUID实例与knowledge_ids关联现有私人事件；日期默认未知、协助/执行明确自述，不自动生成plan。当前修订引用/已知前缀/知识匹配投影，部分覆盖诚实，掌握与里程碑验收未确认。
+- 新private/workspace和private/record/[id]均SSR签名active-owner保护；未登记owner工作区只读，无context/自动建户。save稳定键留稿、correct原因/CAS/原键恢复、历史分页快照检查、勾选确认delete和删除回执已实现，原事件详情可跳编辑。
+- 150/150、非增量类型、隔离5阶段完整构建、37个Worker请求、Chrome保存503重试→关联→修订r2→历史→删除通过；公开三视口×两主题及另外四页小/大屏和筛选通过，无公开context请求。新TS参数属性、旧断言/代理正文/错误文字和截图过渡帧问题已修复验证。
+- 精选30文件commit c1487f8ae6f824b8528ccd888657e7f4fc2a9c22；线上浏览器发现练习页h1→h3跳级，2文件修正commit e84c119aa14551b8034536430a8c56f2bf2e38af。两个Check/Deploy均success。最终100%生产版本ac7168f5-73e2-4530-b6ab-8357fb46d492，06:29:46发布。
+- 双域名5公开栏目200/资源全部200，private页与API302，旧records/snapshots发布前后hash相同；users/events0，records4/snapshots5/ledger5/FK正常。无新迁移、Access/DB/Secret/Cron或费用变更、真实owner登记/启用或私人数据写入。
+- 实际Codex匿名浏览器确认工作台/练习目录h1-h2-h3-h4、搜索“字符串”仅1项及展开验收有效；截图与证据在忽略的data/studio-workbench-2026-10-14。预览页保留，未读取JWT/验证码/Secret。
+- 6-wayneo运行结束已PAUSED，COUNT=1和提示字段保持；旧wayneo-dev继续PAUSED。没有新自动化或每日任务。总体粗估62%–67%，本批+7个百分点。
+- 结果文档与状态更新仍本地未再次提交，避免仅文档再部署。真实账号/常用手机、正式个人大纲与任务状态、ChatGPT、自动评估规划和生产备份配置仍待后续；不能因目录与自述记录把这些记为完成。
+
+## 历史交接：版本15
 ## 当前交接：版本15，2026-10-14
 
 - 用户对 Studio 不满意，要求分析功能并将 Works 从页眉移入 Studio。完成 C2-M 导航归并与产品分析，没有擅自实现整套路线/任务/评估后台。

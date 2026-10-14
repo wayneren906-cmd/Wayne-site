@@ -3,6 +3,10 @@ import {useEffect,useRef,useState} from 'react';
 import type {StudioGoal,StudioPlanContent,StudioPlanDraftDTO,StudioPlanMutation} from '@/lib/learning/contracts';
 import {emptyPlanContent,goalStatusLabels,planContentSchema,planListSchema,planMutationSchema,planReceiptSchema} from '@/lib/ui/plan-protocol';
 import GoalList from '../../goal-list';
+import {useUnsavedChanges} from '@/lib/ui/use-unsaved-changes';
+import {studioPublicationState} from '@/lib/ui/studio-publication-state';
+import {planPublicationChanges} from '@/lib/ui/studio-publication-changes';
+import StudioPublicationChanges from '../../studio-publication-changes';
 type Editable=StudioPlanContent&{private_note:string};
 const draftOf=(row?:StudioPlanDraftDTO):Editable=>({...row?.draft??emptyPlanContent(),private_note:row?.private_note??''});
 export default function PlanEditor({initialPlans,initialError=null}:{initialPlans:StudioPlanDraftDTO[]|null;initialError?:string|null}){
@@ -14,6 +18,8 @@ export default function PlanEditor({initialPlans,initialError=null}:{initialPlan
   useEffect(()=>{if(error)errorRef.current?.focus();},[error]);
   const row=plans?.[0],form=edit??draftOf(row),dirty=JSON.stringify(form)!==JSON.stringify(draftOf(row));
   const canPublish=!!row&&!dirty&&row.draft.goals.length>0&&JSON.stringify(row.draft)!==JSON.stringify(row.publication?.content);
+  useUnsavedChanges(dirty);
+  const publicationState=studioPublicationState({dirty,hasDraft:!!row,hasPublication:!!row?.publication,matchesPublication:!!row?.publication&&JSON.stringify(row.draft)===JSON.stringify(row.publication.content),hasContent:!!row?.draft.goals.length});
   function update(next:Editable){setEdit(next);setPreview(false);setConfirmed(false);setWithdraw(false);setNotice(null);setError(null);}
   function goal(id:string,patch:Partial<StudioGoal>){update({...form,goals:form.goals.map(item=>item.id===id?{...item,...patch}:item)});}
   async function request(method:string,payload?:StudioPlanMutation){
@@ -63,6 +69,7 @@ export default function PlanEditor({initialPlans,initialError=null}:{initialPlan
     finally{locked.current=false;if(alive.current)setBusy(false);}
   }
   return <div className="plan-editor project-editor" data-ready={ready} aria-busy={busy||!ready}>
+    {plans!==null&&<dl className="studio-save-state" aria-label="目标保存与公开状态"><div><dt>私人草稿</dt><dd>{publicationState.draftLabel}</dd></div><div><dt>公开版本</dt><dd>{publicationState.publicationLabel}</dd></div></dl>}
     <div className="plan-actions"><button className="workbench-action" type="button" disabled={busy||!ready} onClick={reload}>{busy?'处理中…':'重新读取版本'}</button></div>
     {error&&<p ref={errorRef} tabIndex={-1} className="workbench-feedback" role="alert">{error}</p>}{notice&&<p className="workbench-feedback" role="status">{notice}</p>}
     {plans!==null&&<div className="workbench-grid"><section className="workbench-panel"><p className="workbench-kicker">PRIVATE PLAN / {row?`r${row.revision}`:'尚未保存'}</p><h2>当前目标</h2><p>最多 8 个目标。保存仅更新私人草稿；期限是目标日期，状态由你确认。</p>
@@ -83,8 +90,8 @@ export default function PlanEditor({initialPlans,initialError=null}:{initialPlan
       {row&&<details className="project-editor-server"><summary>查看服务器草稿 r{row.revision}</summary><GoalList content={row.draft}/><p className="plan-note">私人备注 · {row.private_note||'暂无'}</p><p>更新时间 · <time dateTime={row.updated_at}>{new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',dateStyle:'medium',timeStyle:'short'}).format(new Date(row.updated_at))}</time></p></details>}
     </section><section className="workbench-panel"><p className="workbench-kicker">PUBLIC GOALS</p><h2>访客现在看到的目标</h2>{row?.publication?<><GoalList content={row.publication.content}/><p className="workbench-note">已发布 r{row.publication.revision}</p><a href="/studio#goals">查看公开目标 ↗</a></>:<p>暂无公开目标。私人草稿不会出现在仪表盘。</p>}
       <div className="plan-actions"><button className="workbench-action" type="button" disabled={busy||!ready||!canPublish} onClick={()=>{setPreview(true);setConfirmed(false);setWithdraw(false);}}>预览并发布</button>{row?.publication&&<button className="workbench-action" type="button" disabled={busy||!ready} onClick={()=>{setWithdraw(true);setPreview(false);setConfirmed(false);}}>撤下公开目标</button>}</div>
-      {dirty&&<p className="workbench-note">输入尚未保存，请先保存草稿再预览。旧公开版本保持不变。</p>}
-      {preview&&row&&<section className="project-editor-preview" aria-label="目标发布预览"><h3>发布预览</h3><GoalList content={row.draft}/><label className="project-editor-confirm"><input type="checkbox" checked={confirmed} disabled={busy} onChange={event=>setConfirmed(event.target.checked)}/><span>确认公开以上全部目标、说明、状态、下一步与目标日期。私人备注不会发布。</span></label><div className="plan-actions"><button className="workbench-action primary" type="button" disabled={busy||!confirmed} onClick={()=>void mutate('publish')}>确认发布</button><button className="workbench-action" type="button" disabled={busy} onClick={()=>setPreview(false)}>取消</button></div></section>}
+      <p className="workbench-note">{publicationState.publishHint}</p>
+      {preview&&row&&<section className="project-editor-preview" aria-label="目标发布预览"><h3>发布预览</h3><StudioPublicationChanges changes={planPublicationChanges(row.draft,row.publication?.content??null)}/><p>此次发布将整体替换公开目标列表，包含以下全部目标；已从草稿移除的目标也会从公开列表移除。</p><GoalList content={row.draft}/><label className="project-editor-confirm"><input type="checkbox" checked={confirmed} disabled={busy} onChange={event=>setConfirmed(event.target.checked)}/><span>确认公开以上全部目标、说明、状态、下一步与目标日期。私人备注不会发布。</span></label><div className="plan-actions"><button className="workbench-action primary" type="button" disabled={busy||!confirmed} onClick={()=>void mutate('publish')}>确认发布</button><button className="workbench-action" type="button" disabled={busy} onClick={()=>setPreview(false)}>取消</button></div></section>}
       {withdraw&&<div className="project-editor-preview"><p>撤下后，仪表盘显示暂无公开目标，私人草稿仍保留。</p><div className="plan-actions"><button className="workbench-action" type="button" disabled={busy} onClick={()=>void mutate('unpublish')}>确认撤下</button><button className="workbench-action" type="button" disabled={busy} onClick={()=>setWithdraw(false)}>取消</button></div></div>}
     </section></div>}
   </div>;

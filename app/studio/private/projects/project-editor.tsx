@@ -3,14 +3,19 @@ import {useEffect,useRef,useState} from 'react';
 import {studioProjects} from '@/lib/studio-catalog';
 import {emptyProjectContent,projectContentSchema,projectListSchema,projectMutationSchema,projectReceiptSchema,projectStatusLabels,milestoneStatusLabels} from '@/lib/ui/project-protocol';
 import type {StudioProjectContent,StudioProjectDraftDTO,StudioProjectMutation} from '@/lib/learning/contracts';
+import {useUnsavedChanges} from '@/lib/ui/use-unsaved-changes';
+import {studioPublicationState} from '@/lib/ui/studio-publication-state';
+import {projectPublicationChanges} from '@/lib/ui/studio-publication-changes';
+import StudioPublicationChanges from '../../studio-publication-changes';
+import ProjectEvidence from './project-evidence';
 
 type Editable=StudioProjectContent&{private_note:string};
 const draftOf=(row?:StudioProjectDraftDTO):Editable=>({...row?.draft??emptyProjectContent(),private_note:row?.private_note??''});
 const formatTime=(value:string)=>new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',dateStyle:'medium',timeStyle:'short',hour12:false}).format(new Date(value));
 
-export default function ProjectEditor({initialProjects,initialError=null}:{initialProjects:StudioProjectDraftDTO[]|null;initialError?:string|null}){
+export default function ProjectEditor({initialProjects,initialError=null,initialProjectId}:{initialProjects:StudioProjectDraftDTO[]|null;initialError?:string|null;initialProjectId?:string}){
   const [projects,setProjects]=useState(initialProjects),[error,setError]=useState(initialError),[notice,setNotice]=useState<string|null>(null);
-  const [selected,setSelected]=useState(studioProjects[0].id),[edits,setEdits]=useState<Record<string,Editable>>({});
+  const [selected,setSelected]=useState(studioProjects.find(project=>project.id===initialProjectId)?.id??studioProjects[0].id),[edits,setEdits]=useState<Record<string,Editable>>({});
   const [busy,setBusy]=useState(false),[preview,setPreview]=useState(false),[confirmed,setConfirmed]=useState(false),[withdraw,setWithdraw]=useState(false);
   const [ready,setReady]=useState(false);
   const locked=useRef(false),retry=useRef<{signature:string;payload:StudioProjectMutation}|null>(null),abort=useRef<AbortController|null>(null),alive=useRef(true);
@@ -19,6 +24,9 @@ export default function ProjectEditor({initialProjects,initialError=null}:{initi
   const row=projects?.find(project=>project.project_id===selected),form=edits[selected]??draftOf(row);
   const dirty=JSON.stringify(form)!==JSON.stringify(draftOf(row));
   const canPublish=!!row&&!dirty&&!!row.draft.summary&&JSON.stringify(row.draft)!==JSON.stringify(row.publication?.content);
+  const hasUnsavedEdits=Object.entries(edits).some(([id,value])=>JSON.stringify(value)!==JSON.stringify(draftOf(projects?.find(project=>project.project_id===id))));
+  useUnsavedChanges(hasUnsavedEdits);
+  const publicationState=studioPublicationState({dirty,hasDraft:!!row,hasPublication:!!row?.publication,matchesPublication:!!row?.publication&&JSON.stringify(row.draft)===JSON.stringify(row.publication.content),hasContent:!!row?.draft.summary});
 
   async function request(method:string,payload?:StudioProjectMutation){
     const current=new AbortController();abort.current=current;const timer=setTimeout(()=>current.abort(),20000);
@@ -76,6 +84,8 @@ export default function ProjectEditor({initialProjects,initialError=null}:{initi
     finally{locked.current=false;if(alive.current)setBusy(false);}
   }
   return <div className="project-editor" aria-busy={busy||!ready} data-ready={ready}>
+    {projects!==null&&<dl className="studio-save-state" aria-label="项目保存与公开状态"><div><dt>私人草稿</dt><dd>{publicationState.draftLabel}</dd></div><div><dt>公开版本</dt><dd>{publicationState.publicationLabel}</dd></div></dl>}
+    {hasUnsavedEdits&&<p className="workbench-note">本页有未保存的项目修改。离开或刷新前请先保存；切换项目可保留本页输入。</p>}
     <div className="project-editor-toolbar"><label>选择项目<select value={selected} disabled={busy||!ready} onChange={event=>{setSelected(event.target.value);setPreview(false);setConfirmed(false);setWithdraw(false);setError(null);setNotice(null);}}>{studioProjects.map(project=><option key={project.id} value={project.id}>{project.title}</option>)}</select></label><button type="button" className="workbench-action" disabled={busy||!ready} onClick={reload}>{busy?'处理中…':'重新读取版本'}</button></div>
     {error&&<p className="workbench-feedback" role="alert">{error}</p>}{notice&&<p className="workbench-feedback" role="status">{notice}</p>}
     {projects!==null&&<div className="workbench-grid">
@@ -83,7 +93,7 @@ export default function ProjectEditor({initialProjects,initialError=null}:{initi
         <label>项目状态<select value={form.status} onChange={event=>edit({status:event.target.value as StudioProjectContent['status']})}>{Object.entries(projectStatusLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
         <label>进展说明<textarea value={form.summary} maxLength={1200} onChange={event=>edit({summary:event.target.value})}/></label>
         <label>下一步<input value={form.next_step} maxLength={240} onChange={event=>edit({next_step:event.target.value})}/></label>
-        <div className="project-editor-milestones">{catalog.milestones.map(milestone=><label key={milestone.id}>{milestone.title}<select value={form.milestones[milestone.id as keyof typeof form.milestones]} onChange={event=>edit({milestones:{...form.milestones,[milestone.id]:event.target.value}})}>{Object.entries(milestoneStatusLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>)}</div>
+        <div className="project-editor-milestones">{catalog.milestones.map(milestone=><label key={milestone.id} id={`milestone-${milestone.id}`}>{milestone.title}<select value={form.milestones[milestone.id as keyof typeof form.milestones]} onChange={event=>edit({milestones:{...form.milestones,[milestone.id]:event.target.value}})}>{Object.entries(milestoneStatusLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>)}</div>
         <label>私人备注（不会发布）<textarea value={form.private_note} maxLength={2000} onChange={event=>edit({private_note:event.target.value})}/></label>
         <button type="submit" className="workbench-action primary" disabled={busy||!!row&&!dirty}>保存私人草稿</button>
       </fieldset></form>
@@ -91,10 +101,11 @@ export default function ProjectEditor({initialProjects,initialError=null}:{initi
       </section>
       <section className="workbench-panel"><p className="workbench-kicker">PUBLIC SNAPSHOT</p><h2>访客现在看到的内容</h2>{row?.publication?<><p>{projectStatusLabels[row.publication.content.status]} · 已发布 r{row.publication.revision}</p><p className="project-editor-copy">{row.publication.content.summary}</p><p>下一步 · {row.publication.content.next_step||'暂无公开安排'}</p><p>发布时间 · {formatTime(row.publication.published_at)}</p><a href={`/studio/projects#${selected}`}>查看公开项目 ↗</a></>:<p>尚未发布实际状态。访客看到的仍是原有方向蓝图。</p>}
         <div className="project-editor-publish-actions"><button type="button" className="workbench-action" disabled={busy||!ready||!canPublish} onClick={()=>{setPreview(true);setConfirmed(false);setWithdraw(false);}}>预览并发布</button>{row?.publication&&<button type="button" className="workbench-action" disabled={busy||!ready} onClick={()=>{setWithdraw(true);setPreview(false);}}>撤下公开状态</button>}</div>
-        {dirty&&<p className="workbench-note">当前输入尚未保存，请先保存草稿再预览发布。</p>}
-        {preview&&row&&<section className="project-editor-preview" aria-label="发布预览"><h3>{catalog.title}</h3><p>{projectStatusLabels[row.draft.status]}</p><p className="project-editor-copy">{row.draft.summary}</p><p>下一步 · {row.draft.next_step||'暂无公开安排'}</p><ul>{catalog.milestones.map(milestone=><li key={milestone.id}>{milestone.title} · {milestoneStatusLabels[row.draft.milestones[milestone.id as keyof typeof row.draft.milestones]]}</li>)}</ul><label className="project-editor-confirm"><input type="checkbox" checked={confirmed} disabled={busy} onChange={event=>setConfirmed(event.target.checked)}/><span>确认公开以上状态、说明与里程碑。私人备注不会发布。</span></label><button type="button" className="workbench-action primary" disabled={busy||!confirmed} onClick={()=>void mutate('publish')}>确认发布</button><button type="button" className="workbench-action" disabled={busy} onClick={()=>setPreview(false)}>取消</button></section>}
+        <p className="workbench-note">{publicationState.publishHint}</p>
+        {preview&&row&&<section className="project-editor-preview" aria-label="发布预览"><StudioPublicationChanges changes={projectPublicationChanges(selected,row.draft,row.publication?.content??null)}/><h3>{catalog.title}</h3><p>{projectStatusLabels[row.draft.status]}</p><p className="project-editor-copy">{row.draft.summary}</p><p>下一步 · {row.draft.next_step||'暂无公开安排'}</p><ul>{catalog.milestones.map(milestone=><li key={milestone.id}>{milestone.title} · {milestoneStatusLabels[row.draft.milestones[milestone.id as keyof typeof row.draft.milestones]]}</li>)}</ul><label className="project-editor-confirm"><input type="checkbox" checked={confirmed} disabled={busy} onChange={event=>setConfirmed(event.target.checked)}/><span>确认公开以上状态、说明与里程碑。私人备注不会发布。</span></label><button type="button" className="workbench-action primary" disabled={busy||!confirmed} onClick={()=>void mutate('publish')}>确认发布</button><button type="button" className="workbench-action" disabled={busy} onClick={()=>setPreview(false)}>取消</button></section>}
         {withdraw&&<div className="project-editor-preview"><p>撤下后，公开页面恢复为方向蓝图，私人草稿仍保留。</p><button type="button" className="workbench-action" disabled={busy} onClick={()=>void mutate('unpublish')}>确认撤下</button><button type="button" className="workbench-action" disabled={busy} onClick={()=>setWithdraw(false)}>取消</button></div>}
       </section>
     </div>}
+    <ProjectEvidence projectId={selected}/>
   </div>;
 }

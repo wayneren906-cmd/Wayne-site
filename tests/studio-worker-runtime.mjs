@@ -26,13 +26,13 @@ try {
   assert.equal((await request('/api/studio/management','GET',undefined,sessionCookie)).status,403);
   const publicPage=await request('/studio','GET',undefined,null);assert.equal(publicPage.status,200);
   const publicHTML=await publicPage.text();assert.ok(publicHTML.includes('PERSONAL DASHBOARD'));assert.ok(publicHTML.includes('href="/studio/private"'));assert.ok(!publicHTML.includes('studio-supplement-input'));
-  assert.ok(publicHTML.includes('href="/login"'));
+  assert.ok(publicHTML.includes('href="/studio/private/management"'));
   assert.equal((await request('/api/studio/management','GET',undefined,null)).status,401);
   assert.equal((await request('/api/studio/management','GET',undefined,f.unregistered.cookie)).status,403);
   const management=await request('/api/studio/management');assert.equal(management.status,200);
   const initialManagement=await management.json();assert.equal(initialManagement.private_event_count,0);assert.equal(initialManagement.processor_connected,false);
   assert.match(management.headers.get('cache-control'),/no-store/);
-  const ownerManagement=await request('/studio/private/management');assert.equal(ownerManagement.status,200);assert.match(ownerManagement.headers.get('cache-control'),/private|no-store/);assert.ok((await ownerManagement.text()).includes('任务执行器尚未接入'));
+  const ownerManagement=await request('/studio/private/management');assert.equal(ownerManagement.status,200);assert.match(ownerManagement.headers.get('cache-control'),/private|no-store/);assert.ok((await ownerManagement.text()).includes('私人工作台'));const system=await request('/studio/private/system');assert.ok((await system.text()).includes('任务执行器尚未接入'));
   for(const identity of [null,f.unregistered.cookie]){const deniedManagement=await request('/studio/private/management','GET',undefined,identity);const html=await deniedManagement.text();assert.ok(html.includes('无法验证管理权限'));assert.ok(!html.includes('management-metrics'));}
   assert.equal((await request('/api/studio/projects','GET',undefined,null)).status,401);
   assert.equal((await request('/api/studio/projects','GET',undefined,f.unregistered.cookie)).status,403);
@@ -67,7 +67,7 @@ try {
   assert.equal((await request('/api/studio/context','GET',undefined,null)).status,401);
   const oldAccess=await request('/api/studio/context','GET',undefined,null,{'cf-access-jwt-assertion':auth.jwt});assert.equal(oldAccess.status,401);
   const forged=await request('/studio/private','GET',undefined,'forged');assert.ok((await forged.text()).includes('无法验证访问权限'));
-  const ownerPage=await request('/studio/private');assert.equal(ownerPage.status,200);assert.ok((await ownerPage.text()).includes('studio-supplement-input'));assert.match(ownerPage.headers.get('cache-control'),/private|no-store/);
+  const ownerPage=await request('/studio/private');assert.equal(ownerPage.status,200);const ownerHTML=await ownerPage.text();assert.ok(!ownerHTML.includes('studio-supplement-input'));assert.ok(ownerHTML.includes('/studio/private/workspace'));assert.match(ownerPage.headers.get('cache-control'),/private|no-store/);
   for(const token of [null,f.unregistered.cookie,auth.cookie])assert.equal((await request('/api/studio/registration','GET',undefined,token)).status,410);
   const denied=await request('/studio/private','GET',undefined,f.unregistered.cookie);assert.ok((await denied.text()).includes('无法验证访问权限'));
   assert.equal((await request('/api/studio/events','POST',input('unregistered-preview'),f.unregistered.cookie)).status,403);

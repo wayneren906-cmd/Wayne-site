@@ -11,9 +11,26 @@ const { default: StudioEventList } = await import('./.generated/studio-event-lis
 const { default: StudioEventDetail } = await import('./.generated/studio-event-detail.mjs');
 const { default: StudioSupplementForm } = await import('./.generated/studio-supplement-form.mjs');
 const { default: StudioClient } = await import('./.generated/studio-client.mjs');
+const { default: StudioPrivateNavigation } = await import('./.generated/studio-private-navigation.mjs');
 import { StudioHttpClient, createStudioHttpClientAdapter } from '../lib/ui/studio-client.ts';
 
 // All fixtures, events, and mock data in this test file are strictly synthetic.
+
+test('every private section offers the same navigation with exactly one current destination', () => {
+  for (const active of ['management', 'records', 'projects', 'plans', 'system']) {
+    const html = renderToStaticMarkup(React.createElement(StudioPrivateNavigation, {active}));
+    assert.equal((html.match(/aria-current="page"/g) || []).length, 1);
+    for (const href of ['/studio/private/management', '/studio/private', '/studio/private/projects', '/studio/private/plans', '/studio/private/system']) assert.ok(html.includes(`href="${href}"`));
+    assert.ok(html.includes('私人管理栏目'));
+  }
+});
+
+test('private record list uses the unified composer instead of a second inline form',()=>{
+  const html=renderToStaticMarkup(React.createElement(StudioClient,{showSupplement:false,initialEvents:[],readOnly:true}));
+  assert.ok(html.includes('href="/studio/private/workspace"'));
+  assert.ok(!html.includes('<textarea'));
+  assert.ok(!html.includes('href="#supplement"'));
+});
 
 const syntheticEvent1 = {
   event_id: 'evt-comp-01',
@@ -72,7 +89,8 @@ test('StudioOverview renders empty focus truthfully and distinguishes connection
       loading: false,
     })
   );
-  assert(htmlEmpty.includes('当前暂无已确认安排'), '无安排时明确提示');
+  assert(htmlEmpty.includes('记录实际学习与实践'), '记录概况不冒充未接入的学习安排');
+  assert(htmlEmpty.includes('/studio/private/plans'), '提供已实现的手动目标管理入口');
   assert(htmlEmpty.includes('未接入'), 'not_connected 映射为 未接入');
   assert(htmlEmpty.includes('学习时间未知或暂无记录'), 'lastContentUpdatedAt 为空时提示尚未同步');
   assert(!htmlEmpty.includes('studio-overview__supplement-button'), '无 supplementHref 时不渲染补充按钮');
@@ -105,7 +123,7 @@ test('StudioOverview renders empty focus truthfully and distinguishes connection
       loading: true,
     })
   );
-  assert(htmlLoading.includes('aria-label="正在读取安排…"'));
+  assert(htmlLoading.includes('aria-label="正在读取记录概况…"'));
   assert(htmlLoading.includes('暂时不可用'));
 });
 
@@ -134,6 +152,8 @@ test('StudioEventList renders two same-day events separately and formats unknown
 
   // 第二个事件发生时间未知，诚实展示
   assert(html.includes('时间未知'));
+  assert(html.includes('本次读取 2 条'));
+  assert(html.includes('不是完整档案'));
 
   // 特殊字符转义安全验证：不应包含未经转义的原始 <script> 标签
   assert(!html.includes('<script>alert(1)</script>'));

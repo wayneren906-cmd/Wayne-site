@@ -2,9 +2,10 @@ import type {LearningEventInput,LearningContextDTO,SaveReceiptDTO,Assistance,Exe
 import {knowledgeTopics,practiceExercises,studioProjects} from '../studio-catalog.ts';
 import {receiptSchema,contextSchema} from './studio-protocol.ts';
 
-export type WorkspaceTarget={kind:'practice';id:string}|{kind:'project';id:string;milestone:string};
+export type WorkspaceTarget={kind:'note'}|{kind:'practice';id:string}|{kind:'project';id:string;milestone:string};
 export type WorkspaceDraft={summary:string;date:string;assistance:Assistance;execution:ExecutionMode};
 export function workspaceTarget(target:WorkspaceTarget){
+  if(target.kind==='note')return {title:'日常学习记录',knowledgeIds:[] as string[],prefix:null};
   if(target.kind==='practice'){
     const exercise=practiceExercises.find(e=>e.id===target.id);if(!exercise)throw Error('请选择有效练习。');
     return {title:exercise.title,knowledgeIds:[...exercise.knowledgeIds],prefix:`workspace.practice.${exercise.id}`};
@@ -19,7 +20,7 @@ export function buildWorkspaceInput(target:WorkspaceTarget,draft:WorkspaceDraft,
   if(!summary||summary.length>2000||!uuid.test(keys.instance)||!keys.key||keys.key.length>255)throw Error('请填写最多2000字的实际过程或结果。');
   if(date&&(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T00:00:00Z'))||new Date(date+'T00:00:00Z').toISOString().slice(0,10)!==date))throw Error('学习日期无效。');
   if(!['unknown','none','concept_hint','code_outline','full_solution'].includes(draft.assistance)||!['unknown','reading','simulated_analysis','local_run','hardware_run'].includes(draft.execution))throw Error('请选择有效的协助程度和运行方式。');
-  return {schema_version:1,idempotency_key:keys.key,source:{type:'studio',record_id:`${resolved.prefix}.${keys.instance}`},kind:'learning_activity',occurred_at:null,
+  return {schema_version:1,idempotency_key:keys.key,source:resolved.prefix?{type:'studio',record_id:`${resolved.prefix}.${keys.instance}`}:{type:'studio_supplement',record_id:null},kind:'learning_activity',occurred_at:null,
     time_precision:date?'date':'unknown',study_day_override:date?{study_day:date,reason:'用户在工作台选择的学习日期'}:null,
     content:{summary},evidence_status:'self_reported',assistance:draft.assistance,execution_mode:draft.execution,knowledge_ids:resolved.knowledgeIds,plan_id:null};
 }

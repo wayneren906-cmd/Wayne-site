@@ -7,6 +7,7 @@ import StudioOverview, { type StudioOverviewProps } from "./studio-overview";
 import StudioEventList from "./studio-event-list";
 import StudioEventDetail from "./studio-event-detail";
 import StudioSupplementForm from "./studio-supplement-form";
+import {useUnsavedChanges} from '../../lib/ui/use-unsaved-changes.ts';
 
 export type StudioDataAdapter = {
   loadSnapshot?: () => Promise<{overview:StudioOverviewProps;events:readonly LearningEventDTO[]}>;
@@ -19,6 +20,7 @@ export type StudioDataAdapter = {
 };
 
 export type StudioClientProps = {
+  showSupplement?: boolean;
   readOnly?: boolean;
   adapter?: StudioDataAdapter;
   initialOverview?: StudioOverviewProps;
@@ -35,6 +37,7 @@ const defaultOverview: StudioOverviewProps = {
 };
 
 export default function StudioClient({
+  showSupplement = true,
   readOnly = false,
   adapter,
   initialOverview,
@@ -51,6 +54,7 @@ export default function StudioClient({
   const [supplementText, setSupplementText] = useState<string>("");
   const [supplementState, setSupplementState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [supplementError, setSupplementError] = useState<string | null>(null);
+  useUnsavedChanges(!!supplementText.trim());
 
   // 容器层幂等保护：记录用于重试的幂等键与锁定的草稿载荷
 
@@ -151,9 +155,9 @@ export default function StudioClient({
   const selectedEvent = events.find((e) => e.event_id === selectedEventId) ?? null;
 
   return (
-    <div className="studio-client" aria-label="学习操作台主界面">
+    <div className={`studio-client${showSupplement?'':' studio-client--records'}`} aria-label="学习操作台主界面">
       <div className="studio-client__top">
-        <StudioOverview {...overview} />
+        <StudioOverview {...overview} supplementHref={showSupplement?overview.supplementHref:'/studio/private/workspace'} />
       </div>
 
       <div className="studio-client__body">
@@ -177,7 +181,7 @@ export default function StudioClient({
           )}
         </div>
 
-        <div className="studio-client__aside" id="supplement">
+        {showSupplement&&<div className="studio-client__aside" id="supplement">
           <StudioSupplementForm
             readOnly={readOnly}
             text={supplementText}
@@ -186,7 +190,7 @@ export default function StudioClient({
             onChange={handleDraftChange}
             onSubmit={handleSupplementSubmit}
           />
-        </div>
+        </div>}
       </div>
     </div>
   );

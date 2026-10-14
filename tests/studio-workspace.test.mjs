@@ -23,6 +23,18 @@ test('workspace submissions link existing event fields without creating a plan o
   const dated=buildWorkspaceInput(target,{...draft,date:'2026-10-13'},keys);assert.equal(normalizeLearningEvent(dated).studyDay,'2026-10-13');
   const milestone=buildWorkspaceInput({kind:'project',id:'c-engine',milestone:'verification'},draft,keys);assert.match(milestone.source.record_id,/workspace.project.c-engine.verification/);assert.deepEqual(milestone.knowledge_ids,['c-testing']);
 });
+
+test('unified everyday records preserve supplement source semantics without inventing an association',()=>{
+  const input=buildWorkspaceInput({kind:'note'},{...draft,date:'2026-10-14'},keys);
+  assert.deepEqual(input.source,{type:'studio_supplement',record_id:null});
+  assert.deepEqual(input.knowledge_ids,[]);
+  assert.equal(input.plan_id,null);
+  assert.equal(input.evidence_status,'self_reported');
+  assert.equal(normalizeLearningEvent(input).studyDay,'2026-10-14');
+  const undated=buildWorkspaceInput({kind:'note'},draft,keys);
+  assert.equal(normalizeLearningEvent(undated).studyDay,null);
+  assert.equal(undated.occurred_at,null);
+});
 test('invalid catalog targets, impossible dates or unsupported execution metadata reject before transport',()=>{
   for(const value of [{target:{kind:'practice',id:'missing'},draft},{target,draft:{...draft,date:'2026-02-30'}},{target,draft:{...draft,assistance:'verified'}},{target,draft:{...draft,summary:' '}},{target:{kind:'project',id:'c-engine',milestone:'missing'},draft}])assert.throws(()=>buildWorkspaceInput(value.target,value.draft,keys));
 });

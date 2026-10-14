@@ -71,6 +71,7 @@ export default function StudioSupplementForm({
           </div>
         )}
 
+        {text.trim()&&<p className="workbench-note">输入尚未保存，离开前请先提交。</p>}
         <div className="studio-supplement-form__actions">
           <span className="studio-supplement-form__char-count">
             {text.length} 字
