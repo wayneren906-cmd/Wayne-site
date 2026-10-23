@@ -43,14 +43,14 @@ const learningRowsSchema=z.object({users:z.array(schemas.users).max(maxRows),int
   event_revisions:z.array(schemas.event_revisions).max(maxRows),ingest_receipts:z.array(schemas.ingest_receipts).max(maxRows),
   processing_jobs:z.array(schemas.processing_jobs).max(maxRows),deleted_learning_events:z.array(schemas.deleted_learning_events).max(maxRows),
   deleted_learning_keys:z.array(schemas.deleted_learning_keys).max(maxRows)}).strict();
-const v2RowsSchema=learningRowsSchema.extend({studio_project_records:z.array(projectSchemas.studio_project_records).max(3),
+const v2RowsSchema=learningRowsSchema.extend({studio_project_records:z.array(projectSchemas.studio_project_records).max(projectIds.length),
   studio_project_receipts:z.array(projectSchemas.studio_project_receipts).max(maxRows)}).strict();
 const rowsSchema=v2RowsSchema.extend({studio_plan_records:z.array(planSchemas.studio_plan_records).max(1),studio_plan_receipts:z.array(planSchemas.studio_plan_receipts).max(maxRows)}).strict();
-const projectHeadsSchema=z.array(z.object({project_id:z.enum(projectIds),revision:positive}).strict()).max(3)
+const projectHeadsSchema=z.array(z.object({project_id:z.enum(projectIds),revision:positive}).strict()).max(projectIds.length)
   .refine(heads=>new Set(heads.map(head=>head.project_id)).size===heads.length);
 const studioCheckpointSchema=z.object({schema_version:z.literal(2),learning:checkpointSchema,project_heads:projectHeadsSchema}).strict();
 const planCheckpointSchema=studioCheckpointSchema.extend({schema_version:z.literal(3),plan_revision:positive.nullable()}).strict();
-const projectFloorSchema=z.object({'c-engine':positive.optional(),'embedded-controller':positive.optional(),'automotive-bus':positive.optional()}).strict();
+const projectFloorSchema=z.object({'c-engine':positive.optional(),'embedded-controller':positive.optional(),'automotive-bus':positive.optional(),wayneo:positive.optional()}).strict();
 const envelopeSchema=z.object({schema_version:z.literal(1),purpose:z.enum(['private_backup','deletion_checkpoint']),
   iv:z.string().regex(/^[a-f0-9]{24}$/),ciphertext:z.string().regex(/^[a-f0-9]+$/).max((maxBytes+16)*2)}).strict();
 export type EncryptedLearningBackup=z.infer<typeof envelopeSchema>;
@@ -126,7 +126,7 @@ function validateRows(ownerId:string,raw:unknown,format:1|2|3=3):Record<Table,Ro
     try{
       const checked=projectDraftSchema.parse({project_id:project.project_id,revision:project.revision,draft:JSON.parse(String(project.draft_json)),private_note:project.private_note,updated_at:project.updated_at,
         publication:project.published_json===null?null:{revision:project.published_revision,content:JSON.parse(String(project.published_json)),published_at:project.published_at}});
-      if(checked.publication&&!checked.publication.content.summary)throw Error('empty publication');
+      if(checked.publication&&(!checked.publication.content.summary||(checked.project_id==='wayneo'&&!checked.publication.content.description)))throw Error('empty publication');
     }catch{throw new LearningWriteError('INVALID_INPUT');}
   }
   const projectKeys=new Set<string>(),projectVersions=new Set<string>();

@@ -56,3 +56,12 @@
 @media(max-width:1000px){.dashboard-main-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;}.dashboard-project-grid{gap:16px;}.dashboard-project-grid article{padding:16px;}.dashboard-timeline li{grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;}.dashboard-timeline time{grid-column:1/-1;}}
 @media(max-width:760px){.dashboard-main-grid{grid-template-columns:1fr;gap:28px;}.dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.dashboard-metrics>div{padding:18px 0;}.dashboard-metrics>div:nth-child(odd){padding-right:16px;}.dashboard-metrics>div:nth-child(even){padding-left:16px;border-right:0;}.dashboard-metrics>div:nth-child(-n+2){border-bottom:1px solid var(--line);}.dashboard-metrics dd{font-size:34px;}.dashboard-project-grid{grid-template-columns:1fr;}.dashboard-project-grid article{padding:20px;}}
 @media(max-width:520px){.dashboard-intro{display:block;}.dashboard-intro>p{font-size:15px;margin-bottom:12px;}.dashboard-section-heading{align-items:flex-start;gap:8px;}.dashboard-section-heading h2{font-size:22px;}.dashboard-section-heading>a{font-size:12px;}.dashboard-metrics .dashboard-metric-date{font-size:17px;}.dashboard-bars{gap:6px;}.dashboard-bar-value,.dashboard-bar-month{font-size:11px;}.dashboard-timeline li{grid-template-columns:minmax(0,1fr) auto;}.dashboard-chart-controls{gap:10px;}#connections{scroll-margin-top:80px;}}
+/* Project summaries retain the author's formatting without stretching the grid. */
+.dashboard-project-grid article > p { white-space: pre-line; overflow-wrap: anywhere; }
+.dashboard-project-next p { overflow-wrap: anywhere; }
+/* Keep the editorial row layout while making project titles direct links. */
+.dashboard-project-grid article>h3 a{min-height:44px;color:inherit;font:inherit;text-decoration:none;overflow-wrap:anywhere;}
+.dashboard-project-grid article>h3 a:is(:hover,:focus-visible){text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;}
+.dashboard-project-grid article>a{flex-wrap:wrap;gap:4px 12px;white-space:normal;overflow-wrap:anywhere;}
+.dashboard-project-date{font:12px/1.6 var(--font-mono);color:var(--ink-secondary);font-variant-numeric:tabular-nums;}
+.dashboard-project-detail-label{white-space:nowrap;}

@@ -239,12 +239,13 @@ try {
       const shot=await send('Page.captureScreenshot',{format:'png'});fs.writeFileSync(path.join(work,`plan-editor-${width}-${theme}.png`),Buffer.from(shot.data,'base64'));
       if(width===1280&&theme==='light'){const metrics=await send('Page.getLayoutMetrics');const full=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip:{x:0,y:0,width:metrics.cssContentSize.width,height:metrics.cssContentSize.height,scale:1}});fs.writeFileSync(path.join(work,'plan-editor-full-1280.png'),Buffer.from(full.data,'base64'));}
     }
-    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio`});await wait(()=>evaluate(`document.querySelector('#goals')?.textContent.includes('合成公开目标')`));
+    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio`});await wait(()=>evaluate(`!!document.querySelector(${JSON.stringify(useWorker?'#projects':'#goals')})`));
+    assert.equal(await evaluate(`document.body.innerText.includes('合成公开目标')`),!useWorker);
     assert.equal(await evaluate(`document.body?.innerText.includes('SYNTHETIC_PRIVATE_GOAL_EDITOR_NOTE')`),false);
     await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/private/plans`});await wait(()=>evaluate(`!!document.querySelector('.plan-editor[data-ready=true] .plan-goal-fields input')`));
     await evaluate(`document.querySelector('.plan-goal-fields input').focus();document.querySelector('.plan-goal-fields input').select()`);await send('Input.insertText',{text:'合成未发布目标新版本'});
     await evaluate(`document.querySelector('.plan-editor form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))`);await wait(()=>evaluate(`document.querySelector('[role=status]')?.textContent.includes('私人目标已保存')`));
-    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio`});await wait(()=>evaluate(`document.querySelector('#goals')?.textContent.includes('合成公开目标')`));assert.equal(await evaluate(`document.querySelector('#goals').textContent.includes('合成未发布目标新版本')`),false);
+    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio`});await wait(()=>evaluate(`!!document.querySelector(${JSON.stringify(useWorker?'#projects':'#goals')})`));assert.equal(await evaluate(`document.body.innerText.includes('合成未发布目标新版本')`),false);
     await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/private/plans`});await wait(()=>evaluate(`!!document.querySelector('.plan-editor[data-ready=true] .plan-goal-fields input')`));
     await evaluate(`document.querySelector('.plan-goal-fields input').focus();document.querySelector('.plan-goal-fields input').select()`);await send('Input.insertText',{text:'合成未保存的目标输入'});
     await evaluate(`[...document.querySelectorAll('button')].find(button=>button.textContent==='撤下公开目标').click()`);await wait(()=>evaluate(`[...document.querySelectorAll('button')].some(button=>button.textContent==='确认撤下')`));
@@ -254,13 +255,18 @@ try {
     await evaluate(`[...document.querySelectorAll('button')].find(button=>button.textContent==='移除此目标').click()`);assert.equal(await evaluate(`document.querySelectorAll('.plan-goal-fields').length`),1);
     await evaluate(`[...document.querySelectorAll('button')].find(button=>button.textContent==='确认移除').click()`);await wait(()=>evaluate(`document.querySelectorAll('.plan-goal-fields').length===0`));
     await evaluate(`document.querySelector('.plan-editor form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))`);await wait(()=>evaluate(`document.querySelector('[role=status]')?.textContent.includes('私人目标已保存')`));
-    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio`});await wait(()=>evaluate(`document.querySelector('#goals')?.textContent.includes('暂无公开目标')`));assert.equal(await evaluate(`document.body?.innerText.includes('合成公开目标')`),false);
+    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio`});await wait(()=>evaluate(`!!document.querySelector(${JSON.stringify(useWorker?'#projects':'#goals')})`));assert.equal(await evaluate(`document.body?.innerText.includes('合成公开目标')`),false);
     const readsBeforePublic=reads;
     for(let n=1;n<=4;n++)await f.db.prepare('INSERT INTO records(date,items,practice,revision,updated_at) VALUES(?,?,?,?,?)').bind(`2000-01-0${n}`,JSON.stringify([{label:'合成公开主题',text:'合成公开手记，用于隔离界面验证'}]),'',1,'2000-01-01T00:00:00Z').run();
     await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio`});await wait(()=>evaluate(`!!document.querySelector('.workbench-content')`));
     assert.equal(await evaluate(`document.querySelectorAll('.studio-note-list li').length`),0);
     assert.equal(await evaluate(`document.body?.innerText.includes('合成浏览器学习记录')`),false,'private facts must not reach public Studio');
     assert.equal(reads,readsBeforePublic,'public Studio must not call the private context API');
+    if(useWorker){
+      assert.equal(await evaluate(`!!document.querySelector('.dashboard-chart, #goals, #connections')`),false);
+      assert.equal(await evaluate(`document.body.innerText.includes('合成公开主题')`),false);
+      assert.equal(await evaluate(`document.querySelectorAll('nav[aria-label="Studio 栏目"] a').length`),2);
+    }else{
     await wait(()=>evaluate(`document.querySelectorAll('.dashboard-bar-column').length===6`));
     await evaluate(`document.querySelector('.dashboard-segment button:last-child').click()`);
     await wait(()=>evaluate(`document.querySelector('.dashboard-segment button:last-child').getAttribute('aria-pressed')==='true'&&document.querySelector('.dashboard-chart-caption').textContent.includes('累计')`));
@@ -270,6 +276,7 @@ try {
     assert.equal(await evaluate(`document.querySelectorAll('.dashboard-chart-table tbody tr').length`),12);
     assert.equal(await evaluate(`document.querySelector('.dashboard-chart-table tbody tr:last-child td:last-child').textContent`),'4');
     await evaluate(`document.querySelector('.dashboard-chart-table summary').click()`);
+    }
     for(const width of [320,390,1280])for(const theme of ['light','dark']){
       await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});
       await evaluate(`document.documentElement.dataset.theme=${JSON.stringify(theme)}`);
@@ -302,7 +309,7 @@ try {
   }
   if(useWorker||emailOnly){
     injectIdentity=false;
-    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio`});await wait(()=>evaluate(`!!document.querySelector('#goals')`));assert.equal(await evaluate(`!!document.querySelector('.login-form')`),false);
+    await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio`});await wait(()=>evaluate(`!!document.querySelector(${JSON.stringify(useWorker?'#projects':'#goals')})`));assert.equal(await evaluate(`!!document.querySelector('.login-form')`),false);
     await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/private/system`});await wait(()=>evaluate(`document.body?.innerText.includes('无法验证管理权限')`));assert.equal(await evaluate(`!!document.querySelector('.management-metrics')`),false);
     await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/login`});await wait(()=>evaluate(`!!document.querySelector('.login-form input[type=password]')`));
     for(const width of [320,390,1280])for(const theme of ['light','dark']){
@@ -325,7 +332,7 @@ try {
     await evaluate(`[...document.querySelectorAll('button')].find(button=>button.textContent==='添加管理员').click()`);
     try{await wait(()=>evaluate(`document.body?.innerText.includes('管理员已添加')&&document.body?.innerText.includes('synthetic-browser-admin@example.com')`));}catch(error){console.log('Synthetic account UI diagnostic: '+await evaluate(`document.body?.innerText`));throw error;}
     assert.equal((await f.db.prepare('SELECT owner_id,role FROM admin_accounts WHERE email=?').bind('synthetic-browser-admin@example.com').first()).role,'admin');
-    await evaluate(`[...document.querySelectorAll('button')].find(button=>button.textContent==='退出登录').click()`);await wait(()=>evaluate(`location.pathname==='/studio'&&!!document.querySelector('#goals')`));assert.equal((await evaluate(`fetch('/api/auth/session').then(response=>response.json())`)).signed_in,false);
+    await evaluate(`[...document.querySelectorAll('button')].find(button=>button.textContent==='退出登录').click()`);await wait(()=>evaluate(`location.pathname==='/studio'&&!!document.querySelector(${JSON.stringify(useWorker?'#projects':'#goals')})`));assert.equal((await evaluate(`fetch('/api/auth/session').then(response=>response.json())`)).signed_in,false);
     await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/private/system`});await wait(()=>evaluate(`document.body?.innerText.includes('无法验证管理权限')`));
     if(useWorker){
       await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/studio/private/workspace?project=c-engine&milestone=implementation`});

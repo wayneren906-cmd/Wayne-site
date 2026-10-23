@@ -1,6 +1,7 @@
 import { learningDate, type Entry } from "./records.ts";
 export async function readRecords(db: D1Database): Promise<Entry[]> {
   const rows = await db.prepare("SELECT * FROM records ORDER BY date DESC").all<{date:string;items:string;practice:string;revision:number;updated_at:string}>();
+  if ((rows as {success?:boolean}).success === false || !Array.isArray(rows.results)) throw new Error('PUBLIC_RECORDS_UNAVAILABLE');
   return rows.results.map(r => ({date:r.date,items:JSON.parse(r.items),practice:r.practice,revision:r.revision,updatedAt:r.updated_at}));
 }
 export async function snapshot(db: D1Database, now = new Date()) {

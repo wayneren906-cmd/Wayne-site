@@ -1,0 +1,39 @@
+/* 仅为顶栏新增的「搜索」入口做有限断点调整；不触及页面其他样式。 */
+
+.nav-search-link {
+  white-space: nowrap;
+}
+
+/* 用 body 前缀确保这些窄屏覆盖稳定生效，避免第 4 个导航项把一行挤溢出。 */
+@media (max-width: 520px) {
+  body .editorial-nav-bar .nav-links-cluster {
+    gap: 8px;
+  }
+
+  body .editorial-nav-bar .nav-links-cluster a {
+    min-width: auto;
+    padding-inline: 2px;
+  }
+}
+
+@media (max-width: 400px) {
+  body .editorial-nav-bar .nav-links-cluster {
+    gap: 4px;
+    font-size: 11px;
+  }
+
+  body .editorial-nav-bar .nav-links-cluster a {
+    padding-inline: 1px;
+  }
+}
+
+@media (max-width: 360px) {
+  body .editorial-nav-bar .nav-links-cluster {
+    gap: 3px;
+    font-size: 10.5px;
+  }
+
+  body .editorial-nav-bar .wordmark-wrap img {
+    height: 14px;
+  }
+}

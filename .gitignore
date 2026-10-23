@@ -13,3 +13,8 @@ data/
 *.log
 
 tests/.generated/
+
+# Local screenshots and inspection artifacts (never served by the website)
+/artifacts/
+/shot_*.png
+/screenshot*.png

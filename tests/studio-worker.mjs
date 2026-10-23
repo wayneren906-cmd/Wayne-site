@@ -10,8 +10,13 @@ import {input} from './helpers/learning-fixture.mjs';
 const root=path.resolve(import.meta.dirname,'..');
 const work=path.join(root,'tests/.generated/worker-'+Date.now());
 fs.mkdirSync(work,{recursive:true});
-for(const name of ['app','lib','worker','migrations','public','package.json','tsconfig.json','postcss.config.mjs']) {
+for(const name of ['app','lib','content','worker','migrations','public','package.json','tsconfig.json','postcss.config.mjs']) {
   const source=path.join(root,name);if(fs.existsSync(source))fs.cpSync(source,path.join(work,name),{recursive:true});
+}
+const projectPreview=process.argv.includes('--project-preview');
+if(projectPreview){
+  // These routes exist only in this disposable build, never in the application's app/ tree.
+  fs.cpSync(path.join(root,'tests/fixtures/studio-project-preview'),path.join(work,'app/studio/preview-wayneo'),{recursive:true});
 }
 fs.symlinkSync(path.join(root,'node_modules'),path.join(work,'node_modules'),'junction');
 const config={name:'synthetic-studio-only',main:'worker/index.ts',compatibility_date:'2026-05-15',compatibility_flags:['nodejs_compat'],
@@ -25,5 +30,5 @@ const exit=await new Promise((resolve,reject)=>{
   child.on('error',reject);child.on('exit',resolve);
 });
 assert.equal(exit,0,'isolated complete application build');
-fs.writeFileSync(path.join(root,'tests/.generated/worker-latest.json'),JSON.stringify({work,buildPassed:true}));
+fs.writeFileSync(path.join(root,'tests/.generated/worker-latest.json'),JSON.stringify({work,buildPassed:true,projectPreview}));
 console.log('ISOLATED_FULL_BUILD_PASSED: '+work);

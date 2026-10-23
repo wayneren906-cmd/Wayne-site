@@ -13,3 +13,11 @@
   .workbench-tabs::-webkit-scrollbar{display:none;}
   .workbench-tabs a{flex:0 0 auto;white-space:nowrap;}
 }
+/* Published project copy can contain line breaks and long URLs. */
+.studio-workbench .workbench-project-summary { white-space: pre-line; overflow-wrap: anywhere; }
+.studio-workbench .workbench-details > summary { min-height: 44px; padding: 12px 0; }
+/* Keep project purpose distinct from the published progress snapshot. */
+.studio-workbench .studio-project-description { margin-top: 18px; }
+.studio-workbench .studio-project-description > section + section { margin-top: 20px; }
+.studio-workbench .studio-project-description h3 { font: 500 17px/1.5 var(--font-sans); }
+.studio-workbench .studio-project-description p { margin-top: 6px; max-width: 75ch; font-size: 14px; line-height: 1.85; white-space: pre-line; overflow-wrap: anywhere; color: var(--ink-secondary); }

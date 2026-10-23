@@ -1,0 +1,616 @@
+/* Wayneo 项目特稿与版式体验。全部规则限定在 wayneo-* 类名内，不改动全站元素。 */
+
+.wayneo-feature {
+  scroll-margin-top: 110px;
+}
+
+/* 共享项目介绍：外层是容器查询容器，内部 12 列（标题 4 / 介绍 8）。 */
+.wayneo-specimen-frame {
+  container-type: inline-size;
+}
+
+.wayneo-specimen {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 20px 40px;
+  align-items: start;
+}
+
+.wayneo-specimen-title {
+  grid-column: span 4;
+  min-width: 0;
+}
+
+.wayneo-specimen-title h2 {
+  font: 400 clamp(30px, 3.6vw, 46px)/1.15 var(--font-serif);
+  letter-spacing: -0.04em;
+  margin: 12px 0 0;
+}
+
+.wayneo-specimen-intro {
+  grid-column: span 8;
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.wayneo-specimen-summary {
+  font: 400 clamp(18px, 1.9vw, 22px)/1.7 var(--font-serif);
+  margin: 0;
+}
+
+.wayneo-specimen-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.wayneo-specimen-meta div {
+  display: grid;
+  gap: 4px;
+}
+
+.wayneo-specimen-meta dt {
+  font: 10px/1.6 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+}
+
+.wayneo-specimen-meta dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+.wayneo-specimen-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font: 11px/1.7 var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--ink-secondary);
+}
+
+@container (max-width: 540px) {
+  .wayneo-specimen {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .wayneo-specimen-title,
+  .wayneo-specimen-intro {
+    grid-column: auto;
+  }
+}
+
+/* 老浏览器没有容器查询时，窄屏仍按单列显示，避免 12 列被挤压。 */
+@media (max-width: 540px) {
+  .wayneo-specimen {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .wayneo-specimen-title,
+  .wayneo-specimen-intro {
+    grid-column: auto;
+  }
+}
+
+/* 段内目录：只是文章内锚点，不是旧的概览/详情双导航。 */
+.wayneo-feature-index {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 24px;
+  margin-top: 32px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-strong);
+  font: 11px/1.8 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.wayneo-feature-index a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--ink-secondary);
+  border-bottom: 1px solid transparent;
+}
+
+.wayneo-feature-index a [aria-hidden="true"] {
+  color: var(--stone);
+}
+
+@media (hover: hover) {
+  .wayneo-feature-index a:hover {
+    color: var(--ink);
+    border-bottom-color: var(--line-strong);
+  }
+}
+
+.wayneo-feature-section {
+  scroll-margin-top: 110px;
+  margin-top: 56px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.wayneo-feature-heading h2 {
+  font: 400 clamp(26px, 3vw, 38px)/1.4 var(--font-serif);
+  letter-spacing: -0.035em;
+  margin: 12px 0 0;
+}
+
+.wayneo-feature-body {
+  padding-top: 20px;
+  max-width: 70ch;
+  font-size: 16px;
+  line-height: 1.95;
+}
+
+.wayneo-feature-body > p {
+  margin: 0 0 16px;
+}
+
+.wayneo-feature-details {
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--ink-secondary);
+}
+
+.wayneo-feature-details summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.wayneo-feature-details p {
+  margin: 10px 0 0;
+  line-height: 1.9;
+}
+
+.wayneo-feature-note {
+  margin-top: 48px;
+  color: var(--ink-secondary);
+  font-size: 13px;
+}
+
+.wayneo-feature-related {
+  margin-top: 56px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.wayneo-feature-related h2 {
+  font: 400 clamp(22px, 2.6vw, 30px)/1.4 var(--font-serif);
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.wayneo-feature-related ul {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+  display: grid;
+  gap: 16px;
+}
+
+.wayneo-feature-related a {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 18px;
+  min-height: 44px;
+  color: var(--ink);
+}
+
+.wayneo-feature-related time {
+  font: 11px/1.7 var(--font-mono);
+  color: var(--ink-secondary);
+}
+
+.wayneo-feature-related-topics {
+  margin: 2px 0 0;
+  font: 11px/1.7 var(--font-mono);
+  color: var(--ink-secondary);
+}
+
+/* 体验区：同一个 Specimen 在两个宽度间重排。 */
+.wayneo-demo {
+  margin-top: 32px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: var(--surface-alt);
+}
+
+.wayneo-demo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+
+.wayneo-demo-widths {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wayneo-demo-widths button {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--ink-secondary);
+  font-size: 13px;
+}
+
+.wayneo-demo-widths button[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.wayneo-demo-grid-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 13px;
+  color: var(--ink-secondary);
+}
+
+.wayneo-demo-grid-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ink);
+}
+
+.wayneo-demo-hint,
+.wayneo-demo-readout {
+  margin: 12px 0 0;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--ink-secondary);
+}
+
+.wayneo-demo-readout {
+  margin-top: 4px;
+}
+
+.wayneo-demo-stage {
+  position: relative;
+  width: 100%;
+  margin-top: 18px;
+  margin-inline: auto;
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  transition: width 0.3s ease;
+}
+
+.wayneo-demo-stage[data-demo-width="desktop"] {
+  width: 100%;
+}
+
+.wayneo-demo-stage[data-demo-width="mobile"] {
+  width: 375px;
+  max-width: 100%;
+}
+
+/* 只叠辅助线，不挡交互、不改原色与字体。 */
+.wayneo-demo-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.22;
+  background-image:
+    repeating-linear-gradient(to right, var(--ink-secondary) 0 1px, transparent 1px 8.3333%),
+    repeating-linear-gradient(to bottom, var(--ink-secondary) 0 1px, transparent 1px 44px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wayneo-demo-stage {
+    transition: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .wayneo-demo {
+    padding: 14px;
+  }
+
+  .wayneo-demo-stage {
+    padding: 14px;
+  }
+}
+
+/* 页面导览：三条真实截图与职责说明，接在版式体验之后。
+   图片保持原色与原始比例，只用 1px 细边框收边，不加阴影与滤镜。 */
+.wayneo-page-guide {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.wayneo-page-guide-heading h3 {
+  font: 400 clamp(20px, 2.2vw, 26px)/1.5 var(--font-serif);
+  letter-spacing: -0.03em;
+  margin: 12px 0 0;
+}
+
+.wayneo-page-guide-list {
+  display: grid;
+  gap: 32px;
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+}
+
+.wayneo-page-guide-item {
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.wayneo-page-guide-shot {
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.wayneo-page-guide-frame {
+  display: block;
+  width: 100%;
+  max-width: 800px;
+  border: 1px solid var(--line);
+  background: var(--surface-alt);
+}
+
+.wayneo-page-guide-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.wayneo-page-guide-caption {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  max-width: 800px;
+  font: 11px/1.8 var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--ink-secondary);
+}
+
+.wayneo-page-guide-number {
+  color: var(--stone);
+}
+
+.wayneo-page-guide-text {
+  display: grid;
+  gap: 2px;
+}
+
+.wayneo-page-guide-label {
+  color: var(--ink);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.wayneo-page-guide-copy {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.wayneo-page-guide-name {
+  font: 400 clamp(18px, 2vw, 22px)/1.4 var(--font-serif);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.wayneo-page-guide-duty {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.9;
+  color: var(--ink-secondary);
+}
+
+.wayneo-page-guide-read {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  width: fit-content;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--ink);
+  border-bottom: 1px solid transparent;
+}
+
+@media (hover: hover) {
+  .wayneo-page-guide-read:hover {
+    border-bottom-color: var(--line-strong);
+  }
+}
+
+/* 宽屏把资料图与职责说明并排；窄屏直接单列，不做横向滑动。 */
+@media (min-width: 720px) {
+  .wayneo-page-guide-item {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .wayneo-page-guide-copy {
+    padding-top: 4px;
+  }
+}
+
+/* 项目详情页的返回入口：顶部与文末共用同一条克制链接。 */
+.wayneo-project-back-link {
+  margin: 0 0 24px;
+}
+
+.wayneo-project-back-link a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  width: fit-content;
+  font-size: 13px;
+  color: var(--ink-secondary);
+  border-bottom: 1px solid transparent;
+}
+
+@media (hover: hover) {
+  .wayneo-project-back-link a:hover {
+    color: var(--ink);
+    border-bottom-color: var(--line-strong);
+  }
+}
+
+/* Studio 首页的项目索引：左 4 列项目事实，右 8 列一句导读与唯一入口。
+   详情四段、段内目录与截图都留在 /studio/wayneo，这里只做安静的入口。 */
+.wayneo-project-index {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 40px;
+  row-gap: 12px;
+  align-items: start;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 110px;
+}
+
+.wayneo-project-index-meta {
+  grid-column: 1 / 5;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.wayneo-project-index-number {
+  font: 400 clamp(44px, 4.4vw, 56px)/1 var(--font-serif);
+  letter-spacing: -0.04em;
+  color: var(--line-strong);
+}
+
+.wayneo-project-index-name {
+  font: 400 clamp(26px, 2.6vw, 32px)/1.3 var(--font-serif);
+  letter-spacing: -0.03em;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.wayneo-project-index-status {
+  margin: 2px 0 0;
+  font: 11px/1.7 var(--font-mono);
+  letter-spacing: 0.06em;
+  color: var(--ink-secondary);
+}
+
+.wayneo-project-index-copy {
+  grid-column: 5 / 13;
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.wayneo-project-index-summary {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 16px;
+  line-height: 1.95;
+}
+
+.wayneo-project-index-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font: 11px/1.7 var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--ink-secondary);
+}
+
+.wayneo-project-index-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  width: fit-content;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.wayneo-project-index-link span {
+  margin-left: 8px;
+}
+
+@media (hover: hover) {
+  .wayneo-project-index-link:hover {
+    border-bottom-color: var(--ink);
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .wayneo-project-index-link span {
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .wayneo-project-index-link:hover span {
+    transform: translateX(2px);
+  }
+}
+
+/* 窄屏单列：编号、项目名、导读、状态依次落下。 */
+@media (max-width: 760px) {
+  .wayneo-project-index {
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+    row-gap: 14px;
+    padding-top: 24px;
+  }
+
+  .wayneo-project-index-meta,
+  .wayneo-project-index-copy {
+    grid-column: 1;
+  }
+
+  .wayneo-project-index-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+  }
+
+  .wayneo-project-index-number {
+    font-size: 40px;
+  }
+}
+
+@media (max-width: 400px) {
+  .wayneo-project-index-name {
+    font-size: 24px;
+  }
+}

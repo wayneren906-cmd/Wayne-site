@@ -50,6 +50,8 @@ export async function readPublicStudioProjects(db:D1Database):Promise<StudioProj
     return rows.results.map(row=>{
       const content=projectContentSchema.parse(JSON.parse(row.published_json!));
       if(!content.summary)throw new LearningWriteError('SERVICE_UNAVAILABLE');
+      // A published Wayneo snapshot is public only with a saved, non-empty introduction.
+      if(row.project_id==='wayneo'&&!content.description)throw new LearningWriteError('SERVICE_UNAVAILABLE');
       const checked=projectDraftSchema.parse({project_id:row.project_id,revision:row.published_revision,draft:content,private_note:'',updated_at:row.published_at,publication:{revision:row.published_revision,content,published_at:row.published_at}});
       return {project_id:checked.project_id,revision:checked.publication!.revision,content,published_at:checked.publication!.published_at};
     });
@@ -80,6 +82,8 @@ export async function mutateStudioProject(db:D1Database,identity:LearningPrincip
       const dto=draftDTO(before.row);
       if(input.action==='publish'){
         if(!dto.draft.summary)throw new LearningWriteError('INVALID_INPUT');
+        // Wayneo must be published with its saved introduction; an incomplete private draft is still allowed.
+        if(input.project_id==='wayneo'&&!dto.draft.description)throw new LearningWriteError('INVALID_INPUT');
         requiredWrite(db,statements,'UPDATE studio_project_records SET revision=?,updated_at=?,published_revision=?,published_json=?,published_at=? WHERE owner_id=? AND project_id=? AND revision=?',[revision,at,revision,JSON.stringify(dto.draft),at,owner.userId,input.project_id,input.expected_revision]);
       }else requiredWrite(db,statements,'UPDATE studio_project_records SET revision=?,updated_at=?,published_revision=NULL,published_json=NULL,published_at=NULL WHERE owner_id=? AND project_id=? AND revision=?',[revision,at,owner.userId,input.project_id,input.expected_revision]);
     }

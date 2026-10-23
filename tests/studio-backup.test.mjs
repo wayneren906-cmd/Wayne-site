@@ -5,7 +5,7 @@ import {verifyLearningOwner} from '../lib/learning/auth.ts';
 import {saveLearningEvent} from '../lib/learning/events.ts';
 import {exportPrivateLearningBackup,restorePrivateLearningBackup} from '../lib/learning/private-backup.ts';
 import {mutateStudioProject,getStudioProjectDrafts,readPublicStudioProjects} from '../lib/studio-projects.ts';
-import {emptyProjectContent} from '../lib/ui/project-protocol.ts';
+import {emptyProjectContent,projectIds} from '../lib/ui/project-protocol.ts';
 import {mutateStudioPlan} from '../lib/studio-plans.ts';
 
 const tables=['users','integration_grants','learning_state','learning_events','event_revisions','ingest_receipts','processing_jobs','deleted_learning_events','deleted_learning_keys','studio_project_records','studio_project_receipts','studio_plan_records','studio_plan_receipts'];
@@ -13,6 +13,25 @@ const snapshot=sqlite=>Object.fromEntries(tables.map(table=>[table,sqlite.prepar
 const options={isolated:true,expectedOwnerId:'synthetic-owner',minimumCheckpointVersion:0,now};
 const draft=(revision=0,key='project-save',summary='synthetic draft')=>({action:'save_draft',project_id:'c-engine',expected_revision:revision,idempotency_key:key,content:{...emptyProjectContent(),summary,private_note:'SYNTHETIC_PRIVATE_BACKUP_NOTE'}});
 const publish={action:'publish',project_id:'c-engine',expected_revision:1,idempotency_key:'project-publish',confirm_public:true};
+
+test('four-project backup restores Wayneo introduction privately and enforces its revision floor',async t=>{
+  const f=await setup(t,{project:false});
+  for(const project_id of projectIds){
+    await mutateStudioProject(f.db,f.owner,{action:'save_draft',project_id,expected_revision:0,idempotency_key:'save-'+project_id,content:{...emptyProjectContent(),description:'Synthetic intro '+project_id,summary:'Synthetic progress '+project_id,private_note:'Synthetic private '+project_id}},{now});
+    await mutateStudioProject(f.db,f.owner,{action:'publish',project_id,expected_revision:1,idempotency_key:'publish-'+project_id,confirm_public:true},{now});
+  }
+  const bundle=await exportPrivateLearningBackup(f.db,f.owner,f.key,{now}),target=await blank(t);
+  assert.equal(Object.keys(bundle.project_revisions).length,4);
+  const result=await restorePrivateLearningBackup(target.db,bundle.backup,bundle.checkpoint,f.key,{...options,minimumProjectRevisions:bundle.project_revisions});
+  assert.equal(result.projects_restored,4);
+  assert.equal(result.project_publications_restored,0);
+  const restored=target.sqlite.prepare("SELECT * FROM studio_project_records WHERE project_id='wayneo'").get();
+  assert.equal(JSON.parse(restored.draft_json).description,'Synthetic intro wayneo');
+  assert.equal(restored.published_json,null);
+  assert.ok(restored.revision>bundle.project_revisions.wayneo);
+  const fresh=await blank(t);
+  await assert.rejects(restorePrivateLearningBackup(fresh.db,bundle.backup,bundle.checkpoint,f.key,{...options,minimumProjectRevisions:{...bundle.project_revisions,wayneo:bundle.project_revisions.wayneo+1}}),{code:'INVALID_INPUT'});
+});
 
 async function setup(t,{project=true,learning=true}={}){
   const f=await fixture(t),auth=await signedOwner(),owner=await verifyLearningOwner(auth.jwt,auth.config,f.db,auth.verification);

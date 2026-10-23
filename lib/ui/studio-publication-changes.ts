@@ -8,7 +8,13 @@ const missing='未公开',empty='未填写';
 export function projectPublicationChanges(projectId:string,draft:StudioProjectContent,published:StudioProjectContent|null):PublicationChange[]{
   const changes:PublicationChange[]=[];
   function compare(label:string,before:string,after:string){if(before!==after)changes.push({label,before,after});}
+  const catalogDescription=studioProjects.find(project=>project.id===projectId)?.desc??'';
+  // A stored description always wins. Legacy snapshots without one fall back to the static
+  // catalog introduction, which is what visitors actually see; an explicit empty value means
+  // the introduction is blank. The private draft is never used as the published side.
+  const described=(content:StudioProjectContent)=>content.description!==undefined?content.description||empty:catalogDescription||empty;
   compare('项目状态',published?projectStatusLabels[published.status]:missing,projectStatusLabels[draft.status]);
+  compare('项目介绍',published?described(published):missing,described(draft));
   compare('进展说明',published?published.summary||empty:missing,draft.summary||empty);
   compare('下一步',published?published.next_step||empty:missing,draft.next_step||empty);
   for(const milestone of studioProjects.find(project=>project.id===projectId)?.milestones??[]){

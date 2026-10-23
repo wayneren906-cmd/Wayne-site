@@ -128,7 +128,7 @@ export default function PersonalHome() {
         <div className="pub-cover-bottom"><a href="/learning">进入学习档案 <ArrowUpRight size={13} /></a></div>
       </section>
       <section id="journal" className="pub-section pub-journal pub-reveal" aria-labelledby="journal-title">
-        <SectionLabel number="01" title="JOURNAL" note="日常研习 / 按时间收录" />
+        <SectionLabel number="01" title="JOURNAL" note="近期手记 / 按时间收录" />
         <div className="pub-section-heading pub-reveal"><h2 id="journal-title">写在学习之间。</h2></div>
         {error && <div className="pub-notice" role="status"><span>{records.length ? "暂时无法更新，以下保留上次读取的记录。" : "暂时无法读取学习记录。"}</span><button type="button" onClick={() => { setLoading(true); setRetry(v => v + 1); }} disabled={loading}><RefreshCw size={13} />{loading ? "读取中" : "重新读取"}</button></div>}
         <div className="pub-index pub-reveal" aria-busy={loading}>
@@ -150,11 +150,11 @@ export default function PersonalHome() {
           </a>
         </div>
       </section>
-      <section className="pub-section pub-practice pub-reveal" aria-labelledby="practice-title">
+      <section id="practice" className="pub-section pub-practice pub-reveal" aria-labelledby="practice-title">
         <SectionLabel number="02" title="IN PRACTICE" note="从理解到动手" />
         <div className="pub-practice-grid">
           <figure className="pub-practice-image pub-reveal-image"><div className="pub-photo-window"><img src="/editorial-desk.jpg" alt="窗前原木长案、布面研习笔记与极简书写笔" width={1376} height={768} loading="lazy" /></div><figcaption><span>02 / THE DESK</span><span>实践意向 · 研习案头</span></figcaption></figure>
-          <div className="pub-practice-copy pub-reveal"><span className="pub-small-label">WORK IN PROGRESS</span><h2 id="practice-title">让想法，<br />有迹可循。</h2><a className="pub-text-link" href="/projects">查看实践方向 <ArrowUpRight size={15} /></a><div className="pub-practice-topics"><span>C 语言</span><span>嵌入式</span><span>汽车电子</span></div></div>
+          <div className="pub-practice-copy pub-reveal"><span className="pub-small-label">WORK IN PROGRESS</span><h2 id="practice-title">让想法，<br />有迹可循。</h2><a className="pub-text-link" href="/studio">进入 Studio <ArrowUpRight size={15} /></a></div>
         </div>
       </section>
       <section className="pub-section pub-fragments pub-reveal" aria-labelledby="fragments-title">

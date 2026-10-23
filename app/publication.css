@@ -1274,3 +1274,103 @@ body::before {
   line-height: 1.4;
   letter-spacing: 0.01em;
 }
+
+/* ==========================================================================
+   INDEX 精选（SELECTED）补充：主次入口层次与触控尺寸
+   仅追加，不覆盖全站字体、摄影与动效；沿用原有 12 列案头布局。
+   ========================================================================== */
+
+/* 主链接（查看项目详情）保留原下划线指示，扩展为不小于 44px 的触控目标。 */
+.publication-home .pub-practice-copy .pub-text-link,
+.publication-home .pub-cover-bottom a {
+  min-height: 44px;
+  padding: 12px 0;
+  box-sizing: border-box;
+  align-items: center;
+}
+
+.publication-home .pub-cover-bottom a {
+  gap: 10px;
+}
+
+/* 次链接（浏览 Studio）：不做下划线竞争，退为安静的文字入口，但同样保证触控尺寸。 */
+.publication-home .pub-practice-copy .pub-selected-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 12px 0;
+  margin-top: 10px;
+  width: fit-content;
+  box-sizing: border-box;
+  font: var(--editorial-caption-size)/1.6 var(--font-mono);
+  letter-spacing: .06em;
+  color: var(--ink-secondary);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color .25s ease, border-color .25s ease;
+}
+
+.publication-home .pub-practice-copy .pub-selected-more:hover,
+.publication-home .pub-practice-copy .pub-selected-more:focus-visible {
+  color: var(--ink);
+  border-bottom-color: var(--line);
+}
+
+.publication-home .pub-practice-copy .pub-selected-more svg {
+  flex-shrink: 0;
+  transition: transform .25s ease;
+}
+
+.publication-home .pub-practice-copy .pub-selected-more:hover svg {
+  transform: translate(2px, -2px);
+}
+
+.publication-home .pub-practice-copy .pub-text-link:focus-visible,
+.publication-home .pub-practice-copy .pub-selected-more:focus-visible,
+.publication-home .pub-cover-bottom a:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* 主次链接均为块级起点，之间留出间距，避免贴在一起。 */
+.publication-home .pub-practice-copy .pub-text-link {
+  margin-bottom: 4px;
+}
+
+/* 较长主题名在窄列内换行，不溢出容器。 */
+.publication-home .pub-practice-copy .pub-practice-topics {
+  flex-wrap: wrap;
+  row-gap: 8px;
+  min-width: 0;
+}
+
+.publication-home .pub-practice-copy .pub-practice-topics span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* 封面底部双入口：窄屏换行时仍保持可点区域与对齐。 */
+.publication-home .pub-cover-bottom {
+  flex-wrap: wrap;
+  row-gap: 4px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .publication-home .pub-practice-copy .pub-text-link,
+  .publication-home .pub-practice-copy .pub-selected-more {
+    font-size: 11px;
+  }
+
+  .publication-home .pub-practice-copy .pub-selected-more {
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .publication-home .pub-cover-bottom {
+    justify-content: space-between;
+    gap: 12px;
+  }
+}

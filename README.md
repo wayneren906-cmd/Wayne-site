@@ -4,17 +4,17 @@
 
 **[Index](https://wayneo.dev) · [Journal](https://wayneo.dev/learning) · [Studio](https://wayneo.dev/studio)**
 
-更新时间：2026-10-15。网站由公开的个人空间和管理员私人工作台组成。Studio 最新版已发布；本次补充 Journal 英文标题以及 Journal / Studio 入场动画，首页动画保持原样。功能范围见 [Studio 产品定位](docs/studio-functional-plan.md)，发布与验收记录见 [工作台验证](docs/studio-workbench-verification.md)。测试域名当前共用生产 Worker / D1，不能用于隔离写入测试。
+更新时间：2026-10-16。纯展示站已正式发布：首页恢复氛围式叙事与 Studio 入口，Studio 项目索引、独立 Wayneo 详情与收藏馆均已上线，Journal 保留只读浏览。全站搜索已取消，旧搜索链接返回 Studio。内容在站外整理确认后随网站更新，工具内容仍待确认。发布及验收见 [验证记录](docs/studio-workbench-verification.md)，总体方案见 [产品定位](docs/studio-functional-plan.md)。测试域名当前共用生产 Worker / D1，不能用于隔离写入测试。
 
 ## 页面与功能
 
-- **首页**：摄影封面、双页式学习目录、实践入口、影像与联系信息。手机端保留左右构图。
+- **首页 Index**：个人封面、近期手记、案头实践入口、影像与联系，恢复原来的刊物式叙事。案头保留「让想法，有迹可循。」与唯一 Studio 入口，不在首页展示具体项目名称、摘要、标签或详情链接；近期手记沿用最近三条公开记录与双页目录。手机端保留左右构图。
 - **学习日志**：Journal 英文封面标题、每日记录、类似 GitHub 贡献图的学习日历、日期与月份筛选、全文搜索和历史快照。
-- **项目与实践**：展示 C 语言、嵌入式和汽车电子的探索方向；完整项目内容仍在整理。
-- **Studio 公开仪表盘**：成长趋势、近期探索、已发布项目与里程碑、目标和活动档案，以及学习与练习目录。仅展示明确公开的数据。
-- **私人工作台**：日常与项目记录新增、修订、历史和删除，项目证据关联、项目及目标草稿管理、发布差异预览、确认发布与撤下，系统状态和账号管理。
+- **Studio 项目展示**：主界面只放简短项目介绍与详情入口，保留摄影与封面。Wayneo 完整特稿位于 `/studio/wayneo`，四段内容、页面截图与版式体验集中在详情页，提供返回 Studio 的链接。旧管理与方向目录地址仍跳转至 Studio。
+- **收藏馆**：`/studio/collection` 按故事世界、剧集、游戏浏览五项已确认兴趣：冰与火之歌、绝命毒师、权力的游戏、最后生还者、CS2。保留中英文作品名、简短介绍和官方来源；没有评分、观看进度、海报盗链或内容输入。Studio 只放简短入口。
+- **纯展示边界**：Journal 不再提供录入、登录或编辑；旧管理/登录页面在服务器入口跳转，站内内容编辑和账号管理写入请求返回 405。旧代码与数据保留，外部同步、退出登录清理及定时快照没有一刀切停用。
 - **主题与动效**：支持浅色、深色和系统主题，保存主题选择；Journal 和 Studio 标题、介绍配合轻微上移与渐显入场，Studio 封面摄影淡入。减少动态效果时静态显示。
-- **管理与数据**：记录存储在 Cloudflare D1，管理员通过 `/login` 使用邮箱和密码登录。管理权限由服务端会话验证；没有访客注册。
+- **内容与数据**：项目文案在 `content/wayneo.ts`，收藏内容在 `content/collection.ts`，新公开手记入口为 `content/journal.ts`（尚无新增材料，保持空数组）。统一公开读取层合并本地项目/手记和 D1 原有公开 records；公开数据不含私人记录、草稿和备注。收藏页无需读取数据库。每条手记只维护一个来源，重复日期显式报错。
 - **学习记录同步**：独立接口支持凭证验证、版本冲突保护和重复提交。详细说明见 [自动学习记录同步](docs/learning-sync.md)。
 
 站点可以独立运行，不需要 ChatGPT 账号。ChatGPT 学习系统接入、自动评估与规划、后台任务执行器、自定义项目和完整记录分页检索尚未完成。加密私人备份与隔离恢复服务已有实现，正式备份密钥、独立检查点存储与保留策略仍待配置和验收。Studio 摄影保留原作与作者来源，网站使用许可尚待核实，详见 [摄影说明](docs/studio-photography.md)。
@@ -34,6 +34,31 @@
 
 ## 本地运行
 
+### 目录与图片存放
+
+网站源码根目录是 `wayne-site-migration/wayne-site/`，外层 `web/` 是工作区。
+
+| 位置（相对源码根目录） | 用途 |
+| --- | --- |
+| `app/`、`lib/`、`content/`、`worker/` | 页面、业务逻辑、展示内容与 Worker 入口 |
+| `public/` | 网站正式静态资源；根目录的 `editorial-*.jpg`、Logo 和图标已有公开 URL，移动时需同步引用 |
+| `public/studio-photography/` | Studio 摄影与 `credits.json` 来源记录 |
+| `public/project-case/` | 项目详情页使用的正式案例截图，需要随源码维护 |
+| `public/fonts/` | 字体与许可文件 |
+| `artifacts/screenshots/workspace/` | 从外层工作区归拢的 `shot_*.png` 调试截图，仅本地保留 |
+| `artifacts/screenshots/site-root/` | 从源码根目录归拢的 `screenshot*.png` 调试截图，仅本地保留 |
+| `tests/.generated/` | 测试运行器生成的截图、日志与临时夹具，仅本地保留 |
+| `docs/`、`migrations/`、`scripts/`、`tests/` | 项目文档、数据库迁移、维护脚本与测试 |
+| `data/` | 本地数据、备份与预览材料，已忽略，不放入公开资源 |
+| `../../drafts/` | 外层工作区的工具配置提案与界面草案，不是生效配置 |
+| `../migration/` | 历史迁移数据，保留在仓库之外 |
+
+新调试截图放在 `artifacts/screenshots/` 的对应子目录，自动化测试继续使用 `tests/.generated/`。不要把调试截图放进 `public/`；正式项目案例图仍放在 `public/project-case/`。此次归拢保留了全部原文件，原路径、目标路径和 SHA256 校验值见本地 `artifacts/move-manifest.json`。
+
+`node_modules/`、`.next/`、`dist/`、`.wrangler/`、`.pnpm-store/`、`.pnpm-cache/` 是依赖、构建或工具生成目录，已被 Git 忽略。整理目录时无需搬动它们。
+
+### 启动开发服务
+
 推荐 Node.js 24。项目指定 pnpm 11.25.0。
 
 ```bash
@@ -43,6 +68,8 @@ pnpm dev
 ```
 
 默认本地地址为 `http://localhost:5173`。首次启动的本地数据库可能为空，正式站的数据不会自动复制到本地。
+
+隔离构建后，可用 `node tests/studio-project-preview-server.mjs --display --records <本地公开接口快照路径>` 预览现有公开日志。快照必须为 `/api/records` 的公开响应，仅装入临时内存数据库；不复制到 `content/` 或公开资源，也不连接生产数据库。省略 `--records` 时预览数据库为空。
 
 如需本地变量，将 `.dev.vars.example` 复制为 `.dev.vars`；变量文件已被 Git 忽略。示例中的 Access 项属于历史配置，当前网站登录不再使用 Access JWT。首位管理员需在独立本地数据库中初始化，不能仅靠设置邮箱变量获得权限；方案生成工具与账号初始化说明见 [邮箱管理员登录](docs/email-login.md)。勿复制生产凭证或私人内容到测试夹具。
 
@@ -56,7 +83,7 @@ pnpm typecheck
 pnpm build
 ```
 
-最近完整验证为 208 项单元测试，覆盖邮箱会话、权限与同源写入、学习日边界、幂等接收、修订删除、备份恢复、项目与目标发布及工作台状态。另有隔离 Worker 路由和合成浏览器流程验证，涵盖四种屏宽和明暗主题，详见 [验证记录](docs/studio-workbench-verification.md)。本次新增标题与动画的类型检查和 CSS 语法检查通过，浏览器视觉效果尚未验收；历史浏览器结果不代表本次动画已验证。
+最近本地完整验证为 216 项单元测试；类型检查、正式配置隔离构建、46 个展示站运行时请求及真实 Chrome 流程通过。浏览器覆盖首页、Journal、Studio、项目详情及收藏馆的四种屏宽与明暗主题，检查五项收藏、分类锚点、全站搜索下线、版式切换、失败重试和无内容写入，共 53 张截图。当前使用 `tests/display-site-runtime.mjs`、`tests/display-site-browser.mjs`；旧工作台运行器保留作历史参考。线上发布验证另见 [验证记录](docs/studio-workbench-verification.md)。
 
 Windows 下若运行中的本地服务占用了 `dist/server/.wrangler`，默认构建清理可能报 `EPERM`。可以先停止相关本地服务，再重新构建；也可在本地使用以下命令保留输出目录进行构建检查：
 

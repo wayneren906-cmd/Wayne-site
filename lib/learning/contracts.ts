@@ -117,7 +117,7 @@ export type StudioManagementDTO = {
 
 export type StudioProjectStatus='not_started'|'in_progress'|'paused'|'completed';
 export type StudioMilestoneStatus='not_started'|'in_progress'|'completed';
-export type StudioProjectContent={status:StudioProjectStatus;summary:string;next_step:string;milestones:Record<'interface'|'implementation'|'verification',StudioMilestoneStatus>};
+export type StudioProjectContent={status:StudioProjectStatus;summary:string;description?:string;next_step:string;milestones:Record<'interface'|'implementation'|'verification',StudioMilestoneStatus>};
 export type StudioProjectDraftDTO={project_id:string;revision:number;draft:StudioProjectContent;private_note:string;updated_at:string;publication:{revision:number;content:StudioProjectContent;published_at:string}|null};
 export type StudioProjectPublicDTO={project_id:string;revision:number;content:StudioProjectContent;published_at:string};
 export type StudioProjectMutation=

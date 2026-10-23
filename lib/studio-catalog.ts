@@ -29,7 +29,18 @@ const milestoneSets=[
   [{id:'interface',title:'硬件与接口约定',knowledgeIds:['embedded-io'],acceptance:'说明接口、连接和输入输出约定。'},{id:'implementation',title:'驱动与交互',knowledgeIds:['embedded-io','embedded-time'],acceptance:'提供采样或控制流程，记录真实或模拟环境。'},{id:'verification',title:'调试与验证',knowledgeIds:['c-testing'],acceptance:'保存实际反馈、故障表现及恢复测试。'}],
   [{id:'interface',title:'协议与报文模型',knowledgeIds:['c-types','embedded-io'],acceptance:'说明所用协议和报文边界，不猜测设备行为。'},{id:'implementation',title:'解析与状态处理',knowledgeIds:['c-modules','embedded-state'],acceptance:'为输入序列保留解析结果和状态变化。'},{id:'verification',title:'异常与复盘',knowledgeIds:['c-testing'],acceptance:'检查异常、重复输入与恢复过程。'}],
 ];
-export const studioProjects=projectDirections.map((p,index)=>({...p,id:['c-engine','embedded-controller','automotive-bus'][index],milestones:milestoneSets[index]}));
+// The three original directions keep their fixed ids; Wayneo is appended explicitly so
+// appending it never shifts an id onto a different direction.
+const legacyProjectIds=['c-engine','embedded-controller','automotive-bus'];
+const wayneoMilestones=[
+  {id:'interface',title:'页面与内容结构',knowledgeIds:[] as string[],acceptance:'说明页面结构、内容字段与访客可见范围的约定。'},
+  {id:'implementation',title:'内容与项目管理',knowledgeIds:[] as string[],acceptance:'把介绍、公开手记与项目进展接入同一套内容维护流程。'},
+  {id:'verification',title:'发布与访问验证',knowledgeIds:[] as string[],acceptance:'检查保存草稿、确认公开、撤下与访客访问的完整路径。'},
+];
+export const studioProjects=[
+  ...projectDirections.map((p,index)=>({...p,id:legacyProjectIds[index],milestones:milestoneSets[index]})),
+  {id:'wayneo',num:'NO.04 / PERSONAL WEBSITE',title:'Wayneo',desc:'把个人介绍、公开手记和项目进展放在同一个网站，持续完善内容与使用体验。',tags:['个人网站','持续开发'],milestones:wayneoMilestones},
+];
 export function publicTopicReferences(records:readonly {date:string;items:readonly {label:string;text:string}[]}[],topicId:string){
   const topic=knowledgeTopics.find(t=>t.id===topicId);
   if(!topic)return [];

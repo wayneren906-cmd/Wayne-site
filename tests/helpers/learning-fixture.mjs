@@ -7,11 +7,11 @@ export const now = new Date('2026-10-13T12:00:00Z');
 export const token = 'a'.repeat(64); // Synthetic: never submitted to a real endpoint.
 export const input = (key = 'synthetic-http-1') => ({schema_version: 1, idempotency_key: key, source: {type: 'studio', record_id: null}, kind: 'learning_activity', occurred_at: null, time_precision: 'unknown', study_day_override: null, content: {summary: 'synthetic private fact'}, evidence_status: 'unknown', assistance: 'unknown', execution_mode: 'unknown', knowledge_ids: [], plan_id: null, test_run_id: 'synthetic-c2b'});
 
-export async function fixture(t, scopes = ['events:read', 'context:read', 'events:write']) {
+export async function fixture(t, scopes = ['events:read', 'context:read', 'events:write'], options = {}) {
   const sqlite = new DatabaseSync(':memory:');
   t.after(() => sqlite.close());
   sqlite.exec('PRAGMA foreign_keys=ON');
-  for (const file of ['0001_initial.sql', '0002_learning_events.sql', '0003_ingest_outbox.sql', '0004_correction_authority.sql', '0005_private_deletion.sql','0006_studio_projects.sql','0007_studio_plans.sql','0008_email_auth.sql']) sqlite.exec(readFileSync(new URL('../../migrations/' + file, import.meta.url), 'utf8'));
+  for (const file of ['0001_initial.sql', '0002_learning_events.sql', '0003_ingest_outbox.sql', '0004_correction_authority.sql', '0005_private_deletion.sql','0006_studio_projects.sql','0007_studio_plans.sql','0008_email_auth.sql','0009_wayneo_project.sql'].filter(name=>Number(name.slice(0,4))<=(options.throughMigration??Infinity))) sqlite.exec(readFileSync(new URL('../../migrations/' + file, import.meta.url), 'utf8'));
   for (const [id, sub] of [['synthetic-owner', 'synthetic-sub'], ['synthetic-other', 'synthetic-other-sub']]) {
     sqlite.prepare('INSERT INTO users VALUES(?,?,?,?,?,?)').run(id, 'https://synthetic.cloudflareaccess.com', sub, 'owner', 'active', now.toISOString());
   }

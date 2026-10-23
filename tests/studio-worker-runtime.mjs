@@ -4,6 +4,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import {input} from './helpers/learning-fixture.mjs';
 import {emptyProjectContent} from '../lib/ui/project-protocol.ts';
+import {studioProjects} from '../lib/studio-catalog.ts';
 import {createStudioWorkerEnvironment} from './helpers/studio-worker-environment.mjs';
 const f=await createStudioWorkerEnvironment();
 const {runtime,db,auth,work}=f;
@@ -25,7 +26,13 @@ try {
   const logout=await request('/api/auth/logout','POST',{},sessionCookie);assert.equal(logout.status,200);
   assert.equal((await request('/api/studio/management','GET',undefined,sessionCookie)).status,403);
   const publicPage=await request('/studio','GET',undefined,null);assert.equal(publicPage.status,200);
-  const publicHTML=await publicPage.text();assert.ok(publicHTML.includes('PERSONAL DASHBOARD'));assert.ok(publicHTML.includes('href="/studio/private"'));assert.ok(!publicHTML.includes('studio-supplement-input'));
+  const publicHTML=await publicPage.text();assert.ok(publicHTML.includes('PROJECTS &amp; PROGRESS'));assert.ok(!publicHTML.includes('studio-supplement-input'));
+  const publicNavigation=publicHTML.match(/<nav[^>]*aria-label="Studio 栏目"[^>]*>([\s\S]*?)<\/nav>/)?.[1]??'';
+  assert.equal((publicNavigation.match(/<a /g)??[]).length,2);
+  for(const label of ['项目概览','项目详情'])assert.ok(publicNavigation.includes(label));
+  for(const retired of ['/studio/roadmap','/studio/practice','/studio/archive'])assert.ok(!publicNavigation.includes(retired));
+  for(const retired of ['dashboard-metrics','dashboard-chart','id="goals"','id="connections"','项目蓝图','方向蓝图'])assert.ok(!publicHTML.includes(retired));
+  assert.ok(publicHTML.includes('项目内容仍在整理'));
   assert.ok(publicHTML.includes('href="/studio/private/management"'));
   assert.equal((await request('/api/studio/management','GET',undefined,null)).status,401);
   assert.equal((await request('/api/studio/management','GET',undefined,f.unregistered.cookie)).status,403);
@@ -39,12 +46,23 @@ try {
   for(const identity of [null,f.unregistered.cookie]){const response=await request('/studio/private/projects','GET',undefined,identity);const html=await response.text();assert.ok(html.includes('无法验证管理权限'));assert.ok(!html.includes('class="project-editor"'));}
   const projectPage=await request('/studio/private/projects');assert.equal(projectPage.status,200);assert.match(projectPage.headers.get('cache-control'),/private|no-store/);assert.ok((await projectPage.text()).includes('保存私人草稿'));
   const draft={action:'save_draft',project_id:'c-engine',expected_revision:0,idempotency_key:'synthetic-project-draft',content:{...emptyProjectContent(),summary:'synthetic publishable project status',private_note:'SYNTHETIC_PRIVATE_PROJECT_NOTE'}};
+  const projectIntroduction=studioProjects.find(project=>project.id==='c-engine').desc;
   assert.equal((await request('/api/studio/projects','POST',draft)).status,200);
-  assert.ok(!(await (await request('/studio','GET',undefined,null)).text()).includes('synthetic publishable project status'));
+  for(const path of ['/studio','/studio/projects']){
+    const html=await(await request(path,'GET',undefined,null)).text();
+    assert.ok(!html.includes('synthetic publishable project status'));
+    assert.ok(!html.includes(projectIntroduction),'unpublished project introductions stay off public pages');
+    assert.ok(html.includes('项目内容仍在整理'));
+  }
   assert.equal((await request('/api/studio/projects','POST',{action:'publish',project_id:'c-engine',expected_revision:1,idempotency_key:'synthetic-publish',confirm_public:true})).status,200);
-  for(const path of ['/studio','/studio/projects']){const html=await(await request(path,'GET',undefined,null)).text();assert.ok(html.includes('synthetic publishable project status'));assert.ok(!html.includes('SYNTHETIC_PRIVATE_PROJECT_NOTE'));}
+  for(const path of ['/studio','/studio/projects']){const html=await(await request(path,'GET',undefined,null)).text();assert.ok(html.includes('synthetic publishable project status'));assert.ok(!html.includes('SYNTHETIC_PRIVATE_PROJECT_NOTE'));assert.ok(!html.includes('项目蓝图'));assert.ok(!html.includes('记录此里程碑的过程'));if(path==='/studio/projects'){assert.ok(html.includes(projectIntroduction));assert.ok(html.includes('<h3>项目介绍</h3>'));assert.ok(html.includes('<h3>当前进展</h3>'));}}
   assert.equal((await request('/api/studio/projects','POST',{action:'unpublish',project_id:'c-engine',expected_revision:2,idempotency_key:'synthetic-unpublish'})).status,200);
-  assert.ok(!(await(await request('/studio','GET',undefined,null)).text()).includes('synthetic publishable project status'));
+  for(const path of ['/studio','/studio/projects']){
+    const html=await(await request(path,'GET',undefined,null)).text();
+    assert.ok(!html.includes('synthetic publishable project status'));
+    assert.ok(!html.includes(projectIntroduction),'withdrawal removes the project introduction too');
+    assert.ok(html.includes('项目内容仍在整理'));
+  }
   for(const identity of [null,f.unregistered.cookie]){
     assert.equal((await request('/api/studio/plans','GET',undefined,identity)).status,identity?403:401);
     assert.ok((await(await request('/studio/private/plans','GET',undefined,identity)).text()).includes('无法验证管理权限'));
@@ -55,7 +73,8 @@ try {
   assert.ok(!(await(await request('/studio','GET',undefined,null)).text()).includes('Synthetic Worker goal'));
   const planPublish={action:'publish',plan_id:'personal-goals',expected_revision:1,idempotency_key:'synthetic-plan-publish',confirm_public:true};
   assert.equal((await request('/api/studio/plans','POST',planPublish)).status,200);
-  const goalsHTML=await(await request('/studio','GET',undefined,null)).text();assert.ok(goalsHTML.includes('Synthetic Worker goal'));assert.ok(!goalsHTML.includes('SYNTHETIC_PRIVATE_GOAL_NOTE'));
+  const goalsHTML=await(await request('/studio','GET',undefined,null)).text();assert.ok(!goalsHTML.includes('Synthetic Worker goal'));assert.ok(!goalsHTML.includes('SYNTHETIC_PRIVATE_GOAL_NOTE'));
+  const preservedPlans=await(await request('/api/studio/plans')).json();assert.equal(preservedPlans.plans[0].publication.content.goals[0].title,'Synthetic Worker goal');
   assert.equal((await request('/api/studio/plans','POST',{action:'unpublish',plan_id:'personal-goals',expected_revision:2,idempotency_key:'synthetic-plan-withdraw'})).status,200);
   assert.equal((await request('/api/studio/plans','POST',planPublish)).status,200);assert.ok(!(await(await request('/studio','GET',undefined,null)).text()).includes('Synthetic Worker goal'));
   for(const path of ['/studio/roadmap','/studio/practice','/studio/projects','/studio/archive']){const r=await request(path,'GET',undefined,null);assert.equal(r.status,200);assert.ok(!(await r.text()).includes('synthetic private fact'));}

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {DatabaseSync} from 'node:sqlite';
 import {planLearningMigrations} from '../scripts/migration-preflight.mjs';
 
-const files=['0001_initial.sql','0002_learning_events.sql','0003_ingest_outbox.sql','0004_correction_authority.sql','0005_private_deletion.sql','0006_studio_projects.sql','0007_studio_plans.sql','0008_email_auth.sql'];
+const files=['0001_initial.sql','0002_learning_events.sql','0003_ingest_outbox.sql','0004_correction_authority.sql','0005_private_deletion.sql','0006_studio_projects.sql','0007_studio_plans.sql','0008_email_auth.sql','0009_wayneo_project.sql'];
 const sql=name=>fs.readFileSync(new URL('../migrations/'+name,import.meta.url),'utf8');
 const schema=db=>db.prepare("SELECT type,name,tbl_name,sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY type,name").all();
 function baseline(t,count=1){const db=new DatabaseSync(':memory:');t.after(()=>db.close());db.exec('PRAGMA foreign_keys=ON');
