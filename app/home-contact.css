@@ -1,0 +1,86 @@
+/* Quiet contact details alongside the invitation typography. */
+.publication-home .contact-headline-col {
+  position: relative;
+  left: clamp(12px, 2vw, 28px);
+}
+
+.contact-greeting { display: inline-block; white-space: nowrap; transform-origin: center; }
+
+@media (min-width: 901px) {
+  .publication-home .contact-replica-grid { padding-inline: clamp(28px, 3.5vw, 56px); }
+}
+
+.publication-home .contact-action-col {
+  width: 100%;
+  max-width: 400px;
+  justify-self: end;
+  padding-left: 0;
+}
+
+.publication-home .contact-email-line { margin-bottom: 40px; }
+.contact-channel-label {
+  margin: 0 0 14px;
+  color: var(--ink-secondary);
+  font: italic 400 17px/1.35 Georgia, 'Times New Roman', serif;
+  letter-spacing: 0;
+}
+.publication-home .contact-direct-email {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 44px;
+  max-width: none;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line-strong);
+  font-size: clamp(26px, 2.5vw, 36px);
+  line-height: 1.3;
+  transform: none;
+}
+.contact-direct-email > span { min-width: 0; overflow-wrap: anywhere; }
+.contact-direct-email > svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+.publication-home .contact-social-matrix {
+  max-width: none;
+  gap: 8px 32px;
+  margin-bottom: 0;
+}
+.publication-home .contact-social-anchor {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  color: var(--ink);
+  font: 14px/1.6 var(--font-sans);
+}
+.contact-social-anchor > span { min-width: 3em; }
+.contact-copy-feedback {
+  min-height: 1.7em;
+  margin: 4px 0 0;
+  color: var(--ink-secondary);
+  font: 11px/1.7 var(--font-sans);
+}
+.contact-copy-feedback--quiet {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .publication-home .contact-action-col { max-width: 340px; }
+  .publication-home .contact-social-matrix { column-gap: 24px; }
+}
+
+@media (max-width: 600px) {
+  .publication-home .contact-action-col {
+    grid-column: 1 / -1;
+    max-width: none;
+    margin-top: 40px;
+  }
+  .publication-home .contact-direct-email { font-size: clamp(23px, 6.3vw, 32px); gap: 16px; }
+  .publication-home .contact-email-line { margin-bottom: 32px; }
+}

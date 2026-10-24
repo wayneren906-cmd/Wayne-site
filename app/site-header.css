@@ -1,0 +1,77 @@
+.site-header-sentinel {
+  position: absolute;
+  top: 32px;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.editorial-shell .editorial-nav-bar.site-header {
+  --site-header-height: 84px;
+  isolation: isolate;
+  border-bottom: 0;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  animation: site-header-arrive .5s ease-out backwards;
+}
+
+/* The translucent surface spans the viewport and ends cleanly with the header. */
+.site-header::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: var(--site-header-height);
+  z-index: -1;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  opacity: 0;
+  transition: opacity .4s ease;
+}
+.site-header.is-scrolled::before { opacity: 1; }
+
+.editorial-nav-bar.site-header .nav-edition-tag {
+  border-left: 0;
+  padding-left: 0;
+  font-size: 11px;
+  letter-spacing: .08em;
+  opacity: .65;
+}
+.site-header .nav-links-cluster a[aria-current="page"] { font-weight: 500; }
+.editorial-nav-bar.site-header .nav-links-cluster a::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 5px;
+  width: 16px;
+  height: 1px;
+  background: currentColor;
+  opacity: .65;
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: center;
+  transition: transform .3s cubic-bezier(.16, 1, .3, 1);
+}
+.site-header .nav-links-cluster a:hover::after { transform: translateX(-50%) scaleX(.65); }
+.site-header .nav-links-cluster a[aria-current="page"]::after { transform: translateX(-50%) scaleX(1); }
+.site-header .theme-toggle-btn { border: 0; border-radius: 50%; }
+.site-header .theme-toggle-btn:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+
+@keyframes site-header-arrive { from { opacity: 0; } to { opacity: 1; } }
+
+@media (max-width: 768px) {
+  .editorial-shell .editorial-nav-bar.site-header { --site-header-height: 58px; }
+}
+@media (max-width: 520px) {
+  .editorial-shell .editorial-nav-bar.site-header { --site-header-height: 64px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .editorial-shell .editorial-nav-bar.site-header { animation: none; }
+  .site-header::before, .site-header .nav-links-cluster a::after { transition: none; }
+}
+@media print {
+  .editorial-shell .editorial-nav-bar.site-header { position: static; animation: none; }
+  .site-header::before { display: none; }
+}

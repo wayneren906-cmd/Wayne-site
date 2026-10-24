@@ -1,0 +1,121 @@
+/* An editorial pairing, with all three collections sharing one stable stage. */
+.publication-home .pub-fragments-heading h2 { font-size: clamp(48px, 6.2vw, 88px); }
+
+.publication-home .pub-fragment-gallery {
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.pub-fragment-gallery:focus-visible {
+  outline: 1px solid var(--ink-secondary);
+  outline-offset: 8px;
+}
+
+.pub-fragment-stage {
+  display: grid;
+  isolation: isolate;
+  touch-action: pan-y pinch-zoom;
+}
+
+.pub-fragment-slide {
+  grid-area: 1 / 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  column-gap: clamp(24px, 5vw, 72px);
+  align-items: start;
+  min-width: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pub-fragment-slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 2;
+  animation: pub-fragment-dissolve 1.15s cubic-bezier(.4,0,.2,1) both;
+  will-change: opacity;
+}
+
+/* Keep the outgoing photograph opaque below the incoming layer. This avoids
+   the paper flashing through halfway across a dissolve. */
+.pub-fragment-slide.is-previous { opacity: 1; visibility: visible; z-index: 1; will-change: opacity; }
+.pub-fragment-slide:not(.is-active) :is(figcaption, .pub-fragment-credit) { visibility: hidden; }
+@keyframes pub-fragment-dissolve { from { opacity: 0; } to { opacity: 1; } }
+
+.pub-fragment-photo { min-width: 0; }
+.pub-fragment-photo.is-detail { padding-top: clamp(40px, 6vw, 80px); }
+.pub-fragment-window { aspect-ratio: 1; position: relative; background: var(--paper); }
+.pub-fragment-photo.is-detail .pub-fragment-window { aspect-ratio: 1.18; }
+
+.publication-home .pub-fragment-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: none;
+}
+
+.publication-home .pub-fragment-photo figcaption {
+  font-size: 10px;
+  letter-spacing: .05em;
+  padding-top: 12px;
+}
+
+.pub-fragment-credit {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 24px;
+  color: var(--ink-secondary);
+  font: 11px/1.7 var(--font-mono);
+}
+
+.pub-fragment-credit > span { color: var(--ink); }
+.pub-fragment-credit a { display: inline-flex; align-items: center; gap: 4px; padding: 8px 0; }
+.pub-fragment-credit a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.pub-fragment-controls { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; }
+.pub-fragment-selectors, .pub-fragment-arrows { display: flex; gap: 8px; }
+.pub-fragment-controls button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0; border: 0; background: transparent; -webkit-user-select: none; user-select: none; }
+.pub-fragment-selectors button { position: relative; color: var(--ink-secondary); font: 11px/1 var(--font-mono); }
+.pub-fragment-selectors button::before,
+.pub-fragment-selectors button::after { content: ""; position: absolute; bottom: 4px; left: 10px; right: 10px; height: 1px; transform-origin: left; }
+.pub-fragment-selectors button::before { background: var(--line); }
+.pub-fragment-selectors button::after { background: currentColor; transform: scaleX(0); }
+.pub-fragment-selectors button[aria-pressed="true"] { color: var(--ink); }
+.pub-fragment-selectors button[aria-pressed="true"]::after { animation: pub-fragment-progress 5s linear forwards; }
+@keyframes pub-fragment-progress { to { transform: scaleX(1); } }
+.pub-fragment-arrows { gap: 12px; }
+.pub-fragment-arrows button { color: var(--ink-secondary); border-radius: 0; transition: color .25s ease; }
+.pub-fragment-arrows button svg { transition: transform .3s cubic-bezier(.22, 1, .36, 1); }
+.pub-fragment-arrows button:hover { color: var(--ink); }
+.pub-fragment-arrows button:first-child:hover svg { transform: translateX(-3px); }
+.pub-fragment-arrows button:last-child:hover svg { transform: translateX(3px); }
+.pub-fragment-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--line); color: var(--ink-secondary); font-size: 12px; }
+
+@media (max-width: 768px) {
+  .publication-home .pub-fragments-heading h2 { font-size: clamp(30px, 7.8vw, 44px); }
+  .publication-home .pub-fragments-heading > div { display: none; }
+  .pub-fragment-slide { column-gap: 16px; }
+  .pub-fragment-photo.is-detail { padding-top: 26px; }
+  .publication-home .pub-fragment-photo figcaption { font-size: 8px; letter-spacing: 0; line-height: 1.6; padding-top: 8px; }
+  .pub-fragment-credit { font-size: 9px; gap: 0 12px; margin-top: 16px; }
+  .pub-fragment-controls { margin-top: 8px; padding-top: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pub-fragment-slide.is-active { animation: none; }
+  .pub-fragment-selectors button[aria-pressed="true"]::after { animation: none; transform: scaleX(1); }
+  .pub-fragment-arrows button svg { transition: none; }
+}
+
+@media (max-width: 380px) {
+  .pub-fragment-controls,
+  .pub-fragment-selectors,
+  .pub-fragment-arrows { gap: 0; }
+}

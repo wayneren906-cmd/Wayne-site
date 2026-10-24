@@ -1,15 +1,24 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUpRight, RefreshCw } from "lucide-react";
 import type { Entry } from "@/lib/records";
 import SiteHeader from "./site-header";
 import SiteFooter from "./site-footer";
+import HomeFragments from "./home-fragments";
+import { useHomeMotion } from "./home-motion";
+import "./home-cover.css";
+import "./home-journal.css";
+import "./home-practice.css";
+import "./home-contact.css";
+import "./home-motion.css";
 
 function SectionLabel({ number, title, note }: { number: string; title: string; note: string }) {
-  return <div className="pub-section-label"><span>{number} / {title}</span><span>{note}</span></div>;
+  return <div className="pub-section-label pub-reveal"><span>{number} / {title}</span><span>{note}</span></div>;
 }
 
 export default function PersonalHome() {
+  const homeRef = useRef<HTMLDivElement>(null);
+  useHomeMotion(homeRef);
   const [records, setRecords] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -25,7 +34,7 @@ export default function PersonalHome() {
       await navigator.clipboard.writeText(text);
       setCopiedSocial(label);
     } catch {
-      setCopyError("复制未完成，请从按钮提示中手动复制账号。");
+      setCopyError(`复制未完成，请手动复制：${text}`);
     }
   };
   useEffect(() => {
@@ -65,31 +74,62 @@ export default function PersonalHome() {
 
   useEffect(() => {
     if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
+    const root = homeRef.current;
+    if (!root) return;
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (motion.matches) return;
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("is-revealed");
+            observer.unobserve(entry.target);
           }
         });
       },
       { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
     );
-    const root = document.querySelector(".publication-home");
-    const elements = root?.querySelectorAll(".pub-reveal, .pub-reveal-image") ?? [];
-    root?.classList.add("motion-ready");
+    const elements = root.querySelectorAll(".pub-reveal, .pub-reveal-image");
+    root.classList.add("motion-ready");
     elements.forEach((el) => observer.observe(el));
-    return () => { observer.disconnect(); root?.classList.remove("motion-ready"); };
-  }, [records]);
+    // Revealed content stays visible when records refresh or motion preferences change.
+    const showAll = () => {
+      if (!motion.matches) return;
+      observer.disconnect();
+      elements.forEach(el => el.classList.add("is-revealed"));
+      root.classList.remove("motion-ready");
+    };
+    motion.addEventListener("change", showAll);
+    return () => { observer.disconnect(); motion.removeEventListener("change", showAll); root.classList.remove("motion-ready"); };
+  }, []);
 
-  return <div className="editorial-shell publication-home">
+  const recentRecords = records.slice(0, 3);
+  const journalEntries = recentRecords.length ? recentRecords.map((record, index) => (
+    <a href={`/learning?date=${record.date}`} className="pub-index-entry" key={record.date} aria-label={`${record.date} ${record.items.map(item => item.label).join("；")}`}>
+      <span className="pub-index-number-slot" aria-hidden="true"><span className="pub-index-number">{String(index + 1).padStart(2, "0")}</span></span>
+      <div className="pub-index-copy">
+        <time className="pub-index-entry-date" dateTime={record.date}>{record.date.replace(/-/g, ".")}</time>
+        <h3>{record.items.map(item => <span key={item.label}>{item.label}</span>)}</h3>
+        {record.items.length > 1 && <p className="pub-index-more" aria-hidden="true">另 {record.items.length - 1} 个主题</p>}
+      </div>
+    </a>
+  )) : [<p className="pub-index-state" role={loading ? "status" : undefined} key="state">{loading ? "正在翻开学习档案…" : error ? "记录恢复后，会在这里继续收录。" : "目录尚待写下，新的记录会从这里开始。"}</p>];
+  journalEntries.push(
+    <a href="/learning" className="pub-index-archive" key="archive">
+      <span className="pub-index-number-slot" aria-hidden="true"><span className="pub-index-number">{String(recentRecords.length + 1).padStart(2, "0")}</span></span>
+      <div className="pub-index-copy"><span className="pub-index-entry-date">VOL. 2026</span><h3>全部学习记录 <ArrowUpRight size={13} aria-hidden="true" /></h3></div>
+    </a>
+  );
+
+  return <div ref={homeRef} className="editorial-shell publication-home">
     <SiteHeader active="home" />
     <main>
-      <section className="pub-cover" aria-labelledby="cover-title">
+      <section className="pub-cover pub-cover--architecture" aria-labelledby="cover-title">
         <div className="pub-cover-meta"><span>A PERSONAL PUBLICATION</span><span>LEARNING / PRACTICE / EVERYDAY</span></div>
+        <div className="pub-cover-layout">
         <div className="pub-cover-title-group">
-          <h1 id="cover-title" className="pub-cover-title">
-            <span className="cover-line-1">
+          <h1 id="cover-title" className="pub-cover-title" aria-label="Learning. Building. Becoming.">
+            <span className="cover-line-1" aria-hidden="true">
               <span className="pub-title-word">
                 <span className="c-roslindale">Le</span>
                 <span className="c-letter-glyph glyph-a">
@@ -100,14 +140,14 @@ export default function PersonalHome() {
                 <span className="c-roslindale">rning.</span>
               </span>
             </span>
-            <span className="cover-line-2">
+            <span className="cover-line-2" aria-hidden="true">
               <span className="pub-title-word">
                 <span className="c-roslindale">B</span>
                 <span className="c-editorial-it">ui</span>
                 <span className="c-roslindale">lding.</span>
               </span>
             </span>
-            <span className="cover-line-3">
+            <span className="cover-line-3" aria-hidden="true">
               <span className="pub-title-word">
                 <span className="c-roslindale">B</span>
                 <span className="c-editorial-it">e</span>
@@ -121,9 +161,14 @@ export default function PersonalHome() {
             Notes on becoming — 2026.
           </p>
         </div>
-        <div className="pub-cover-grid">
-          <div className="pub-cover-intro"><span className="pub-small-label">WAYNE / 个人刊物</span><p className="pub-cover-deck">从一行代码，<br />到生活的细部。</p><p className="pub-body">物联网工程在读。C 语言与嵌入式。</p><a className="pub-text-link" href="#journal">翻开这一页 <ArrowDown size={15} /></a></div>
-          <figure className="pub-cover-photo"><div className="pub-photo-window"><img src="/editorial-monument-light.jpg" alt="晨光穿透现代主义建筑廊柱与几何阶梯，独行者步入光芒之中" width={1376} height={768} fetchPriority="high" /></div><figcaption><span>01 / THE PASSAGE OF LIGHT</span><span>哈苏大师赛风格 · 空间与光芒</span></figcaption></figure>
+          <div className="pub-cover-intro pub-reveal"><span className="pub-small-label">WAYNE / 个人刊物</span><p className="pub-cover-deck">从一行代码，<br />到生活的细部。</p><p className="pub-body">物联网工程在读。C 语言与嵌入式。</p><a className="pub-text-link" href="#journal">翻开这一页 <ArrowDown size={15} /></a></div>
+          <figure className="pub-cover-photo pub-reveal-image">
+            <div className="pub-photo-window"><img src="/editorial-kamilla-hanapova-2018.jpg" alt="建筑立面被光影一分为二，明亮的窗格与深黑阴影形成重复的几何节奏" width={1024} height={1024} fetchPriority="high" /></div>
+            <figcaption>
+              <span>01 / LIGHT &amp; STRUCTURE</span>
+              <a href="https://www.hasselblad.com/press/press-releases/2018/hasselblad-announces-winners-of-masters-awards-2018/" target="_blank" rel="noopener noreferrer" aria-label="查看 Kamilla Hanapova 的哈苏大师赛 2018 建筑类获奖出处">© Kamilla Hanapova<br />Hasselblad Masters 2018 · Architecture <ArrowUpRight size={11} aria-hidden="true" /></a>
+            </figcaption>
+          </figure>
         </div>
         <div className="pub-cover-bottom"><a href="/learning">进入学习档案 <ArrowUpRight size={13} /></a></div>
       </section>
@@ -131,40 +176,26 @@ export default function PersonalHome() {
         <SectionLabel number="01" title="JOURNAL" note="近期手记 / 按时间收录" />
         <div className="pub-section-heading pub-reveal"><h2 id="journal-title">写在学习之间。</h2></div>
         {error && <div className="pub-notice" role="status"><span>{records.length ? "暂时无法更新，以下保留上次读取的记录。" : "暂时无法读取学习记录。"}</span><button type="button" onClick={() => { setLoading(true); setRetry(v => v + 1); }} disabled={loading}><RefreshCw size={13} />{loading ? "读取中" : "重新读取"}</button></div>}
-        <div className="pub-index pub-reveal" aria-busy={loading}>
-          {loading && records.length === 0 ? <p className="pub-index-state" role="status">正在翻开学习档案…</p> : records.length === 0 ? <p className="pub-index-state">{error ? "记录恢复后，会在这里继续收录。" : "目录尚待写下，新的记录会从这里开始。"}</p> : records.slice(0, 3).map((record, index) => (
-            <a href={`/learning?date=${record.date}`} className="pub-index-entry" key={record.date}>
-              <span className="pub-index-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-              <div className="pub-index-copy">
-                <time className="pub-index-entry-date" dateTime={record.date}>{record.date.replace(/-/g, ".")}</time>
-                <h3>{record.items.map(item => <span key={item.label}>{item.label}</span>)}</h3>
-              </div>
-            </a>
+        <div className="pub-index pub-index--spread pub-reveal" data-record-count={recentRecords.length} aria-busy={loading}>
+          {Array.from({ length: Math.ceil(journalEntries.length / 2) }, (_, page) => (
+            <div className="pub-index-page" key={page}>{journalEntries.slice(page * 2, page * 2 + 2)}</div>
           ))}
-          <a href="/learning" className="pub-index-archive">
-            <span className="pub-index-number" aria-hidden="true">{String(Math.min(records.length, 3) + 1).padStart(2, "0")}</span>
-            <div className="pub-index-copy">
-              <span className="pub-index-entry-date">VOL. 2026</span>
-              <h3>全部学习记录</h3>
-            </div>
-          </a>
         </div>
       </section>
-      <section id="practice" className="pub-section pub-practice pub-reveal" aria-labelledby="practice-title">
+      <section id="practice" className="pub-section pub-practice pub-practice--paper pub-reveal" aria-labelledby="practice-title">
         <SectionLabel number="02" title="IN PRACTICE" note="从理解到动手" />
         <div className="pub-practice-grid">
-          <figure className="pub-practice-image pub-reveal-image"><div className="pub-photo-window"><img src="/editorial-desk.jpg" alt="窗前原木长案、布面研习笔记与极简书写笔" width={1376} height={768} loading="lazy" /></div><figcaption><span>02 / THE DESK</span><span>实践意向 · 研习案头</span></figcaption></figure>
+          <figure className="pub-practice-image pub-reveal-image">
+            <div className="pub-photo-window"><img src="/editorial-paper-david-butler.jpg" alt="白色纸张卷曲成抽象形体，柔和光影显露纸纹与弧线" width={1489} height={1489} loading="lazy" /></div>
+            <figcaption><span>PAPER STUDY II</span><a href="https://www.davidbutlerstudios.com/blog/paper-study-ii" target="_blank" rel="noreferrer" aria-label="摄影：David Butler，查看 Paper Study II 原作（新窗口）">© David Butler <ArrowUpRight size={11} aria-hidden="true" /></a></figcaption>
+          </figure>
           <div className="pub-practice-copy pub-reveal"><span className="pub-small-label">WORK IN PROGRESS</span><h2 id="practice-title">让想法，<br />有迹可循。</h2><a className="pub-text-link" href="/studio">进入 Studio <ArrowUpRight size={15} /></a></div>
         </div>
       </section>
-      <section className="pub-section pub-fragments pub-reveal" aria-labelledby="fragments-title">
+      <section id="fragments" className="pub-section pub-fragments pub-reveal" aria-labelledby="fragments-title">
         <SectionLabel number="03" title="FRAGMENTS" note="影像随笔 / 光与空间" />
         <div className="pub-fragments-heading pub-reveal"><h2 id="fragments-title">Between<br /><em>the lines.</em></h2><div><span className="pub-small-label">在字里行间之外</span></div></div>
-        <div className="pub-photo-essay">
-          <figure className="pub-essay-main pub-reveal-image"><div className="pub-photo-window"><img src="/editorial-architecture.jpg" alt="天窗的自然光落在混凝土墙面与楼梯上" width={1376} height={768} loading="lazy" /></div><figcaption><span>01 — LIGHT, IN PASSING</span><span>光线经过的地方</span></figcaption></figure>
-          <figure className="pub-essay-detail pub-reveal-image"><div className="pub-photo-window"><img src="/editorial-facade.jpg" alt="仰视城市建筑，玻璃立面在天空中形成交错的边界" width={1600} height={1067} loading="lazy" /></div><figcaption><span>02 — LOOKING UP</span><span>城市的另一种尺度</span></figcaption></figure>
-
-        </div>
+        <div className="pub-reveal"><HomeFragments /></div>
       </section>
       <div className="pub-endnote pub-reveal">
         <span>TO BE CONTINUED</span>
@@ -225,7 +256,7 @@ export default function PersonalHome() {
               </div>
             </div>
             <p className="contact-replica-subinvite">
-              Or just say hello.
+              <span className="contact-greeting">Or just say hello.</span>
             </p>
           </div>
 
@@ -234,11 +265,12 @@ export default function PersonalHome() {
             <div className="contact-floating-ring" />
           </div>
 
-          {/* 右侧交互区 */}
           <div className="contact-action-col">
             <div className="contact-email-line">
+              <p className="contact-channel-label">E-mail</p>
               <a href="mailto:wayne.ren906@gmail.com" className="contact-direct-email">
-                wayne.ren906@gmail.com
+                <span>wayne.ren906@gmail.com</span>
+                <ArrowUpRight size={20} aria-hidden="true" />
               </a>
             </div>
 
@@ -250,23 +282,23 @@ export default function PersonalHome() {
                 title="QQ: 2746682776（点击复制）"
                 aria-label="复制 QQ 号 2746682776"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M21.395 15.035a40 40 0 0 0-.803-2.264l-1.079-2.695c.001-.032.014-.562.014-.836C19.526 4.632 17.351 0 12 0S4.474 4.632 4.474 9.241c0 .274.013.804.014.836l-1.08 2.695a39 39 0 0 0-.802 2.264c-1.021 3.283-.69 4.643-.438 4.673.54.065 2.103-2.472 2.103-2.472 0 1.469.756 3.387 2.394 4.771-.612.188-1.363.479-1.845.835-.434.32-.379.646-.301.778.343.578 5.883.369 7.482.189 1.6.18 7.14.389 7.483-.189.078-.132.132-.458-.301-.778-.483-.356-1.233-.646-1.846-.836 1.637-1.384 2.393-3.302 2.393-4.771 0 0 1.563 2.537 2.103 2.472.251-.03.581-1.39-.438-4.673"/>
                 </svg>
-                <span>{copiedSocial === "QQ" ? "已复制 QQ" : "QQ"}</span>
+                <span>{copiedSocial === "QQ" ? "已复制" : "QQ"}</span>
               </button>
 
               <button
                 type="button"
                 className="contact-social-anchor"
-                onClick={() => handleCopy("wayneraining", "WeChat")}
-                title="微信: wayneraining（点击复制）"
-                aria-label="复制微信号 wayneraining"
+                onClick={() => handleCopy("WayneRaining", "WeChat")}
+                title="微信: WayneRaining（点击复制）"
+                aria-label="复制微信号 WayneRaining"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.407-.03zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z"/>
                 </svg>
-                <span>{copiedSocial === "WeChat" ? "已复制微信" : "微信"}</span>
+                <span>{copiedSocial === "WeChat" ? "已复制" : "微信"}</span>
               </button>
 
               <a
@@ -276,7 +308,7 @@ export default function PersonalHome() {
                 className="contact-social-anchor"
                 title="GitHub: wayneren906-cmd"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                   <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
                 </svg>
                 <span>GitHub</span>
@@ -289,14 +321,15 @@ export default function PersonalHome() {
                 className="contact-social-anchor"
                 title="X"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z"/>
                 </svg>
                 <span>X</span>
               </a>
             </div>
-
-            {copyError && <p className="pub-body" role="status">{copyError}</p>}
+            <p className={`contact-copy-feedback${copyError ? "" : " contact-copy-feedback--quiet"}`} role="status" aria-live="polite">
+              {copyError || (copiedSocial ? "已复制 " + (copiedSocial === "WeChat" ? "微信号" : "QQ 号") : "")}
+            </p>
           </div>
         </div>
 

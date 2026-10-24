@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import "./site-header.css";
 
 const navigation = [
   { id: "home", href: "/", label: "Index" },
@@ -11,6 +12,19 @@ const navigation = [
 
 export default function SiteHeader({ active }: { active: string }) {
   const [dark, setDark] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const sentinelRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    if (!("IntersectionObserver" in window)) { setScrolled(true); return; }
+    const observer = new IntersectionObserver(([entry]) => {
+      setScrolled(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+    });
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     let saved: string | null = null;
@@ -35,8 +49,9 @@ export default function SiteHeader({ active }: { active: string }) {
     }
   }
 
-  return (
-    <header className="editorial-nav-bar" role="banner">
+  return <>
+    <span ref={sentinelRef} className="site-header-sentinel" aria-hidden="true" />
+    <header className={`editorial-nav-bar site-header${scrolled ? " is-scrolled" : ""}`} role="banner">
       <div className="brand-anchor">
         <a className="wordmark-wrap" href="/" aria-label="wayneo 首页">
           <img src="/wayneo-logo-clean.png" alt="wayneo" width={1008} height={215} />
@@ -67,5 +82,5 @@ export default function SiteHeader({ active }: { active: string }) {
         </button>
       </nav>
     </header>
-  );
+  </>;
 }

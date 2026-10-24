@@ -1,0 +1,131 @@
+/* Motion stays local to the publication. Layout and reading order stay fixed. */
+@media (prefers-reduced-motion: no-preference) {
+  .publication-home { --home-ease: cubic-bezier(.16, 1, .3, 1); }
+
+  .publication-home .pub-cover-title .pub-title-word {
+    transform-origin: left bottom;
+    animation: home-type-arrive 1.05s var(--home-ease) backwards;
+  }
+  .publication-home .pub-cover-title .cover-line-2 .pub-title-word { animation-delay: .12s; }
+  .publication-home .pub-cover-title .cover-line-3 .pub-title-word { animation-delay: .24s; }
+  .publication-home .pub-cover-subphrase { animation: home-rise .85s .36s var(--home-ease) backwards; }
+  .publication-home .pub-cover--architecture .pub-cover-intro { animation: home-rise .9s .3s var(--home-ease) backwards; }
+  .publication-home .pub-cover--architecture .pub-cover-photo { animation: home-rise 1.1s .16s var(--home-ease) backwards; }
+  .publication-home .pub-cover--architecture .pub-cover-photo img { animation: home-photo-arrive 1.35s .16s var(--home-ease) backwards; }
+
+  /* Reveal the contents individually instead of fading a whole section twice. */
+  .publication-home.motion-ready .pub-section.pub-reveal { opacity: 1; transform: none; transition: none; }
+  .publication-home.motion-ready :is(.pub-reveal, .pub-reveal-image) {
+    transition: opacity .7s var(--home-ease), transform .9s var(--home-ease);
+  }
+  .publication-home.motion-ready .pub-section-label.pub-reveal { transition-duration: .55s, .7s; }
+  .publication-home.motion-ready .pub-practice-copy.pub-reveal:not(.is-revealed):not(:focus-within) { transform: translate3d(14px, 18px, 0); }
+  .publication-home.motion-ready .pub-practice-image.pub-reveal-image:not(.is-revealed):not(:focus-within) { transform: translate3d(0, 24px, 0) scale(.985); }
+
+  .publication-home.motion-ready .pub-index--spread.is-revealed .pub-index-page :is(.pub-index-entry, .pub-index-archive) .pub-index-number {
+    animation: home-number-arrive .9s var(--number-delay, .08s) var(--home-ease) backwards;
+  }
+  .publication-home .pub-index--spread .pub-index-page:first-child > :nth-child(2) { --number-delay: .16s; }
+  .publication-home .pub-index--spread .pub-index-page:nth-child(2) > :first-child { --number-delay: .22s; }
+  .publication-home .pub-index--spread .pub-index-page:nth-child(2) > :nth-child(2) { --number-delay: .3s; }
+  .publication-home .pub-index--spread .pub-index-number { transition: translate .45s var(--home-ease); }
+  .publication-home .pub-index--spread :is(a:hover, a:focus-visible) .pub-index-number { translate: 0 -3px; }
+  .publication-home.motion-ready .pub-index--spread.is-revealed:focus-within .pub-index-page :is(.pub-index-entry, .pub-index-archive) .pub-index-number { animation: none; }
+
+  .publication-home.motion-ready .contact-replica-section.pub-reveal :is(.contact-title-line, .contact-replica-subinvite, .contact-action-col) {
+    animation: none;
+    transform-origin: left bottom;
+  }
+  .publication-home.motion-ready .contact-replica-section :is(.contact-title-line, .contact-replica-subinvite, .contact-action-col):not(.is-contact-ready) {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0);
+  }
+  .publication-home.motion-ready .contact-replica-section .contact-title-line.is-contact-ready {
+    animation: home-contact-arrive .85s var(--contact-delay, .18s) var(--home-ease) both;
+  }
+  .publication-home .contact-title-line.line-2 { --contact-delay: .24s; }
+  .publication-home .contact-title-line.line-3 { --contact-delay: .3s; }
+  .publication-home .contact-title-line.line-4 { --contact-delay: .36s; }
+  .publication-home.motion-ready .contact-replica-section :is(.contact-replica-subinvite, .contact-action-col).is-contact-ready {
+    animation: home-rise .85s .2s var(--home-ease) backwards;
+  }
+  .publication-home.motion-ready .contact-replica-section .contact-action-col:focus-within {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .publication-home .contact-floating-ring { animation: home-ring-float 7.5s ease-in-out infinite; animation-play-state: paused; }
+  .publication-home .contact-bottom-wavy svg { animation: home-wave-drift 6s ease-in-out infinite; animation-play-state: paused; }
+  .publication-home .contact-replica-section.is-in-view :is(.contact-floating-ring, .contact-bottom-wavy svg) { animation-play-state: running; }
+  .publication-home .contact-replica-section.motion-page-paused :is(.contact-floating-ring, .contact-bottom-wavy svg) { animation-play-state: paused; }
+
+  /* The sentence moves as one handwritten gesture; its letters stay together. */
+  .publication-home .contact-replica-subinvite.is-contact-ready .contact-greeting {
+    animation: home-greeting-float 6.8s .9s ease-in-out infinite;
+    animation-play-state: paused;
+    transition: translate .65s var(--home-ease);
+  }
+  .publication-home .contact-replica-section.is-in-view .contact-greeting { animation-play-state: running; }
+  .publication-home .contact-replica-section.motion-page-paused .contact-greeting { animation-play-state: paused; }
+
+  @media (hover: hover) and (pointer: fine) {
+    .publication-home .contact-replica-subinvite.is-contact-ready .contact-greeting:hover { translate: 4px -2px; }
+  }
+
+  .publication-home :is(.pub-text-link, .contact-direct-email, .contact-external-links a) svg { transition: transform .45s var(--home-ease); }
+  .publication-home :is(.pub-text-link, .contact-direct-email, .contact-external-links a):is(:hover, :focus-visible) svg { transform: translate(3px, -3px); }
+  .publication-home .pub-cover-intro .pub-text-link:hover svg { transform: translateY(3px); }
+  .publication-home .contact-account-action svg { transition: transform .35s var(--home-ease); }
+  .publication-home .contact-account-row:hover .contact-account-action svg { transform: translateY(-2px); }
+  .publication-home .pub-fragment-arrows button { transition: background-color .2s ease, transform .35s var(--home-ease); }
+  .publication-home .pub-fragment-arrows button:active { transform: scale(.92); }
+
+  @media (hover: hover) and (pointer: fine) {
+    .publication-home .pub-cover--architecture .pub-cover-photo .pub-photo-window {
+      transform: perspective(900px) translate3d(var(--motion-x, 0px), var(--motion-y, 0px), 0) rotateX(var(--motion-rx, 0deg)) rotateY(var(--motion-ry, 0deg));
+      transition: transform .7s var(--home-ease);
+    }
+    .publication-home .pub-practice--paper .pub-photo-window:hover img { transform: scale(1.025); filter: none; }
+  }
+
+  @keyframes home-type-arrive {
+    from { opacity: 0; transform: translate3d(0, 105%, 0) rotate(2deg); }
+    75% { opacity: 1; }
+    to { opacity: 1; transform: translate3d(0, 0, 0) rotate(0); }
+  }
+  @keyframes home-rise {
+    from { opacity: 0; transform: translate3d(0, 20px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+  @keyframes home-photo-arrive {
+    from { opacity: .55; transform: scale(1.065); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes home-number-arrive {
+    from { opacity: 0; transform: translate3d(0, 12px, 0) rotate(-90deg); }
+    to { opacity: 1; transform: translate3d(0, 0, 0) rotate(-90deg); }
+  }
+  @keyframes home-contact-arrive {
+    from { opacity: 0; transform: translate3d(0, 24px, 0) rotate(-1deg); }
+    to { opacity: 1; transform: translate3d(0, 0, 0) rotate(0); }
+  }
+  @keyframes home-ring-float {
+    0%, 100% { transform: translate3d(0, 3px, 0) rotate(-8deg) scaleX(1); }
+    50% { transform: translate3d(0, -5px, 0) rotate(8deg) scaleX(.92); }
+  }
+  @keyframes home-wave-drift {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-5px); }
+  }
+  @keyframes home-greeting-float {
+    0%, 100% { transform: translate3d(0, 1px, 0) rotate(-.25deg); }
+    45% { transform: translate3d(0, -2px, 0) rotate(.35deg); }
+    80% { transform: translate3d(0, 0, 0) rotate(0); }
+  }
+}
+
+@media print {
+  .publication-home :is(.pub-reveal, .pub-reveal-image) { opacity: 1 !important; transform: none !important; }
+  .publication-home .contact-replica-section :is(.contact-title-line, .contact-replica-subinvite, .contact-action-col) { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .publication-home .contact-greeting { animation: none !important; transform: none !important; translate: none !important; }
+}

@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   title: { default: "Wayne · 个人网站", template: "%s · Wayne" },
   description: "Wayne 的个人网站，记录学习、编程与项目。",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: { url: "/favicon.svg?v=2", type: "image/svg+xml" },
+    shortcut: "/favicon.svg?v=2",
   },
 };
 
