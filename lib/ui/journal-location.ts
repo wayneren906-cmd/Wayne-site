@@ -11,6 +11,15 @@ export function readJournalLocation(search:string):JournalLocation {
   return {date,month:!date&&/^\d{4}-(0[1-9]|1[0-2])$/.test(month)?month:'all',query:date?'':p.get('q')??'',snapshot:validDate('snapshot')};
 }
 
+export function readJournalSearchParams(params:Record<string,string|string[]|undefined>):JournalLocation {
+  const search=new URLSearchParams();
+  for(const key of ['date','month','q','snapshot']){
+    const value=params[key];
+    if(value!==undefined)search.set(key,Array.isArray(value)?value[0]??'':value);
+  }
+  return readJournalLocation(search.toString());
+}
+
 export function journalLocationURL(href:string,location:JournalLocation):string {
   const url=new URL(href);
   for(const [key,value] of Object.entries({date:location.date,month:location.month==='all'?'':location.month,q:location.query,snapshot:location.snapshot})) {

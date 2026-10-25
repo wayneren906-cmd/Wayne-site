@@ -83,7 +83,9 @@ pnpm typecheck
 pnpm build
 ```
 
-最近本地完整验证为 216 项单元测试；类型检查、正式配置隔离构建、46 个展示站运行时请求及真实 Chrome 流程通过。浏览器覆盖首页、Journal、Studio、项目详情及收藏馆的四种屏宽与明暗主题，检查五项收藏、分类锚点、全站搜索下线、版式切换、失败重试和无内容写入，共 53 张截图。当前使用 `tests/display-site-runtime.mjs`、`tests/display-site-browser.mjs`；旧工作台运行器保留作历史参考。线上发布验证另见 [验证记录](docs/studio-workbench-verification.md)。
+最近本地验证为 225 项单元测试；类型检查、隔离完整构建、46 个展示站运行时请求及真实 Chrome 流程通过。浏览器覆盖首页、Journal、Studio、项目详情及收藏馆的四种屏宽与明暗主题，检查五项收藏、分类锚点、全站搜索下线、版式切换、失败重试和无内容写入，共 57 张截图。当前使用 `tests/display-site-runtime.mjs`、`tests/display-site-browser.mjs`；旧工作台运行器保留作历史参考。线上发布验证另见 [验证记录](docs/studio-workbench-verification.md)。
+
+2026-10-25 的 Journal 阅读与分享升级：服务端首屏直接输出公开记录并应用日期、月份和关键词筛选；每条记录提供独立链接和复制入口，复制不可用时保留可手动选中的链接。日期链接输出对应的标题、摘要与分享信息，历史链接保留快照日期。初次读取失败可重试，后续更新失败保留已读正文；切换快照失败不会显示上一份内容。额外运行时检查见 `node tests/journal-reading-runtime.mjs`；浏览器回归包含关闭 JavaScript、无重复首屏请求、复制替身及失败回退、前进后退与刷新、历史快照切换和错误恢复。全部本地验证使用隔离内存 D1 与合成材料，不写入生产；线上结果需以实际发布验收为准。
 
 Windows 下若运行中的本地服务占用了 `dist/server/.wrangler`，默认构建清理可能报 `EPERM`。可以先停止相关本地服务，再重新构建；也可在本地使用以下命令保留输出目录进行构建检查：
 

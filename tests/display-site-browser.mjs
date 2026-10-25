@@ -7,6 +7,7 @@ import {spawn} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {createStudioWorkerEnvironment} from './helpers/studio-worker-environment.mjs';
 import {loadPublicRecords,seedPublicRecords} from './helpers/public-record-preview.mjs';
+import {verifyJournalReading} from './helpers/journal-browser-checks.mjs';
 
 const snapshotIndex=process.argv.indexOf('--records');
 const publicRecords=snapshotIndex<0?null:loadPublicRecords(process.argv[snapshotIndex+1]);
@@ -47,7 +48,7 @@ try{
   ws.onmessage=event=>{const msg=JSON.parse(event.data);if(msg.method==='Runtime.exceptionThrown')errors.push(msg.params.exceptionDetails.text);if(msg.id){const operation=pending.get(msg.id);pending.delete(msg.id);msg.error?operation.reject(Error(JSON.stringify(msg.error))):operation.resolve(msg.result);}};
   const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++sequence,timer=setTimeout(()=>reject(Error('CDP timeout '+method)),15000);pending.set(id,{resolve:value=>{clearTimeout(timer);resolve(value);},reject:error=>{clearTimeout(timer);reject(error);}});ws.send(JSON.stringify({id,method,params}));});
   const evaluate=async(expression)=>{const result=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(result.exceptionDetails)throw Error(JSON.stringify(result.exceptionDetails));return result.result.value;};
-  const navigate=async(url,selector)=>{await send('Page.navigate',{url:base+url});await wait(()=>evaluate('location.pathname==='+JSON.stringify(new URL(base+url).pathname)+'&&!!document.querySelector('+JSON.stringify(selector)+')'),'navigate '+url);};
+  const navigate=async(url,selector)=>{await evaluate('window.__displayNavigationMarker=true');await send('Page.navigate',{url:base+url});await wait(()=>evaluate('!window.__displayNavigationMarker&&location.pathname==='+JSON.stringify(new URL(base+url).pathname)+'&&location.search==='+JSON.stringify(new URL(base+url).search)+'&&!!document.querySelector('+JSON.stringify(selector)+')'),'navigate '+url);};
   const clickText=async(text)=>evaluate('(()=>{const button=[...document.querySelectorAll("button")].find(el=>el.textContent.trim()==='+JSON.stringify(text)+');if(!button)throw Error("Missing button");button.click();})()');
   const screenshot=async(name)=>{
     for(const width of [320,390,768,1280])for(const theme of ['light','dark']){
@@ -138,11 +139,12 @@ try{
   await navigate('/learning?date='+encodeURIComponent(publicRecords?'2026-10-12':'2026-10-15'),'.entries .entry');
   assert.equal(await evaluate('document.querySelector(".journal-related a")?.getAttribute("href")'),publicRecords?undefined:'/studio/wayneo','only matching topics link back to the project detail');
   await screenshot('journal');await caseScreenshot('wayneo-journal');
+  if(!publicRecords)await verifyJournalReading({db:f.db,send,evaluate,navigate,wait,base,requests,setRecordsMode:mode=>{homeRecordsMode=mode;},work,screenshots});
   await navigate('/','.publication-home');
   await wait(()=>evaluate('document.querySelectorAll(".pub-index-entry").length>0'),'home recent records');
   assert.deepEqual(await evaluate('[...document.querySelectorAll("main>section")].map(section=>section.id||section.classList[0]).slice(0,3)'),['pub-cover','journal','practice'],'home restores journal before atmospheric Studio entry');
   assert.equal(await evaluate('document.querySelector("#practice .pub-text-link").getAttribute("href")'),'/studio','home has only a Studio entry');
-  assert.equal(await evaluate('document.querySelectorAll("#practice a").length'),1);
+  assert.equal(await evaluate('document.querySelectorAll("#practice .pub-practice-copy a").length'),1,'one Studio entry; photography attribution remains a separate external link');
   assert.equal(await evaluate('!!document.querySelector("#selected,.pub-practice-topics,.pub-selected-more")||[...document.querySelectorAll("main a")].some(a=>a.getAttribute("href")==="/studio/wayneo")'),false,'no project detail on home');
   assert.equal(await evaluate('document.querySelector("#practice h2").textContent'),'让想法，有迹可循。');
   assert.equal(await evaluate('document.querySelector(".pub-cover-intro a").getAttribute("href")'),'#journal');
@@ -153,7 +155,7 @@ try{
     await evaluate('document.documentElement.dataset.theme="light";document.documentElement.style.scrollBehavior="auto";window.scrollTo({top:Math.max(0,scrollY+document.querySelector('+JSON.stringify(selector)+').getBoundingClientRect().top-100),behavior:"instant"})');
     await evaluate('document.fonts.ready');
     await evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
-    if(selector==='#practice')assert.equal(await evaluate('[...document.querySelectorAll("#practice a")].every(el=>el.getBoundingClientRect().height>=44)'),true,'Studio entry has touch target');
+    if(selector==='#practice')assert.equal(await evaluate('[...document.querySelectorAll("#practice .pub-practice-copy a")].every(el=>el.getBoundingClientRect().height>=44)'),true,'Studio entry has touch target');
     assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth+1'),true,'home section fits '+width);
     const shot=await send('Page.captureScreenshot',{format:'png'}),filename='index-'+selector.slice(1)+'-'+width+'.png';
     fs.writeFileSync(path.join(work,filename),Buffer.from(shot.data,'base64'));screenshots.push(filename);
@@ -180,6 +182,6 @@ try{
   homeRecordsMode='normal';
   assert.equal(requests.every(request=>['GET','HEAD'].includes(request.method)),true,'browsing and interaction never write content');
   assert.deepEqual(errors,[],'no browser exceptions');
-  const summary={passed:true,screenshots,checks:['collection entry and five confirmed interests','category anchors','global search retired','real container-responsive component','local grid control','journal deep link','home failure recovery','no content writes','4 viewports and 2 themes'],scope:'complete local Worker + Chrome + memory D1; '+(publicRecords?'existing public records snapshot':'synthetic public reading only')};
+  const summary={passed:true,screenshots,checks:['collection entry and five confirmed interests','category anchors','global search retired','real container-responsive component','local grid control','journal deep link',...(!publicRecords?['journal without JavaScript','no redundant initial journal fetch','journal copy and manual fallback','journal filter history and reload','snapshot share and failed transitions','journal retry and retained reading']:[]),'home failure recovery','no content writes','4 viewports and 2 themes'],scope:'complete local Worker + Chrome + memory D1; '+(publicRecords?'existing public records snapshot':'synthetic public reading only')};
   fs.writeFileSync(path.join(work,'summary.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
 }finally{ws?.close();chrome?.kill();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));await f.runtime.dispose();}

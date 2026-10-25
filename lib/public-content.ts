@@ -9,6 +9,16 @@ import type { PublicContentItem } from "./public-content-contracts.ts";
 // 不做整行展开，也不读取私人草稿、备注或其他私有表。
 export async function readPublicJournalRecords(db: D1Database): Promise<Entry[]> {
   const records = [...journalEntries,...await readRecords(db)];
+  return projectJournalRecords(records);
+}
+
+export async function readPublicJournalSnapshot(db: D1Database, date: string) {
+  dateSchema.parse(date);
+  const row = await db.prepare("SELECT data,updated_at FROM snapshots WHERE date=?").bind(date).first<{data:string;updated_at:string}>();
+  return row ? {date,records:projectJournalRecords(JSON.parse(row.data)),updatedAt:row.updated_at} : null;
+}
+
+function projectJournalRecords(records: Entry[]): Entry[] {
   const dates=new Set<string>();
   return records.map((record) => {
     const date=dateSchema.parse(record.date);
