@@ -125,7 +125,6 @@ export default function Journal({apiPath = "/api/records",initialData,initialLoc
         </summary>
         <div className="entry-body">
           <div className="notes">{r.items.map((item,i)=><section className="note" id={`journal-${r.date}-note-${i+1}`} aria-labelledby={`journal-${r.date}-heading-${i+1}`} tabIndex={-1} data-journal-reveal key={i}>
-            {i===0&&<p className="journal-reading-date"><time dateTime={r.date}>{r.date.replaceAll('-','.')}</time> / 学习手记</p>}
             <div className="journal-section-heading"><span className="journal-section-number" aria-hidden="true">{String(i+1).padStart(2,'0')}</span><h3 className="note-label" id={`journal-${r.date}-heading-${i+1}`}>{item.label}</h3></div>
             <JournalProse text={item.text}/>
           </section>)}</div>

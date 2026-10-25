@@ -48,7 +48,7 @@
 .journal-shell .records-heading h2 { font: 400 27px/1.4 var(--font-serif); }
 .journal-shell .list-meta { color: var(--ink-secondary); margin: 0 0 20px; font-size: 10px; }
 .journal-shell .entries { gap: 0; border-bottom: 1px solid var(--line); }
-.journal-shell .entry { background: transparent; border: 0; border-top: 1px solid var(--line); border-radius: 0; box-shadow: none; }
+.journal-shell .entry { background: transparent; border: 0; border-top: 1px solid var(--line); border-radius: 0; box-shadow: none; overflow-anchor: none; }
 .journal-shell .entry:first-child { border-top-color: var(--ink); }
 .journal-shell .entry summary { display: grid; grid-template-columns: minmax(300px, 40%) minmax(0, 1fr); gap: 24px; padding: 26px 0; -webkit-user-select: none; user-select: none; }
 .journal-shell .date-line { gap: 10px 16px; min-width: 0; }
@@ -98,8 +98,9 @@
   .journal-shell .date-annotation { gap: 8px; }
   .journal-shell .summary-right { display: contents; }
   .journal-shell .summary-right .chevron { grid-column: 2; grid-row: 1; align-self: center; }
-  .journal-shell .category-preview { display: -webkit-box; grid-column: 1; grid-row: 2; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: normal; overflow-wrap: anywhere; }
-  .journal-shell .entry[open] .category-preview { display: none; }
+  /* Keep the tapped header the same height while its content opens below. */
+  .journal-shell .category-preview,
+  .journal-shell .entry[open] .category-preview { display: -webkit-box; grid-column: 1; grid-row: 2; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: normal; overflow-wrap: anywhere; }
   .journal-shell .entry-body { padding: 0 0 28px 0; }
   .journal-shell .note { display: flex; flex-direction: column; gap: 10px; padding: 22px 0; }
   .journal-shell .note-label { font-size: 16px; white-space: normal; padding: 0; margin: 0; background: transparent; }
@@ -188,7 +189,7 @@
     .journal-shell .entry::details-content {
       block-size: 0;
       overflow: clip;
-      transition: block-size .45s cubic-bezier(.22, 1, .36, 1), content-visibility .45s allow-discrete;
+      transition: block-size .36s cubic-bezier(.25, .8, .25, 1), content-visibility .36s allow-discrete;
     }
     .journal-shell .entry[open]::details-content { block-size: auto; }
   }
@@ -201,16 +202,12 @@
     .journal-shell .entry summary:hover .chevron { opacity: 1; }
   }
   @media (max-width: 700px) {
-    .journal-shell .entry summary { row-gap: 0; }
-    .journal-shell .category-preview,
-    .journal-shell .entry[open] .category-preview {
-      display: -webkit-box;
-      max-height: 3.4em;
-      margin-top: 10px;
-      transition: max-height .35s cubic-bezier(.22, 1, .36, 1), margin-top .35s ease, opacity .2s ease;
-    }
-    .journal-shell .entry[open] .category-preview { max-height: 0; margin-top: 0; opacity: 0; }
+    .journal-shell.journal-motion-ready .is-journal-revealed { animation-name: journal-reading-fade; }
   }
+}
+@keyframes journal-reading-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 @keyframes journal-reading-enter {
   from { opacity: 0; transform: translateY(6px); }
@@ -224,17 +221,22 @@
 .journal-shell .entry-body { max-inline-size: 40rem; margin-inline: auto; padding-bottom: 36px; }
 .journal-shell .notes { border-top: 0; }
 .journal-shell .note { position: relative; display: block; border: 0; padding: 100px 0 72px; scroll-margin-top: 110px; }
-.journal-shell .note:first-child { padding-top: clamp(140px,18svh,200px); }
+.journal-shell .note:first-child { padding-top: 72px; }
 .journal-section-heading { position: relative; padding-top: 28px; margin-bottom: 34px; }
 .journal-section-number { position: absolute; top: -70px; left: -5px; pointer-events: none; color: var(--ink); opacity: .055; font: 400 138px/1 Georgia,serif; letter-spacing: -.07em; }
 .journal-shell .note-label { position: relative; display: block; margin: 0; font-size: clamp(32px,3.6vw,44px); font-weight: 400; line-height: 1.35; letter-spacing: -.025em; text-wrap: pretty; }
-.journal-shell .note .journal-reading-date { position: absolute; top: 20px; left: 0; margin: 0; font: 11px/1.7 var(--font-mono); letter-spacing: .07em; color: var(--ink-secondary); }
 .journal-shell .journal-prose { max-inline-size: 36rem; font: 400 17px/1.9 var(--font-sans); letter-spacing: .005em; overflow-wrap: anywhere; }
 .journal-shell :is(.note,.practice) .journal-prose p { margin: 0 0 1.05em; max-width: none; font: inherit; letter-spacing: inherit; color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; }
 .journal-shell :is(.note,.practice) .journal-prose p:last-child { margin-bottom: 0; }
 .journal-shell .practice { display: block; border: 0; padding: 38px 0 24px; }
 .journal-shell .practice > span { display: block; margin-bottom: 24px; font: 400 23px/1.5 var(--font-serif); color: var(--ink); }
 .journal-shell .note:focus-visible { outline: none; }
+@media (min-width: 1024px) {
+  .journal-shell .entry-body { max-inline-size: 60rem; }
+  .journal-shell .journal-prose { max-inline-size: none; font-size: 19px; line-height: 1.95; }
+  .journal-shell .note-label { font-size: clamp(40px,3.2vw,50px); }
+  .journal-shell .practice > span { font-size: 25px; }
+}
 .journal-archive { margin-top: 56px; }
 .journal-archive-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; margin-bottom: 18px; }
 .journal-archive-heading h3 { margin: 0; font: 400 20px/1.5 var(--font-serif); }
@@ -262,9 +264,12 @@
 .journal-reading-neighbors a[data-direction="newer"] { grid-column: 2; align-items: flex-end; text-align: right; }
 .journal-reading-neighbors span { font-size: 12px; color: var(--ink-secondary); }
 .journal-reading-neighbors time { font: 14px/1.6 var(--font-mono); color: var(--ink); }
+@media (min-width: 1024px) {
+  .journal-reading-neighbors { max-width: 60rem; }
+}
 @media (max-width: 700px) {
   .journal-shell .note { padding-block: 88px 56px; scroll-margin-top: 88px; }
-  .journal-shell .note:first-child { padding-top: clamp(124px,17svh,164px); }
+  .journal-shell .note:first-child { padding-top: 56px; }
   .journal-section-heading { padding-top: 24px; margin-bottom: 30px; }
   .journal-section-number { top: -52px; font-size: 112px; }
   .journal-shell .note-label { font-size: clamp(28px,7.8vw,34px); line-height: 1.4; }

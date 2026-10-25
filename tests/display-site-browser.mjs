@@ -10,6 +10,7 @@ import {loadPublicRecords,seedPublicRecords} from './helpers/public-record-previ
 import {verifyJournalReading} from './helpers/journal-browser-checks.mjs';
 import {verifyJournalTypography} from './helpers/journal-typography-checks.mjs';
 import {verifyJournalArchive} from './helpers/journal-archive-checks.mjs';
+import {verifyJournalMotion} from './helpers/journal-motion-checks.mjs';
 
 const snapshotIndex=process.argv.indexOf('--records');
 const publicRecords=snapshotIndex<0?null:loadPublicRecords(process.argv[snapshotIndex+1]);
@@ -76,10 +77,15 @@ try{
   await send('Runtime.enable');await send('Page.enable');await send('Page.bringToFront');
   await send('Emulation.setDeviceMetricsOverride',{width:1280,height:900,deviceScaleFactor:1,mobile:false});
   await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
-  if(process.argv.includes('--journal-only')){
+  if(process.argv.includes('--journal-motion-only')){
+    await verifyJournalMotion({db:f.db,send,evaluate,navigate,wait,work,screenshots});
+    assert.deepEqual(errors,[],'no browser exceptions during motion');
+    console.log(JSON.stringify({passed:true,screenshots,scope:'Journal motion; local Worker and synthetic memory D1'}));
+  }else if(process.argv.includes('--journal-only')){
     await verifyJournalTypography({db:f.db,send,evaluate,navigate,wait,work,screenshots});
     await verifyJournalReading({db:f.db,send,evaluate,navigate,wait,base,requests,setRecordsMode:mode=>{homeRecordsMode=mode;},work,screenshots});
     await verifyJournalArchive({db:f.db,send,evaluate,navigate,wait,work,screenshots});
+    await verifyJournalMotion({db:f.db,send,evaluate,navigate,wait,work,screenshots});
     assert.deepEqual(errors,[],'no browser exceptions');
     assert.equal(requests.every(request=>['GET','HEAD'].includes(request.method)),true,'reading never writes content');
     const summary={passed:true,screenshots,scope:'Journal only; local Worker, Chrome and synthetic memory D1'};
@@ -154,6 +160,7 @@ try{
     await verifyJournalTypography({db:f.db,send,evaluate,navigate,wait,work,screenshots});
     await verifyJournalReading({db:f.db,send,evaluate,navigate,wait,base,requests,setRecordsMode:mode=>{homeRecordsMode=mode;},work,screenshots});
     await verifyJournalArchive({db:f.db,send,evaluate,navigate,wait,work,screenshots});
+    await verifyJournalMotion({db:f.db,send,evaluate,navigate,wait,work,screenshots});
   }
   await navigate('/','.publication-home');
   await wait(()=>evaluate('document.querySelectorAll(".pub-index-entry").length>0'),'home recent records');
