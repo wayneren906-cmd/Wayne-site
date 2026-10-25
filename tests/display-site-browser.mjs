@@ -8,6 +8,8 @@ import {createRequire} from 'node:module';
 import {createStudioWorkerEnvironment} from './helpers/studio-worker-environment.mjs';
 import {loadPublicRecords,seedPublicRecords} from './helpers/public-record-preview.mjs';
 import {verifyJournalReading} from './helpers/journal-browser-checks.mjs';
+import {verifyJournalTypography} from './helpers/journal-typography-checks.mjs';
+import {verifyJournalArchive} from './helpers/journal-archive-checks.mjs';
 
 const snapshotIndex=process.argv.indexOf('--records');
 const publicRecords=snapshotIndex<0?null:loadPublicRecords(process.argv[snapshotIndex+1]);
@@ -74,6 +76,15 @@ try{
   await send('Runtime.enable');await send('Page.enable');await send('Page.bringToFront');
   await send('Emulation.setDeviceMetricsOverride',{width:1280,height:900,deviceScaleFactor:1,mobile:false});
   await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+  if(process.argv.includes('--journal-only')){
+    await verifyJournalTypography({db:f.db,send,evaluate,navigate,wait,work,screenshots});
+    await verifyJournalReading({db:f.db,send,evaluate,navigate,wait,base,requests,setRecordsMode:mode=>{homeRecordsMode=mode;},work,screenshots});
+    await verifyJournalArchive({db:f.db,send,evaluate,navigate,wait,work,screenshots});
+    assert.deepEqual(errors,[],'no browser exceptions');
+    assert.equal(requests.every(request=>['GET','HEAD'].includes(request.method)),true,'reading never writes content');
+    const summary={passed:true,screenshots,scope:'Journal only; local Worker, Chrome and synthetic memory D1'};
+    fs.writeFileSync(path.join(work,'journal-canvas-summary.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
+  }else{
   await navigate('/studio','.wayneo-project-index');
   assert.equal(await evaluate('document.querySelectorAll("[data-project-demo],.wayneo-feature-index,.wayneo-page-guide").length'),0,'Studio index does not inline project details');
   assert.equal(await evaluate('document.querySelector(".wayneo-project-index a").getAttribute("href")'),'/studio/wayneo','project opens its own detail page');
@@ -139,7 +150,11 @@ try{
   await navigate('/learning?date='+encodeURIComponent(publicRecords?'2026-10-12':'2026-10-15'),'.entries .entry');
   assert.equal(await evaluate('document.querySelector(".journal-related a")?.getAttribute("href")'),publicRecords?undefined:'/studio/wayneo','only matching topics link back to the project detail');
   await screenshot('journal');await caseScreenshot('wayneo-journal');
-  if(!publicRecords)await verifyJournalReading({db:f.db,send,evaluate,navigate,wait,base,requests,setRecordsMode:mode=>{homeRecordsMode=mode;},work,screenshots});
+  if(!publicRecords){
+    await verifyJournalTypography({db:f.db,send,evaluate,navigate,wait,work,screenshots});
+    await verifyJournalReading({db:f.db,send,evaluate,navigate,wait,base,requests,setRecordsMode:mode=>{homeRecordsMode=mode;},work,screenshots});
+    await verifyJournalArchive({db:f.db,send,evaluate,navigate,wait,work,screenshots});
+  }
   await navigate('/','.publication-home');
   await wait(()=>evaluate('document.querySelectorAll(".pub-index-entry").length>0'),'home recent records');
   assert.deepEqual(await evaluate('[...document.querySelectorAll("main>section")].map(section=>section.id||section.classList[0]).slice(0,3)'),['pub-cover','journal','practice'],'home restores journal before atmospheric Studio entry');
@@ -182,6 +197,7 @@ try{
   homeRecordsMode='normal';
   assert.equal(requests.every(request=>['GET','HEAD'].includes(request.method)),true,'browsing and interaction never write content');
   assert.deepEqual(errors,[],'no browser exceptions');
-  const summary={passed:true,screenshots,checks:['collection entry and five confirmed interests','category anchors','global search retired','real container-responsive component','local grid control','journal deep link',...(!publicRecords?['journal without JavaScript','no redundant initial journal fetch','journal copy and manual fallback','journal filter history and reload','snapshot share and failed transitions','journal retry and retained reading']:[]),'home failure recovery','no content writes','4 viewports and 2 themes'],scope:'complete local Worker + Chrome + memory D1; '+(publicRecords?'existing public records snapshot':'synthetic public reading only')};
+  const summary={passed:true,screenshots,checks:['collection entry and five confirmed interests','category anchors','global search retired','real container-responsive component','local grid control','journal deep link',...(!publicRecords?['journal without JavaScript','no redundant initial journal fetch','no directory or link action bar','journal filter history and reload','historical reading and failed transitions','journal retry and retained reading','short paragraphs preserve source characters','prominent titles and whitespace','long identifiers and doubled text fit narrow reading','real adjacent-record links']:[]),'home failure recovery','no content writes','4 viewports and 2 themes'],scope:'complete local Worker + Chrome + memory D1; '+(publicRecords?'existing public records snapshot':'synthetic public reading only')};
   fs.writeFileSync(path.join(work,'summary.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
+  }
 }finally{ws?.close();chrome?.kill();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));await f.runtime.dispose();}

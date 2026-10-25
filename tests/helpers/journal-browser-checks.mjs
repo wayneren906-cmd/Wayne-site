@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import path from 'node:path';
 
-export async function verifyJournalReading({db,send,evaluate,navigate,wait,base,requests,setRecordsMode,work,screenshots}){
+export async function verifyJournalReading({db,send,evaluate,navigate,wait,requests,setRecordsMode}){
   const primary='2026-10-15',older='2026-10-14',snapshot='2026-10-16';
-  const hydrate=()=>wait(()=>evaluate('Object.keys(document.querySelector(".journal-entry-actions button")??{}).some(key=>key.startsWith("__reactProps"))'),'Journal hydration');
+  const hydrate=()=>wait(()=>evaluate('Object.keys(document.querySelector(".search input")??{}).some(key=>key.startsWith("__reactProps"))'),'Journal hydration');
   const input=async(value)=>evaluate('(()=>{const field=document.querySelector(".search input");Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value").set.call(field,'+JSON.stringify(value)+');field.dispatchEvent(new Event("input",{bubbles:true}));})()');
   const snapshotRecord={date:primary,items:[{label:'设计',text:'Synthetic historical reading'}],practice:'Historical practice',revision:1,updatedAt:'2026-10-15T00:00:00Z'};
   await db.prepare('INSERT INTO records(date,items,practice,revision,updated_at) VALUES(?,?,?,?,?)').bind(older,JSON.stringify([{label:'Older',text:'Synthetic older reading'}]),'',1,snapshotRecord.updatedAt).run();
@@ -28,26 +26,14 @@ export async function verifyJournalReading({db,send,evaluate,navigate,wait,base,
   assert.equal(await evaluate('document.querySelector(".month-field select").value'),'all');
   assert.equal(requests.slice(start).some(request=>request.url==='/api/records'),false,'SSR data does not trigger a redundant initial API request');
   assert.equal(await evaluate('document.title'),'2026-10-15 学习手记 · Wayne');
+  assert.equal(await evaluate('document.querySelector(".journal-reading-neighbors a").getAttribute("href")'),'/learning?date='+older,'an actual older record is available without returning to the calendar');
+  await evaluate('document.querySelector(".journal-reading-neighbors a").click()');
+  await wait(()=>evaluate('new URLSearchParams(location.search).get("date")==="2026-10-14"&&document.querySelector(".notes")?.textContent.includes("Synthetic older reading")'),'read the older record');await hydrate();
+  assert.equal(await evaluate('document.querySelector(".journal-reading-neighbors a[data-direction=newer]").getAttribute("href")'),'/learning?date='+primary);
+  await evaluate('document.querySelector(".journal-reading-neighbors a[data-direction=newer]").click()');
+  await wait(()=>evaluate('new URLSearchParams(location.search).get("date")==="2026-10-15"&&document.querySelector(".notes")?.textContent.includes("Synthetic published reading")'),'return to the newer record');await hydrate();
 
-  // Exercise the actual click handlers with an isolated clipboard, never the system clipboard.
-  await evaluate('Object.defineProperty(navigator,"clipboard",{configurable:true,value:{writeText:async value=>{window.__journalCopied=value}}});document.querySelector(".journal-entry-actions button").click()');
-  await wait(()=>evaluate('!!window.__journalCopied'),'copy success');
-  assert.equal(await evaluate('window.__journalCopied'),base+'/learning?date='+primary);
-  assert.equal(await evaluate('document.querySelector(".toast").textContent'),'已复制记录链接');
-  await evaluate('navigator.clipboard.writeText=async()=>{throw Error("Synthetic clipboard denial")};document.querySelector(".journal-entry-actions button").click()');
-  await wait(()=>evaluate('!!document.querySelector(".journal-share-fallback input")'),'copy fallback');
-  assert.equal(await evaluate('document.querySelector(".journal-share-fallback input").value'),base+'/learning?date='+primary);
-  await evaluate('document.querySelector(".journal-share-fallback input").focus()');
-  assert.equal(await evaluate('(()=>{const field=document.querySelector(".journal-share-fallback input");return field.selectionStart===0&&field.selectionEnd===field.value.length;})()'),true);
-  for(const width of [320,390,1280])for(const theme of ['light','dark']){
-    await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});
-    await evaluate('document.documentElement.dataset.theme='+JSON.stringify(theme)+';document.querySelector(".journal-entry-actions").scrollIntoView({block:"center",behavior:"instant"});document.fonts.ready');
-    await evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
-    assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth+1'),true,'Journal sharing fits '+width+' '+theme);
-    assert.equal(await evaluate('[...document.querySelectorAll(".journal-entry-actions a,.journal-entry-actions button,.journal-share-fallback input")].every(el=>el.getBoundingClientRect().height>=44)'),true,'sharing touch targets');
-    const shot=await send('Page.captureScreenshot',{format:'png'}),name='journal-sharing-'+width+'-'+theme+'.png';
-    fs.writeFileSync(path.join(work,name),Buffer.from(shot.data,'base64'));screenshots.push(name);
-  }
+  assert.equal(await evaluate('document.querySelectorAll(".journal-entry-actions,.journal-share-fallback,.journal-contents").length'),0,'reading stays free of the removed controls');
 
   // Filters persist through browser history and a full reload.
   await navigate('/learning','.entries .entry');await hydrate();
@@ -66,10 +52,7 @@ export async function verifyJournalReading({db,send,evaluate,navigate,wait,base,
 
   await navigate('/learning?date='+primary+'&snapshot='+snapshot,'.entries .entry');await hydrate();
   assert.equal(await evaluate('document.querySelector(".notes").textContent.includes("Synthetic historical reading")'),true);
-  assert.equal(await evaluate('document.querySelector(".journal-entry-actions a").getAttribute("href")'),'/learning?date='+primary+'&snapshot='+snapshot);
-  await evaluate('Object.defineProperty(navigator,"clipboard",{configurable:true,value:{writeText:async value=>{window.__journalCopied=value}}});document.querySelector(".journal-entry-actions button").click()');
-  await wait(()=>evaluate('!!window.__journalCopied'),'historical copy');
-  assert.equal(await evaluate('window.__journalCopied'),base+'/learning?date='+primary+'&snapshot='+snapshot);
+  assert.equal(await evaluate('new URLSearchParams(location.search).get("snapshot")'),snapshot,'historical reading preserves the selected snapshot');
   await db.prepare('INSERT INTO snapshots(date,data,updated_at) VALUES(?,?,?)').bind('2026-10-17','[',snapshotRecord.updatedAt).run();
   await evaluate('[...document.querySelectorAll("button")].find(button=>button.textContent.trim()==="历史快照").click()');
   await wait(()=>evaluate(`!!document.querySelector('select[aria-label="选择历史快照"]')`),'snapshot list');

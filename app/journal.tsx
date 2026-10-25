@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BookOpen, Search, ChevronDown, ArrowUpRight, X, Archive, ArrowLeft, RefreshCw, Copy } from "lucide-react";
+import { BookOpen, Search, ChevronDown, ArrowUpRight, X, Archive, ArrowLeft, RefreshCw } from "lucide-react";
 import { type Entry } from "@/lib/records";
 import type {JournalData} from '@/lib/journal-reading';
 import {journalEntryPath} from '@/lib/journal-sharing';
@@ -10,6 +10,8 @@ import SiteFooter from "./site-footer";
 import {emptyJournalLocation, readJournalLocation, journalLocationURL, type JournalLocation} from "@/lib/ui/journal-location";
 import { wayneoProject } from "@/content/wayneo";
 import { useJournalMotion } from "./journal-motion";
+import JournalProse from './journal-prose';
+import {journalArchive} from '@/lib/ui/journal-archive';
 
 function RelatedProject({entry}:{entry:Entry}) {
   if(!entry.items.some(item=>wayneoProject.topics.includes(item.label.trim())))return null;
@@ -29,7 +31,6 @@ export default function Journal({apiPath = "/api/records",initialData,initialLoc
   const [lastSync,setLastSync] = useState<string|null>(initialData?.lastSync??null);
   const [snapshots,setSnapshots] = useState<{date:string}[]>([]), [historyRecords,setHistoryRecords] = useState<Entry[]>(initialData?.snapshot?.records??[]);
   const [notice,setNotice] = useState("");
-  const [shareFallback,setShareFallback]=useState<{path:string;url:string}|null>(null);
   const [snapshotLoading,setSnapshotLoading]=useState(false), [snapshotError,setSnapshotError]=useState(initialData?.snapshot?.error??'');
   const [loadedSnapshot,setLoadedSnapshot]=useState(initialData?.snapshot?.date??'');
   const initialSnapshot=useRef(initialData?.snapshot?.date??'');
@@ -46,7 +47,7 @@ export default function Journal({apiPath = "/api/records",initialData,initialLoc
   useEffect(()=>{
     function restore(){
       const next=readJournalLocation(window.location.search);
-      pendingReading.current=!!(next.date||next.query||next.month!=='all'||next.snapshot||window.location.hash==='#journal-records');
+      pendingReading.current=!!(next.date||next.query||next.month!=='all'||next.snapshot||window.location.hash==='#journal-records'||/^#journal-\d{4}-\d{2}-\d{2}-note-\d+$/.test(window.location.hash));
       editingSearch.current=false;
       setLocation(next);
     }
@@ -74,32 +75,32 @@ export default function Journal({apiPath = "/api/records",initialData,initialLoc
 
   useEffect(()=>{ if(!notice)return; const t=setTimeout(()=>setNotice(""),3000);return ()=>clearTimeout(t);},[notice]);
   async function loadSnapshots(){try{const r=await fetch("/api/snapshots");if(!r.ok)throw Error();setSnapshots((await r.json() as {snapshots:{date:string}[]}).snapshots);setNotice("选择日期即可查看当时的记录");}catch{setNotice("暂时无法读取历史快照");}}
-  async function copyEntryLink(date:string){
-    const path=journalEntryPath(date,snapshot);
-    const url=new URL(path,window.location.origin).href;
-    try{await navigator.clipboard.writeText(url);setShareFallback(null);setNotice('已复制记录链接');}
-    catch{setShareFallback({path,url});setNotice('复制未完成，可选中记录下方的链接手动复制。');}
-  }
   function viewSnapshot(date:string){editingSearch.current=false;navigate({...emptyJournalLocation,snapshot:date},true);}
   const readingLoading=snapshot?(snapshotLoading||loadedSnapshot!==snapshot):loading;
   const readingError=snapshot?snapshotError:error;
   useEffect(()=>{
     if(!pendingReading.current||readingLoading)return;
     const frame=requestAnimationFrame(()=>{
-      const heading=readingHeading.current;
+      const fragment=/^#journal-\d{4}-\d{2}-\d{2}-note-\d+$/.test(window.location.hash)?document.getElementById(window.location.hash.slice(1)):null;
+      const firstSection=selectedDate?rootRef.current?.querySelector<HTMLElement>('.entries .entry .note'):null;
+      const heading=fragment??firstSection??readingHeading.current;
       if(!heading)return;
       pendingReading.current=false;
-      const entry=document.querySelector<HTMLDetailsElement>('.journal-shell .entries details');
+      const entry=heading.closest<HTMLDetailsElement>('details')??rootRef.current?.querySelector<HTMLDetailsElement>('.entries details');
       if(entry)entry.open=true;
       heading.focus({preventScroll:true});
       heading.scrollIntoView({block:'start',behavior:'instant'});
     });
     return ()=>cancelAnimationFrame(frame);
-  },[location,readingLoading,readingError,records,historyRecords]);
+  },[location,selectedDate,readingLoading,readingError,records,historyRecords]);
   const source=snapshot?historyRecords:records;
   const blockingError=readingError&&(!!snapshot||source.length===0);
   const months=[...new Set(source.map(r=>r.date.slice(0,7)))].sort().reverse();
   const visible=source.filter(r=>(!selectedDate||r.date===selectedDate) && (month==="all"||r.date.startsWith(month)) && (r.date+" "+r.items.map(i=>i.label+" "+i.text).join(" ")+" "+r.practice).toLowerCase().includes(query.trim().toLowerCase()));
+  const archive=(!selectedDate&&month==='all'&&!query.trim())?journalArchive(visible):{recent:visible,months:[]};
+  const selectedIndex=selectedDate?source.findIndex(record=>record.date===selectedDate):-1;
+  const older=selectedIndex>=0?source[selectedIndex+1]:undefined;
+  const newer=selectedIndex>0?source[selectedIndex-1]:undefined;
   function selectDate(date:string){editingSearch.current=false;navigate({...location,date:selectedDate===date?"":date,month:"all",query:""},true);}
   return <div ref={rootRef} className="shell editorial-shell journal-shell">
     <SiteHeader active="learning"/>
@@ -114,7 +115,7 @@ export default function Journal({apiPath = "/api/records",initialData,initialLoc
     <div className="list-meta"><span>{selectedDate?selectedDate+" 的记录":snapshot?"历史快照 · "+snapshot:loading?"正在读取…":visible.length+" 天记录"}</span>{snapshot?<button className="text-button" onClick={()=>viewSnapshot("")}><ArrowLeft size={14}/>返回最新</button>:<span className="sync"><span/>{lastSync?"快照保存于 "+timeLabel(lastSync):"学习手记"}</span>}</div>
     {readingError&&!blockingError&&<div className="journal-refresh-notice" role="alert"><p>暂时无法更新，以下保留上次读取的记录。</p>{!snapshot&&<button className="text-button" onClick={refresh}><RefreshCw size={15}/>重新读取</button>}</div>}
     {blockingError?<div className="empty"><p role="alert">{readingError}</p>{!snapshot&&<button className="secondary" onClick={refresh}><RefreshCw size={15}/>重新读取</button>}</div>:readingLoading?<div className="loading-bars" aria-label="正在加载"><div/><div/></div>:visible.length===0?<div className="empty"><BookOpen size={28}/><h2>{selectedDate?"这一天还没有公开手记":query||month!=="all"?"没有找到这条记录":"暂时还没有公开手记"}</h2><p>{selectedDate?"可以选择其他日期查看学习记录。":query||month!=="all"?"换个关键词或月份试试。":"这里会收录整理确认后的公开手记。"}</p></div>:<div className="entries">
-      {visible.map((r,index)=><details className="entry" key={r.date+snapshot} open={index===0||!!query||undefined}>
+      {archive.recent.map((r,index)=><details className="entry" key={r.date+snapshot} open={index===0||!!query||undefined}>
         <summary>
           <div className="date-line">
             <time className="entry-date" dateTime={r.date}>{r.date.replaceAll("-",".")}</time>
@@ -123,19 +124,26 @@ export default function Journal({apiPath = "/api/records",initialData,initialLoc
           <div className="summary-right"><span className="category-preview">{r.items.map(i=>i.label).join(" · ")}</span><ChevronDown size={16} className="chevron" aria-hidden="true"/></div>
         </summary>
         <div className="entry-body">
-          <div className="notes">{r.items.map((item,i)=><div className="note" data-journal-reveal key={i}><span className="note-label">{item.label}</span><p>{item.text}</p></div>)}</div>
+          <div className="notes">{r.items.map((item,i)=><section className="note" id={`journal-${r.date}-note-${i+1}`} aria-labelledby={`journal-${r.date}-heading-${i+1}`} tabIndex={-1} data-journal-reveal key={i}>
+            {i===0&&<p className="journal-reading-date"><time dateTime={r.date}>{r.date.replaceAll('-','.')}</time> / 学习手记</p>}
+            <div className="journal-section-heading"><span className="journal-section-number" aria-hidden="true">{String(i+1).padStart(2,'0')}</span><h3 className="note-label" id={`journal-${r.date}-heading-${i+1}`}>{item.label}</h3></div>
+            <JournalProse text={item.text}/>
+          </section>)}</div>
           {(r.practice||r.items.some(item=>wayneoProject.topics.includes(item.label.trim())))&&<div className="entry-bottom">
-            {r.practice&&<div className="practice" data-journal-reveal><span>练习与补充</span><p>{r.practice}</p></div>}
+            {r.practice&&<div className="practice" data-journal-reveal><span>练习与补充</span><JournalProse text={r.practice}/></div>}
             <RelatedProject entry={r}/>
           </div>}
-          <div className="journal-entry-actions">
-            <a href={journalEntryPath(r.date,snapshot)} aria-label={`打开 ${r.date} 的记录链接`}>记录链接 <ArrowUpRight size={14}/></a>
-            <button type="button" className="text-button" aria-label={`复制 ${r.date} 的记录链接`} onClick={()=>copyEntryLink(r.date)}><Copy size={14}/>复制链接</button>
-          </div>
-          {shareFallback?.path===journalEntryPath(r.date,snapshot)&&<label className="journal-share-fallback">可选中链接手动复制<input readOnly aria-label={`${r.date} 的记录链接`} value={shareFallback.url} onFocus={event=>event.currentTarget.select()}/></label>}
         </div>
       </details>)}
+      {archive.months.length>0&&<section className="journal-archive" aria-labelledby="journal-archive-title">
+        <div className="journal-archive-heading"><h3 id="journal-archive-title">更早的记录</h3><p>最近 7 次之外，按月收起</p></div>
+        {archive.months.map(group=><details className="journal-archive-month" key={group.month+snapshot}>
+          <summary><span>{group.month.slice(0,4)} 年 {Number(group.month.slice(5))} 月</span><span className="journal-archive-count">{group.records.length} 次<ChevronDown size={16} aria-hidden="true"/></span></summary>
+          <ul>{group.records.map(record=><li key={record.date}><a href={journalEntryPath(record.date,snapshot)}><time dateTime={record.date}>{record.date.replaceAll('-','.')}</time><span>{record.items.map(item=>item.label).join(' · ')}</span><ArrowUpRight size={15} aria-hidden="true"/></a></li>)}</ul>
+        </details>)}
+      </section>}
     </div>}
+    {!readingLoading&&!readingError&&(older||newer)&&<nav className="journal-reading-neighbors" aria-label="相邻学习记录">{older&&<a href={journalEntryPath(older.date,snapshot)}><span>← 较早一篇</span><time dateTime={older.date}>{older.date}</time></a>}{newer&&<a data-direction="newer" href={journalEntryPath(newer.date,snapshot)}><span>较新一篇 →</span><time dateTime={newer.date}>{newer.date}</time></a>}</nav>}
     <footer><span>凌晨 6 点前归入前一天 · 北京时间</span><div className="history"><button className="text-button" onClick={loadSnapshots}><Archive size={14}/>历史快照</button>{snapshots.length>0&&<select aria-label="选择历史快照" value={snapshot} onChange={e=>viewSnapshot(e.target.value)}><option value="">最新记录</option>{snapshots.map(s=><option key={s.date} value={s.date}>{s.date}</option>)}</select>}</div></footer>
     </main><SiteFooter />
     {notice&&<div className="toast" role="status">{notice}</div>}

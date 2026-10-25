@@ -27,9 +27,10 @@ try{
   assert.match(shared,/<title>2026-10-15 学习手记 · Wayne<\/title>/);
   assert.match(shared,/<meta[^>]*property="og:title"[^>]*content="2026-10-15 学习手记 · Wayne"/);
   assert.match(shared,/<meta[^>]*property="og:description"[^>]*Synthetic SSR reading/);
-  assert.match(body(shared),/Synthetic SSR reading &lt;script&gt;unsafe\(\)&lt;\/script&gt;/);
+  assert.match(body(shared).replace(/<\/?code\b[^>]*>/g,''),/Synthetic SSR reading &lt;script&gt;unsafe\(\)&lt;\/script&gt;/);
   assert.ok(!body(shared).includes('Synthetic older reading'),'the server applies the shared date before hydration');
-  assert.match(body(shared),/href="\/learning\?date=2026-10-15"/);
+  assert.match(shared,/href="https:\/\/wayneo.dev\/learning\?date=2026-10-15"/);
+  assert.doesNotMatch(body(shared),/class="journal-entry-actions"|class="journal-contents"|class="journal-share-fallback"/);
   const filtered=await html('/learning?q=Earlier');
   assert.ok(body(filtered).includes('Synthetic older reading'));
   assert.ok(!body(filtered).includes('Synthetic SSR reading'));
@@ -37,7 +38,7 @@ try{
   assert.ok(body(snapshot).includes('Synthetic historical practice'));
   assert.ok(!body(snapshot).includes('Synthetic public practice'));
   assert.match(snapshot,/<title>2026-10-15 学习手记（快照 2026-10-16） · Wayne<\/title>/);
-  assert.match(body(snapshot),/href="\/learning\?date=2026-10-15&amp;snapshot=2026-10-16"/);
+  assert.match(snapshot,/href="https:\/\/wayneo.dev\/learning\?date=2026-10-15&amp;snapshot=2026-10-16"/);
   const api=await f.runtime.dispatchFetch('http://synthetic.invalid/api/snapshots?date='+historicalDate);
   assert.equal(api.status,200);assert.ok(!JSON.stringify(await api.json()).includes('PRIVATE_'));
   const unknown=await html('/learning?date=2026-10-13');
