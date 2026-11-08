@@ -10,7 +10,9 @@ export function sqlStatements(sql){let text='',trigger=false;const result=[];for
 
 export async function createStudioWorkerEnvironment(options={}){
   const root=path.resolve(import.meta.dirname,'../..');
-  const {work,buildPassed}=JSON.parse(fs.readFileSync(path.join(root,'tests/.generated/worker-latest.json'),'utf8'));
+  const manifest=options.syntheticJournal?'worker-browser-latest.json':'worker-latest.json';
+  const {work,buildPassed,syntheticJournal}=JSON.parse(fs.readFileSync(path.join(root,'tests/.generated',manifest),'utf8'));
+  if(options.syntheticJournal)assert.equal(syntheticJournal,true,'browser fixture build required');
   assert.equal(buildPassed,true);assert.ok(path.resolve(work).startsWith(path.join(root,'tests/.generated')+path.sep));
   const require=createRequire(fs.realpathSync(path.join(root,'node_modules/wrangler/package.json')));
   const {Miniflare,Response}=await import(pathToFileURL(require.resolve('miniflare')).href);

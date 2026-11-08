@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import {spawn} from 'node:child_process';
+import {createChromeProfile,disposeChromeProfile} from './helpers/chrome-profile.mjs';
 import {createRequire} from 'node:module';
 import assert from 'node:assert/strict';
 import {createStudioWorkerEnvironment} from './helpers/studio-worker-environment.mjs';
@@ -36,7 +37,7 @@ const draft={...published,summary:'Synthetic new draft progress',next_step:'Synt
 const goal={id:'synthetic-kept',title:'Synthetic current goal',status:'planned',summary:'Synthetic goal description',next_step:'Synthetic goal next action',target_date:null};
 const removedGoal={...goal,id:'synthetic-removed',title:'Synthetic removed goal'};
 const note={summary:'Synthetic milestone evidence',date:'',assistance:'unknown',execution:'unknown'};
-let chrome,ws;
+let chrome,ws,profile;
 const screenshots=[];
 try{
   await mutate('/api/studio/projects',{action:'save_draft',project_id:projectId,expected_revision:0,idempotency_key:'synthetic-project-1',content:{...published,private_note:'SYNTHETIC_PRIVATE_PROJECT_NOTE'}});
@@ -46,7 +47,7 @@ try{
   await mutate('/api/studio/plans',{action:'publish',plan_id:'personal-goals',expected_revision:1,idempotency_key:'synthetic-plan-2',confirm_public:true});
   await mutate('/api/studio/plans',{action:'save_draft',plan_id:'personal-goals',expected_revision:2,idempotency_key:'synthetic-plan-3',content:{goals:[goal],private_note:'SYNTHETIC_PRIVATE_PLAN_NOTE'}});
   await mutate('/api/studio/events',buildWorkspaceInput({kind:'project',id:projectId,milestone:'implementation'},note,{key:'synthetic-evidence',instance:'11111111-1111-4111-8111-111111111111'}));
-  const profile=path.join(work,'profile-'+Date.now());
+  profile=createChromeProfile(work);
   chrome=spawn('C:/Program Files/Google/Chrome/Application/chrome.exe',['--headless=new','--disable-gpu',...(process.env.CHROME_TEST_NO_SANDBOX==='1'?['--no-sandbox']:[]),'--no-first-run','--no-default-browser-check','--remote-debugging-port=0','--user-data-dir='+profile,'about:blank'],{windowsHide:true,stdio:'ignore'});
   const wait=async predicate=>{for(let n=0;n<150;n++){if(await predicate())return;await new Promise(resolve=>setTimeout(resolve,100));}throw Error('Workbench browser condition timed out');};
   await wait(()=>fs.existsSync(path.join(profile,'DevToolsActivePort')));
@@ -320,4 +321,4 @@ try{
   }
   const summary={passed:true,publicMotion:process.argv.includes('--public-motion'),visualOnly:process.argv.includes('--visual-only'),projectPreview:process.argv.includes('--project-preview'),wayneoManagement:process.argv.includes('--wayneo-management'),recordCount:(await f.db.prepare('SELECT COUNT(*) n FROM learning_events').first()).n,screenshots,scope:'Generated application Worker + Chrome + memory D1 only; synthetic records, projects, goals and email session'};
   fs.writeFileSync(path.join(work,'summary.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
-}finally{ws?.close();chrome?.kill();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));await f.runtime.dispose();}
+}finally{ws?.close();await disposeChromeProfile(work,profile,chrome);server.closeAllConnections();await new Promise(resolve=>server.close(resolve));await f.runtime.dispose();}

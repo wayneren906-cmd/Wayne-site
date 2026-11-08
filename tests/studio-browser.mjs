@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import {spawn} from 'node:child_process';
+import {createChromeProfile,disposeChromeProfile} from './helpers/chrome-profile.mjs';
 import {createRequire} from 'node:module';
 import assert from 'node:assert/strict';
 import {build} from 'vite';
@@ -60,7 +61,7 @@ const server=http.createServer(async(req,res)=>{
   }catch(error){console.log('Synthetic server error: '+String(error));if(res.headersSent)res.destroy();else res.writeHead(500).end('synthetic server error');}
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const profile=path.join(work,'profile-'+Date.now());let chrome,ws;
+const profile=createChromeProfile(work);let chrome,ws;
 try {
   // Optional opt-in for restricted Windows runners; this browser only visits synthetic localhost data.
   const chromeRunnerFlags=process.env.CHROME_TEST_NO_SANDBOX==='1'?['--no-sandbox']:[];
@@ -351,4 +352,4 @@ try {
   }
   const summary={posts,reads,managementReads,rows:emailOnly?0:2,viewportResults,publicViews,emailLoginVerified:useWorker||emailOnly,passed:true,scope:useWorker?'Chrome + complete Worker build + actual Vinext dispatch + memory D1, synthetic native email sessions':'actual browser clients + HTTP handlers + memory SQLite; Worker route dispatch verified separately'};
   fs.writeFileSync(path.join(work,'summary.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
-}finally{ws?.close();chrome?.kill();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));for(const cleanup of cleanups)cleanup();if(useWorker)await f.runtime.dispose();}
+}finally{ws?.close();await disposeChromeProfile(work,profile,chrome);server.closeAllConnections();await new Promise(resolve=>server.close(resolve));for(const cleanup of cleanups)cleanup();if(useWorker)await f.runtime.dispose();}

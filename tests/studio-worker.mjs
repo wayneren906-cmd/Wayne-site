@@ -14,6 +14,11 @@ for(const name of ['app','lib','content','worker','migrations','public','package
   const source=path.join(root,name);if(fs.existsSync(source))fs.cpSync(source,path.join(work,name),{recursive:true});
 }
 const projectPreview=process.argv.includes('--project-preview');
+const syntheticJournal=process.argv.includes('--synthetic-journal');
+if(syntheticJournal){
+  // This only changes the disposable build copy; the real content file is untouched.
+  fs.copyFileSync(path.join(root,'tests/fixtures/browser-journal.ts'),path.join(work,'content/journal.ts'));
+}
 if(projectPreview){
   // These routes exist only in this disposable build, never in the application's app/ tree.
   fs.cpSync(path.join(root,'tests/fixtures/studio-project-preview'),path.join(work,'app/studio/preview-wayneo'),{recursive:true});
@@ -30,5 +35,6 @@ const exit=await new Promise((resolve,reject)=>{
   child.on('error',reject);child.on('exit',resolve);
 });
 assert.equal(exit,0,'isolated complete application build');
-fs.writeFileSync(path.join(root,'tests/.generated/worker-latest.json'),JSON.stringify({work,buildPassed:true,projectPreview}));
+const manifest=syntheticJournal?'worker-browser-latest.json':'worker-latest.json';
+fs.writeFileSync(path.join(root,'tests/.generated',manifest),JSON.stringify({work,buildPassed:true,projectPreview,syntheticJournal}));
 console.log('ISOLATED_FULL_BUILD_PASSED: '+work);

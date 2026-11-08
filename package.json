@@ -10,6 +10,7 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "test:browser": "node tests/studio-worker.mjs --synthetic-journal && node tests/display-site-browser.mjs --synthetic-journal",
     "db:local": "wrangler d1 migrations apply DB --local",
     "db:remote": "wrangler d1 migrations apply DB --remote",
     "deploy": "pnpm build && pnpm db:remote && wrangler deploy --config dist/server/wrangler.json",

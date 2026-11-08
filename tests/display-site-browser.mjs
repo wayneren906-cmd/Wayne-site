@@ -12,13 +12,14 @@ import {verifyJournalTypography} from './helpers/journal-typography-checks.mjs';
 import {verifyJournalArchive} from './helpers/journal-archive-checks.mjs';
 import {verifyJournalMotion} from './helpers/journal-motion-checks.mjs';
 import {verifyDevPathArchive} from './helpers/devpath-browser-checks.mjs';
+import {createChromeProfile,disposeChromeProfile} from './helpers/chrome-profile.mjs';
 
 const snapshotIndex=process.argv.indexOf('--records');
 const publicRecords=snapshotIndex<0?null:loadPublicRecords(process.argv[snapshotIndex+1]);
 const root=path.resolve(import.meta.dirname,'..'),work=path.join(root,'tests/.generated/'+(process.argv.includes('--devpath-only')?'devpath-browser':publicRecords?'public-record-browser':'display-browser'));
 fs.mkdirSync(work,{recursive:true});
 const require=createRequire(fs.realpathSync(path.join(root,'node_modules/vite/package.json'))),WebSocket=require('ws');
-const f=await createStudioWorkerEnvironment(),requests=[];
+const f=await createStudioWorkerEnvironment({syntheticJournal:process.argv.includes('--synthetic-journal')}),requests=[];
 let homeRecordsMode='normal';
 const note='Synthetic published reading '+ 'public layout context '.repeat(24)+'deepneedle design conclusion';
 if(publicRecords)await seedPublicRecords(f.db,publicRecords);
@@ -37,10 +38,10 @@ const server=http.createServer(async(req,res)=>{
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const base='http://127.0.0.1:'+server.address().port;
-let chrome,ws;
+let chrome,ws,profile;
 const screenshots=[];
 try{
-  const profile=path.join(work,'profile-'+Date.now());
+  profile=createChromeProfile(work);
   chrome=spawn('C:/Program Files/Google/Chrome/Application/chrome.exe',['--headless=new','--disable-gpu','--no-first-run','--no-default-browser-check','--remote-debugging-port=0','--user-data-dir='+profile,'about:blank'],{windowsHide:true,stdio:'ignore'});
   const wait=async(predicate,label='condition')=>{for(let n=0;n<150;n++){if(await predicate())return;await new Promise(resolve=>setTimeout(resolve,100));}throw Error('Display browser timeout: '+label);};
   await wait(()=>fs.existsSync(path.join(profile,'DevToolsActivePort')),'Chrome startup');
@@ -220,4 +221,4 @@ try{
   const summary={passed:true,screenshots,checks:['collection entry and five confirmed interests','category anchors','global search retired','real container-responsive component','local grid control','journal deep link',...(!publicRecords?['journal without JavaScript','no redundant initial journal fetch','no directory or link action bar','journal filter history and reload','historical reading and failed transitions','journal retry and retained reading','short paragraphs preserve source characters','prominent titles and whitespace','long identifiers and doubled text fit narrow reading','real adjacent-record links']:[]),'home failure recovery','no content writes','4 viewports and 2 themes'],scope:'complete local Worker + Chrome + memory D1; '+(publicRecords?'existing public records snapshot':'synthetic public reading only')};
   fs.writeFileSync(path.join(work,'summary.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
   }
-}finally{ws?.close();chrome?.kill();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));await f.runtime.dispose();}
+}finally{ws?.close();await disposeChromeProfile(work,profile,chrome);server.closeAllConnections();await new Promise(resolve=>server.close(resolve));await f.runtime.dispose();}

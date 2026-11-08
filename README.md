@@ -87,7 +87,9 @@ pnpm typecheck
 pnpm build
 ```
 
-最近本地验证为 232 项单元测试；类型检查、隔离完整构建及 Journal 真实 Chrome 定向验收通过。阅读区覆盖五种屏宽与明暗主题，另有手机和桌面归档布局、正常与减少动态效果设置下的手机展开，共 14 张截图，并检查原文字保留、两倍字号、移除目录和操作栏、日期筛选、历史快照及失败重试。归档检查覆盖最近七次、跨年月份分组、无 JavaScript 的键盘展开、历史正文搜索和快照身份。定向运行命令为 `node tests/display-site-browser.mjs --journal-only`，完整展示站回归入口仍为 `tests/display-site-runtime.mjs`、`tests/display-site-browser.mjs`；旧工作台运行器保留作历史参考。线上发布验证另见 [验证记录](docs/studio-workbench-verification.md)。
+完整展示站浏览器回归使用 `pnpm test:browser`。它在独立构建中注入固定的合成日志，使用内存 D1 和本地 Chrome，不受真实日志日期或数量变化影响；该构建使用独立清单，不覆盖正常预览所用的构建。正常结束时会清理本次创建的 Chrome 临时配置，截图和构建结果仍保留；如果 Chrome 未能退出，配置也会保留并给出提示。普通的 `node tests/studio-worker.mjs` 不使用合成日志，可继续用于本地预览。
+
+既有 Journal 验证记录包括单元测试；类型检查、隔离完整构建及 Journal 真实 Chrome 定向验收通过。阅读区覆盖五种屏宽与明暗主题，另有手机和桌面归档布局、正常与减少动态效果设置下的手机展开，共 14 张截图，并检查原文字保留、两倍字号、移除目录和操作栏、日期筛选、历史快照及失败重试。归档检查覆盖最近七次、跨年月份分组、无 JavaScript 的键盘展开、历史正文搜索和快照身份。定向运行命令为 `node tests/display-site-browser.mjs --journal-only`，完整展示站回归入口为 `node tests/display-site-runtime.mjs`、`pnpm test:browser`；旧工作台运行器保留作历史参考。线上发布验证另见 [验证记录](docs/studio-workbench-verification.md)。
 
 Journal 服务端首屏直接输出公开记录并应用日期、月份和关键词筛选；日期地址保留对应的标题、摘要与分享信息，历史地址保留快照日期。初次读取失败可重试，后续更新失败保留已读正文；切换快照失败不会显示上一份内容。额外运行时检查见 `node tests/journal-reading-runtime.mjs`；浏览器回归包含关闭 JavaScript、无重复首屏请求、前进后退与刷新、历史快照切换和错误恢复。全部本地验证使用隔离内存 D1 与合成材料，不写入生产；线上结果需以实际发布验收为准。
 
