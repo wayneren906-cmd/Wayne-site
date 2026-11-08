@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {createStudioWorkerEnvironment} from './helpers/studio-worker-environment.mjs';
+import {journalEntries} from '../content/journal.ts';
 
 const f=await createStudioWorkerEnvironment(),checks=[];
 const date='2026-10-15',historicalDate='2026-10-16';
@@ -22,6 +23,10 @@ try{
   const initial=await html('/learning');
   assert.match(body(initial),/class="notes"[^]*Synthetic SSR reading/,'text is rendered HTML, not just an RSC payload');
   assert.ok(!body(initial).includes('class="loading-bars"'));
+  assert.match(body(initial),/更新于/);
+  assert.doesNotMatch(body(initial),/快照保存于/);
+  const initialRecords=await (await f.runtime.dispatchFetch('http://synthetic.invalid/api/records')).json();
+  assert.equal(initialRecords.lastSync,journalEntries.find(item=>item.date==='2026-11-08').updatedAt);
   assert.match(initial,/<link[^>]*rel="canonical"[^>]*href="https:\/\/wayneo.dev\/learning"/);
   const shared=await html('/learning?date='+date+'&month=2026-09&q=missing');
   assert.match(shared,/<title>2026-10-15 学习手记 · Wayne<\/title>/);
@@ -48,9 +53,13 @@ try{
   assert.ok(body(missing).includes('暂时无法读取这份快照'));
   assert.ok(!body(missing).includes('Synthetic SSR reading'));
   // A later request must read current state, never reuse a module-level public cache.
-  await f.db.prepare('UPDATE records SET practice=? WHERE date=?').bind('Synthetic updated practice',date).run();
+  const updatedAt='2026-11-09T01:22:00+08:00';
+  await f.db.prepare('UPDATE records SET practice=?,updated_at=? WHERE date=?').bind('Synthetic updated practice',updatedAt,date).run();
   const updated=await html('/learning?date='+date);
   assert.ok(body(updated).includes('Synthetic updated practice'));
+  assert.match(body(updated),/更新于[^]*11\/0?9 01:22/);
+  const updatedRecords=await (await f.runtime.dispatchFetch('http://synthetic.invalid/api/records')).json();
+  assert.equal(updatedRecords.lastSync,updatedAt,'the API and SSR reflect a write without a new backup');
   await f.db.prepare('ALTER TABLE records RENAME TO synthetic_unavailable_records').run();
   const failed=await html('/learning?date='+date);
   assert.ok(body(failed).includes('暂时无法读取记录，请重试。'));

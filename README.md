@@ -2,6 +2,10 @@
 
 一个关于学习、实践与日常观察的个人网站。采用独立刊物式排版：暖纸色、黑白摄影、大字号目录与克制的动效。
 
+DevPath 成长档案以当前阶段、五个成长方向、实践作品与阶段变化组织长页，专题及记录使用 `/studio/devpath/[slug]` 独立网址，兼容旧 `#view/<id>` 链接。内容整理截至 2026-11-08，已发布。公开文案维护在 `content/devpath.ts`，每日正文仍以 Journal 为唯一来源。
+
+DevPath 定向验收：先运行 `node tests/studio-worker.mjs` 完成隔离构建，再运行 `node tests/devpath-runtime.mjs` 和 `node tests/display-site-browser.mjs --devpath-only`。本地预览使用 `node tests/studio-project-preview-server.mjs --display`，启动后打开输出地址下的 `/studio/devpath`。这些命令使用测试目录与隔离内存 D1，不连接生产数据库。
+
 **[Index](https://wayneo.dev) · [Journal](https://wayneo.dev/learning) · [Studio](https://wayneo.dev/studio)**
 
 更新时间：2026-10-16。纯展示站已正式发布：首页恢复氛围式叙事与 Studio 入口，Studio 项目索引、独立 Wayneo 详情与收藏馆均已上线，Journal 保留只读浏览。全站搜索已取消，旧搜索链接返回 Studio。内容在站外整理确认后随网站更新，工具内容仍待确认。发布及验收见 [验证记录](docs/studio-workbench-verification.md)，总体方案见 [产品定位](docs/studio-functional-plan.md)。测试域名当前共用生产 Worker / D1，不能用于隔离写入测试。
@@ -14,7 +18,7 @@
 - **收藏馆**：`/studio/collection` 按故事世界、剧集、游戏浏览五项已确认兴趣：冰与火之歌、绝命毒师、权力的游戏、最后生还者、CS2。保留中英文作品名、简短介绍和官方来源；没有评分、观看进度、海报盗链或内容输入。Studio 只放简短入口。
 - **纯展示边界**：Journal 不再提供录入、登录或编辑；旧管理/登录页面在服务器入口跳转，站内内容编辑和账号管理写入请求返回 405。旧代码与数据保留，外部同步、退出登录清理及定时快照没有一刀切停用。
 - **主题与动效**：支持浅色、深色和系统主题，保存主题选择；Journal 和 Studio 标题、介绍配合轻微上移与渐显入场，Studio 封面摄影淡入。减少动态效果时静态显示。
-- **内容与数据**：项目文案在 `content/wayneo.ts`，收藏内容在 `content/collection.ts`，新公开手记入口为 `content/journal.ts`（尚无新增材料，保持空数组）。统一公开读取层合并本地项目/手记和 D1 原有公开 records；公开数据不含私人记录、草稿和备注。收藏页无需读取数据库。每条手记只维护一个来源，重复日期显式报错。
+- **内容与数据**：项目文案在 `content/wayneo.ts`，收藏内容在 `content/collection.ts`，已确认的公开手记可维护在 `content/journal.ts`。统一公开读取层合并本地手记和 D1 原有公开 records；同步接口拒绝写入由内容文件维护的日期，新快照收录两处公开记录，历史快照不回填。公开数据不含私人记录、草稿和备注。每条手记只维护一个来源，重复日期显式报错。
 - **学习记录同步**：独立接口支持凭证验证、版本冲突保护和重复提交。详细说明见 [自动学习记录同步](docs/learning-sync.md)。
 
 站点可以独立运行，不需要 ChatGPT 账号。ChatGPT 学习系统接入、自动评估与规划、后台任务执行器、自定义项目和完整记录分页检索尚未完成。加密私人备份与隔离恢复服务已有实现，正式备份密钥、独立检查点存储与保留策略仍待配置和验收。Studio 摄影保留原作与作者来源，网站使用许可尚待核实，详见 [摄影说明](docs/studio-photography.md)。

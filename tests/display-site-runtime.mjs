@@ -14,7 +14,8 @@ try{
   await f.db.prepare('INSERT INTO records(date,items,practice,revision,updated_at) VALUES(?,?,?,?,?)').bind('2026-10-15',JSON.stringify([{label:'公开设计',text:'Synthetic public design reading'}]),'Synthetic public practice',1,new Date().toISOString()).run();
   await f.db.prepare('INSERT INTO studio_project_records(owner_id,project_id,revision,draft_json,private_note,updated_at) VALUES(?,?,?,?,?,?)').bind('synthetic-owner','wayneo',1,JSON.stringify({status:'not_started',description:'PRIVATE_DRAFT_SENTINEL',summary:'PRIVATE_DRAFT_SENTINEL',next_step:'',milestones:{interface:'not_started',implementation:'not_started',verification:'not_started'}}),'PRIVATE_NOTE_SENTINEL',new Date().toISOString()).run();
   const contentResponse=await request('/api/public/content');assert.equal(contentResponse.status,200);
-  const content=await contentResponse.json();assert.equal(content.items.filter(item=>item.type==='project').length,1);
+  const content=await contentResponse.json();assert.equal(content.items.filter(item=>item.type==='project').length,2);
+  assert.equal(content.items.find(item=>item.id==='project:devpath').url,'/studio/devpath');
   assert.equal(content.items.find(item=>item.type==='project').url,'/studio/wayneo');
   assert.ok(content.items.some(item=>item.id==='journal:2026-10-15'));
   assert.ok(!JSON.stringify(content).includes('PRIVATE_'));

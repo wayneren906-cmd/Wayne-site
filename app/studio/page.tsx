@@ -1,5 +1,6 @@
 import {collectionItems} from '@/content/collection';
 import {wayneoProject} from '@/content/wayneo';
+import {devPathProject} from '@/content/devpath';
 import StudioShell from './studio-shell';
 import StudioCover from './studio-cover';
 import StudioPhotographyEssay from './studio-photography-essay';
@@ -36,9 +37,26 @@ export default function StudioPage(){
         </div>
       </article>
 
+      <article id="devpath" className="wayneo-project-index" aria-labelledby="devpath-project-title">
+        <div className="wayneo-project-index-meta">
+          <span className="wayneo-project-index-number" aria-hidden="true">02</span>
+          <h2 id="devpath-project-title" className="wayneo-project-index-name">{devPathProject.title}</h2>
+          <p className="wayneo-project-index-status">个人成长档案 · 持续记录</p>
+        </div>
+        <div className="wayneo-project-index-copy">
+          <p className="wayneo-project-index-summary">{devPathProject.summary}</p>
+          <ul className="wayneo-project-index-topics" aria-label="DevPath 方向">
+            {devPathProject.topics.map(topic=><li key={topic}>{topic}</li>)}
+          </ul>
+          <a className="wayneo-project-index-link" href={devPathProject.url}>
+            打开 DevPath <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </article>
+
       <article className="collection-entry" aria-labelledby="collection-entry-title">
         <div className="collection-entry-meta">
-          <span className="collection-entry-number" aria-hidden="true">02</span>
+          <span className="collection-entry-number" aria-hidden="true">03</span>
           <h2 id="collection-entry-title" className="collection-entry-name">收藏馆</h2>
         </div>
         <div className="collection-entry-copy">

@@ -7,17 +7,22 @@ function database(rows=[row]){
   return {prepare(sql){assert.match(sql,/\brecords\b/i);assert.doesNotMatch(sql,/learning_events|studio_project_records/i);return {async all(){return {success:true,results:rows};}};}};
 }
 
-test('public content joins the fixed Wayneo feature and legacy public records without private fields',async()=>{
+test('public content joins Wayneo, DevPath and public records without private fields',async()=>{
   const items=await readPublicContent(database());
-  assert.equal(items.filter(item=>item.type==='project').length,1);
+  assert.equal(items.filter(item=>item.type==='project').length,2);
   assert.equal(items.find(item=>item.type==='project').id,'project:wayneo');
+  const devpath=items.find(item=>item.id==='project:devpath');
+  assert.equal(devpath.url,'/studio/devpath');
+  assert.equal(devpath.topics.length,5);
+  assert.ok(devpath.text.includes('生活体验'));
   const journal=items.find(item=>item.id==='journal:2026-10-15');
   assert.ok(journal.text.includes('Synthetic public pointer note'));
   assert.ok(journal.url.includes('/learning?date=2026-10-15'));
   assert.ok(journal.topics.includes('C 语言'));
   assert.ok(!JSON.stringify(items).includes('DO_NOT_EXPOSE'));
   const records=await readPublicJournalRecords(database());
-  assert.equal(records[0].items[0].text,'Synthetic public pointer note');
+  assert.equal(records.find(record=>record.date==='2026-10-15').items[0].text,'Synthetic public pointer note');
+  assert.ok(records.some(record=>record.date==='2026-11-08'));
   assert.ok(!JSON.stringify(records).includes('DO_NOT_EXPOSE'));
 });
 

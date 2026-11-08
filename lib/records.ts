@@ -12,3 +12,13 @@ export const recordSchema = z.object({
   practice: z.string().trim().max(2000), expectedRevision: z.number().int().min(0),
 });
 export type Entry = { date: string; items: {label: string; text: string}[]; practice: string; revision: number; updatedAt: string };
+
+export function latestRecordUpdate(records: Pick<Entry, 'updatedAt'>[]): string | null {
+  let latest: string | null = null;
+  for (const record of records) {
+    if (Number.isFinite(Date.parse(record.updatedAt)) && (!latest || Date.parse(record.updatedAt) > Date.parse(latest))) {
+      latest = record.updatedAt;
+    }
+  }
+  return latest;
+}

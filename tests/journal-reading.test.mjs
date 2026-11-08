@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readJournalData} from '../lib/journal-reading.ts';
+import {latestRecordUpdate} from '../lib/records.ts';
 import {journalEntryPath, describeJournalEntry} from '../lib/journal-sharing.ts';
 import {readJournalSearchParams} from '../lib/ui/journal-location.ts';
 
@@ -12,18 +13,29 @@ function database({unavailable=false,snapshot=null}={}){
   }};
 }
 
-test('server reading contains only public fields, with a snapshot timestamp',async()=>{
+test('server reading contains only public fields, with the latest record update rather than snapshot time',async()=>{
   const data=await readJournalData(database());
-  assert.deepEqual(data.records,[record]);
-  assert.equal(data.lastSync,'2026-10-16T00:00:00Z');
+  assert.deepEqual(data.records.find(item=>item.date===record.date),record);
+  assert.equal(data.lastSync,latestRecordUpdate(data.records));
+  assert.ok(data.records.some(item=>item.date==='2026-11-08'));
   assert.equal(data.error,'');
   assert.equal(data.snapshot,null);
   assert.ok(!JSON.stringify(data).includes('PRIVATE_'));
 });
 
+test('latest update follows write time, including edits to older study dates and timezone offsets',()=>{
+  assert.equal(latestRecordUpdate([
+    {...record,date:'2026-10-27',updatedAt:'2026-10-28T00:00:00+08:00'},
+    {...record,date:'2026-10-24',updatedAt:'2026-10-27T17:22:47.616Z'},
+  ]),'2026-10-27T17:22:47.616Z');
+  assert.equal(latestRecordUpdate([]),null);
+  assert.equal(latestRecordUpdate([{updatedAt:'invalid'}]),null);
+});
+
 test('failed initial reading is a retryable error, never a successful empty journal or internal error leak',async()=>{
   const data=await readJournalData(database({unavailable:true}));
   assert.equal(data.records.length,0);
+  assert.equal(data.lastSync,null);
   assert.equal(data.error,'暂时无法读取记录，请重试。');
   assert.ok(!JSON.stringify(data).includes('PRIVATE_'));
 });

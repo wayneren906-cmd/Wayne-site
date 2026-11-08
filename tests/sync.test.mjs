@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { createHash } from 'node:crypto';
 import { handleSync } from '../lib/sync.ts';
+import {snapshot} from '../lib/database.ts';
+import {journalEntries} from '../content/journal.ts';
 
 const token = 'a'.repeat(64);
 const digest = createHash('sha256').update(token).digest('hex');
@@ -10,6 +12,7 @@ const draft = {date:'2026-10-10',items:[{label:'学习',text:'阅读状态机'}]
 function fixture() {
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec('CREATE TABLE records(date TEXT PRIMARY KEY,items TEXT NOT NULL,practice TEXT NOT NULL,revision INTEGER NOT NULL,updated_at TEXT NOT NULL)');
+  sqlite.exec('CREATE TABLE snapshots(date TEXT PRIMARY KEY,data TEXT NOT NULL,updated_at TEXT NOT NULL)');
   const DB = {prepare(sql){let args=[]; const statement=sqlite.prepare(sql); return {
     bind(...values){args=values;return this;},
     async first(){return statement.get(...args)??null;},
@@ -21,6 +24,24 @@ function fixture() {
 function request(body=draft, credential=token) {
   return new Request('https://wayneo.dev/api/sync/records',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${credential}`},body:JSON.stringify(body)});
 }
+test('source-maintained dates cannot be inserted through sync and remain visible',async()=>{
+  const env=fixture();
+  const source=journalEntries[0];
+  const response=await handleSync(request({...draft,date:source.date}),env);
+  assert.equal(response.status,409);
+  assert.equal((await env.DB.prepare('SELECT COUNT(*) AS count FROM records').first()).count,0);
+});
+test('snapshots include source entries and reject duplicate dates without writing',async()=>{
+  const env=fixture(),source=journalEntries[0];
+  await handleSync(request(),env);
+  const saved=await snapshot(env.DB,new Date('2026-11-09T15:00:00Z'));
+  assert.equal(saved.count,2);
+  const row=await env.DB.prepare('SELECT data FROM snapshots WHERE date=?').bind(saved.snapshotDate).first();
+  assert.deepEqual(JSON.parse(row.data).find(item=>item.date===source.date),source);
+  await env.DB.prepare('INSERT INTO records(date,items,practice,revision,updated_at) VALUES(?,?,?,?,?)').bind(source.date,JSON.stringify(source.items),source.practice,source.revision,source.updatedAt).run();
+  await assert.rejects(()=>snapshot(env.DB,new Date('2026-11-10T15:00:00Z')),/PUBLIC_CONTENT_ID_CONFLICT/);
+  assert.equal((await env.DB.prepare('SELECT COUNT(*) AS count FROM snapshots').first()).count,1);
+});
 test('sync rejects missing or wrong credentials and fails closed without config',async()=>{
   const env=fixture();
   for(const credential of ['', 'wrong',digest]) assert.equal((await handleSync(request(draft,credential),env)).status,401);

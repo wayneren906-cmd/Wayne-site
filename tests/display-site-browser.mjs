@@ -11,10 +11,11 @@ import {verifyJournalReading} from './helpers/journal-browser-checks.mjs';
 import {verifyJournalTypography} from './helpers/journal-typography-checks.mjs';
 import {verifyJournalArchive} from './helpers/journal-archive-checks.mjs';
 import {verifyJournalMotion} from './helpers/journal-motion-checks.mjs';
+import {verifyDevPathArchive} from './helpers/devpath-browser-checks.mjs';
 
 const snapshotIndex=process.argv.indexOf('--records');
 const publicRecords=snapshotIndex<0?null:loadPublicRecords(process.argv[snapshotIndex+1]);
-const root=path.resolve(import.meta.dirname,'..'),work=path.join(root,'tests/.generated/'+(publicRecords?'public-record-browser':'display-browser'));
+const root=path.resolve(import.meta.dirname,'..'),work=path.join(root,'tests/.generated/'+(process.argv.includes('--devpath-only')?'devpath-browser':publicRecords?'public-record-browser':'display-browser'));
 fs.mkdirSync(work,{recursive:true});
 const require=createRequire(fs.realpathSync(path.join(root,'node_modules/vite/package.json'))),WebSocket=require('ws');
 const f=await createStudioWorkerEnvironment(),requests=[];
@@ -51,7 +52,13 @@ try{
   ws.onmessage=event=>{const msg=JSON.parse(event.data);if(msg.method==='Runtime.exceptionThrown')errors.push(msg.params.exceptionDetails.text);if(msg.id){const operation=pending.get(msg.id);pending.delete(msg.id);msg.error?operation.reject(Error(JSON.stringify(msg.error))):operation.resolve(msg.result);}};
   const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++sequence,timer=setTimeout(()=>reject(Error('CDP timeout '+method)),15000);pending.set(id,{resolve:value=>{clearTimeout(timer);resolve(value);},reject:error=>{clearTimeout(timer);reject(error);}});ws.send(JSON.stringify({id,method,params}));});
   const evaluate=async(expression)=>{const result=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(result.exceptionDetails)throw Error(JSON.stringify(result.exceptionDetails));return result.result.value;};
-  const navigate=async(url,selector)=>{await evaluate('window.__displayNavigationMarker=true');await send('Page.navigate',{url:base+url});await wait(()=>evaluate('!window.__displayNavigationMarker&&location.pathname==='+JSON.stringify(new URL(base+url).pathname)+'&&location.search==='+JSON.stringify(new URL(base+url).search)+'&&!!document.querySelector('+JSON.stringify(selector)+')'),'navigate '+url);};
+  const navigate=async(url,selector)=>{
+    const target=new URL(base+url),before=await evaluate('location.href');
+    const fragmentOnly=before.split('#')[0]===target.href.split('#')[0]&&before!==target.href;
+    if(!fragmentOnly)await evaluate('window.__displayNavigationMarker=true');
+    await send('Page.navigate',{url:target.href});
+    await wait(()=>evaluate((fragmentOnly?'':'!window.__displayNavigationMarker&&')+'location.pathname==='+JSON.stringify(target.pathname)+'&&location.search==='+JSON.stringify(target.search)+'&&location.hash==='+JSON.stringify(target.hash)+'&&!!document.querySelector('+JSON.stringify(selector)+')'),'navigate '+url);
+  };
   const clickText=async(text)=>evaluate('(()=>{const button=[...document.querySelectorAll("button")].find(el=>el.textContent.trim()==='+JSON.stringify(text)+');if(!button)throw Error("Missing button");button.click();})()');
   const screenshot=async(name)=>{
     for(const width of [320,390,768,1280])for(const theme of ['light','dark']){
@@ -77,7 +84,13 @@ try{
   await send('Runtime.enable');await send('Page.enable');await send('Page.bringToFront');
   await send('Emulation.setDeviceMetricsOverride',{width:1280,height:900,deviceScaleFactor:1,mobile:false});
   await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
-  if(process.argv.includes('--journal-motion-only')){
+  if(process.argv.includes('--devpath-only')){
+    await verifyDevPathArchive({db:f.db,send,evaluate,navigate,wait,base,work,screenshots});
+    assert.deepEqual(errors,[],'no DevPath browser exceptions');
+    assert.equal(requests.every(request=>['GET','HEAD'].includes(request.method)),true,'DevPath browsing never writes content');
+    const summary={passed:true,screenshots,scope:'DevPath archive; local Worker + Chrome + memory D1; synthetic records only'};
+    fs.writeFileSync(path.join(work,'summary.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
+  }else if(process.argv.includes('--journal-motion-only')){
     await verifyJournalMotion({db:f.db,send,evaluate,navigate,wait,work,screenshots});
     assert.deepEqual(errors,[],'no browser exceptions during motion');
     console.log(JSON.stringify({passed:true,screenshots,scope:'Journal motion; local Worker and synthetic memory D1'}));
@@ -170,7 +183,7 @@ try{
   assert.equal(await evaluate('!!document.querySelector("#selected,.pub-practice-topics,.pub-selected-more")||[...document.querySelectorAll("main a")].some(a=>a.getAttribute("href")==="/studio/wayneo")'),false,'no project detail on home');
   assert.equal(await evaluate('document.querySelector("#practice h2").textContent'),'让想法，有迹可循。');
   assert.equal(await evaluate('document.querySelector(".pub-cover-intro a").getAttribute("href")'),'#journal');
-  assert.equal(await evaluate('document.querySelectorAll(".pub-index-entry").length'),Math.min(publicRecords?.length??1,3),'only the latest three records are featured');
+  assert.equal(await evaluate('document.querySelectorAll(".pub-index-entry").length'),Math.min((publicRecords?.length??1)+1,3),'only the latest three records are featured');
   await screenshot('index');await caseScreenshot('wayneo-index');
   for(const width of [390,1280])for(const selector of ['#practice','#journal']){
     await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});

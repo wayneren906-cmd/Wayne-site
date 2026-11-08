@@ -1,4 +1,4 @@
-import type {Entry} from './records.ts';
+import {latestRecordUpdate, type Entry} from './records.ts';
 import {readPublicJournalRecords, readPublicJournalSnapshot} from './public-content.ts';
 
 export type JournalData = {
@@ -9,14 +9,13 @@ export type JournalData = {
 };
 
 export async function readJournalData(db: D1Database, snapshotDate = ''): Promise<JournalData> {
-  const [records, last, snapshot] = await Promise.allSettled([
+  const [records, snapshot] = await Promise.allSettled([
     readPublicJournalRecords(db),
-    db.prepare('SELECT updated_at FROM snapshots ORDER BY updated_at DESC LIMIT 1').first<{updated_at:string}>(),
     snapshotDate ? readPublicJournalSnapshot(db,snapshotDate) : Promise.resolve(null),
   ]);
   return {
     records: records.status === 'fulfilled' ? records.value : [],
-    lastSync: last.status === 'fulfilled' ? last.value?.updated_at ?? null : null,
+    lastSync: records.status === 'fulfilled' ? latestRecordUpdate(records.value) : null,
     error: records.status === 'fulfilled' ? '' : '暂时无法读取记录，请重试。',
     snapshot: snapshotDate ? {
       date: snapshotDate,

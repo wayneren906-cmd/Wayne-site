@@ -3,20 +3,22 @@ import {sameOrigin} from '@/lib/access';
 import {verifyStudioSession} from '@/lib/learning/auth';
 import {guardPrivateDatabase} from '@/lib/learning/session-db';
 import { json, readRecords, snapshot } from "@/lib/database";
-import { recordSchema } from "@/lib/records";
+import { latestRecordUpdate, recordSchema } from "@/lib/records";
+import {isSourceJournalDate} from '@/lib/journal-source';
 export const dynamic = "force-dynamic";
 async function allowed(request: Request) {
   try {await verifyStudioSession(request.headers,env.DB); return await guardPrivateDatabase(env.DB,request.headers);} catch {return null;}
 }
 export async function GET(request:Request) {
   const db=await allowed(request);if(!db)return json({error:"请使用管理员账户登录"},403);
-  const last = await db.prepare("SELECT updated_at FROM snapshots ORDER BY updated_at DESC LIMIT 1").first();
-  return json({records:await readRecords(db),lastSync:last?.updated_at ?? null,canEdit:true,signedIn:true});
+  const records = await readRecords(db);
+  return json({records,lastSync:latestRecordUpdate(records),canEdit:true,signedIn:true});
 }
 export async function POST(request:Request) {
   const db=await allowed(request);if(!db)return json({error:"请使用管理员账户登录"},403);
   if (!sameOrigin(request)) return json({error:"请求来源无效"},403);
   let body;try {body=recordSchema.parse(await request.json());}catch{return json({error:"请检查日期和学习内容"},400);}
+  if(isSourceJournalDate(body.date))return json({error:"该日期的记录由网站内容文件维护，请在原处修改"},409);
   const now=new Date().toISOString();
   const result=body.expectedRevision === 0
     ? await db.prepare("INSERT INTO records(date,items,practice,revision,updated_at) VALUES(?,?,?,1,?) ON CONFLICT(date) DO NOTHING").bind(body.date,JSON.stringify(body.items),body.practice,now).run()

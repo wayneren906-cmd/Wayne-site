@@ -1,14 +1,15 @@
 import type { Entry } from "./records.ts";
 import { readRecords } from "./database.ts";
 import { wayneoProject } from "../content/wayneo.ts";
-import { journalEntries } from "../content/journal.ts";
+import { mergeJournalSources } from "./journal-source.ts";
+import { devPathProject, devPathIntroduction, devPathDirections } from "../content/devpath.ts";
 import { dateSchema } from "./records.ts";
 import type { PublicContentItem } from "./public-content-contracts.ts";
 
 // 公开阅读边界：只把 records 中已经公开的字段按 Entry 形状重新投影，
 // 不做整行展开，也不读取私人草稿、备注或其他私有表。
 export async function readPublicJournalRecords(db: D1Database): Promise<Entry[]> {
-  const records = [...journalEntries,...await readRecords(db)];
+  const records = mergeJournalSources(await readRecords(db));
   return projectJournalRecords(records);
 }
 
@@ -84,6 +85,17 @@ export async function readPublicContent(db: D1Database): Promise<PublicContentIt
     text: projectText(),
     url: wayneoProject.url,
     topics: [...wayneoProject.topics],
+  });
+
+  pushUnique(items, {
+    id: devPathProject.id,
+    title: devPathProject.title,
+    summary: devPathProject.summary,
+    url: devPathProject.url,
+    type: "project",
+    text: [devPathIntroduction.description, devPathIntroduction.stageText,
+      ...devPathDirections.map(direction=>`${direction.title}\n${direction.description}`)].join("\n\n"),
+    topics: [...devPathProject.topics],
   });
 
   for (const record of records) {

@@ -25,7 +25,7 @@ export async function verifyJournalTypography({db,send,evaluate,navigate,wait,wo
     await wait(()=>evaluate('location.hash==='+JSON.stringify(target)+'&&document.activeElement.id==='+JSON.stringify(target.slice(1))),'existing topic links still reach their section');
     await evaluate('window.__typographyReloadMarker=true');await send('Page.reload');
     await wait(()=>evaluate('!window.__typographyReloadMarker&&location.hash==='+JSON.stringify(target)+'&&document.activeElement?.id==='+JSON.stringify(target.slice(1))),'reload retains the topic destination');
-    assert.equal(await evaluate('document.querySelectorAll(".journal-reading-neighbors a").length'),0,'no invented neighbors for one record');
+    assert.deepEqual(await evaluate('[...document.querySelectorAll(".journal-reading-neighbors a")].map(a=>new URL(a.href).searchParams.get("date"))'),['2026-11-08'],'neighbor points to the existing source entry');
     await evaluate('location.hash=""');
     await wait(()=>evaluate('!location.hash&&document.activeElement?.id==="journal-2026-10-15-note-1"'),'return to the first reading section');
     for(const width of [320,390,768,1280,1920])for(const theme of ['light','dark']){

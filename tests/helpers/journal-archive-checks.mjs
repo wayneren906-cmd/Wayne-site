@@ -11,7 +11,7 @@ export async function verifyJournalArchive({db,send,evaluate,navigate,wait,work,
     await db.prepare('INSERT INTO snapshots(date,data,updated_at) VALUES(?,?,?)').bind('2026-10-25',JSON.stringify(fixture),fixture[0].updatedAt).run();
     await send('Emulation.setScriptExecutionDisabled',{value:true});
     await navigate('/learning','.journal-archive');
-    assert.deepEqual(await evaluate('[...document.querySelectorAll(".entries > .entry .entry-date")].map(el=>el.dateTime)'),dates.slice(0,7));
+    assert.deepEqual(await evaluate('[...document.querySelectorAll(".entries > .entry .entry-date")].map(el=>el.dateTime)'),['2026-11-08',...dates.slice(0,6)]);
     assert.equal(await evaluate('document.querySelectorAll(".journal-archive-month").length'),3,'years have distinct month groups');
     assert.equal(await evaluate('document.querySelectorAll(".journal-archive-month[open]").length'),0,'all older months start closed');
     assert.equal(await evaluate('document.querySelectorAll(".journal-archive .entry-body").length'),0,'older prose does not lengthen the index');
@@ -31,9 +31,9 @@ export async function verifyJournalArchive({db,send,evaluate,navigate,wait,work,
       const shot=await send('Page.captureScreenshot',{format:'png'}),filename='journal-archive-'+width+'.png';
       fs.writeFileSync(path.join(work,filename),Buffer.from(shot.data,'base64'));screenshots.push(filename);
     }
-    assert.equal(await evaluate('document.querySelector(".journal-archive-month a").getAttribute("href")'),'/learning?date=2026-10-17');
+    assert.equal(await evaluate('document.querySelector(".journal-archive-month a").getAttribute("href")'),'/learning?date=2026-10-18');
     await evaluate('document.querySelector(".journal-archive-month a").click()');
-    await wait(()=>evaluate('location.search==="?date=2026-10-17"&&document.querySelector(".notes")?.textContent.includes("历史正文 2026-10-17")'),'read an archived date');await hydrate();
+    await wait(()=>evaluate('location.search==="?date=2026-10-18"&&document.querySelector(".notes")?.textContent.includes("历史正文 2026-10-18")'),'read an archived date');await hydrate();
     assert.equal(await evaluate('document.querySelectorAll(".entries > .entry").length'),1);
     await navigate('/learning?q='+encodeURIComponent('历史正文 2026-09-12'),'.entries .entry');await hydrate();
     assert.equal(await evaluate('document.querySelector(".entry-date").dateTime'),'2026-09-12','search covers archived prose');

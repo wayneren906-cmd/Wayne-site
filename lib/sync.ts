@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
 import { json, readRecords } from './database.ts';
 import { recordSchema } from './records.ts';
+import {isSourceJournalDate} from './journal-source.ts';
 
 type SyncEnv = { DB: D1Database; SYNC_TOKEN_SHA256?: string };
 const maxBytes = 64 * 1024;
@@ -43,6 +44,7 @@ export async function handleSync(request: Request, env: SyncEnv): Promise<Respon
   if (text === null) return json({error:'学习记录超过大小限制'},413);
   let body;
   try { body = recordSchema.parse(JSON.parse(text)); } catch { return json({error:'请检查日期和学习内容'},400); }
+  if (isSourceJournalDate(body.date)) return json({error:'该日期的记录由网站内容文件维护，请在原处修改'},409);
   const current = (await readRecords(env.DB)).find(record=>record.date === body.date);
   if (current && (body.expectedRevision === current.revision || body.expectedRevision + 1 === current.revision)
       && JSON.stringify(current.items) === JSON.stringify(body.items) && current.practice === body.practice) {

@@ -71,10 +71,10 @@ export async function verifyJournalReading({db,send,evaluate,navigate,wait,reque
   assert.equal(await evaluate('document.querySelector(".empty").textContent.includes("暂时无法读取记录，请重试。")'),true);
   await db.prepare('ALTER TABLE synthetic_journal_unavailable RENAME TO records').run();
   await evaluate('document.querySelector(".empty button").click()');
-  await wait(()=>evaluate('document.querySelectorAll(".entries .entry").length===2'),'server error retry');
+  await wait(()=>evaluate('document.querySelectorAll(".entries .entry").length===3'),'server error retry');
   setRecordsMode('error');await evaluate('window.dispatchEvent(new Event("focus"))');
   await wait(()=>evaluate('document.querySelector(".journal-refresh-notice")?.textContent.includes("保留上次读取")'),'failed refresh retains content');
-  assert.equal(await evaluate('document.querySelectorAll(".entries .entry").length'),2);
+  assert.equal(await evaluate('document.querySelectorAll(".entries .entry").length'),3);
   setRecordsMode('normal');await evaluate('document.querySelector(".journal-refresh-notice button").click()');
   await wait(()=>evaluate('!document.querySelector(".journal-refresh-notice")'),'refresh retry');
   await navigate('/learning?date=2026-10-13','.empty');

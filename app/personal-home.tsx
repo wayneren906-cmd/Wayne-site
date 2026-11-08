@@ -161,7 +161,7 @@ export default function PersonalHome() {
             Notes on becoming — 2026.
           </p>
         </div>
-          <div className="pub-cover-intro pub-reveal"><span className="pub-small-label">WAYNE / 个人刊物</span><p className="pub-cover-deck">从一行代码，<br />到生活的细部。</p><p className="pub-body">物联网工程在读。C 语言与嵌入式。</p><a className="pub-text-link" href="#journal">翻开这一页 <ArrowDown size={15} /></a></div>
+          <div className="pub-cover-intro pub-reveal"><span className="pub-small-label">WAYNE / 个人刊物</span><p className="pub-cover-deck">从一行代码，<br />到生活的细部。</p><p className="pub-body">物联网工程在读。记录学习、创造，也记录生活与选择。</p><a className="pub-text-link" href="#journal">翻开这一页 <ArrowDown size={15} /></a></div>
           <figure className="pub-cover-photo pub-reveal-image">
             <div className="pub-photo-window"><img src="/editorial-kamilla-hanapova-2018.jpg" alt="建筑立面被光影一分为二，明亮的窗格与深黑阴影形成重复的几何节奏" width={1024} height={1024} fetchPriority="high" /></div>
             <figcaption>
